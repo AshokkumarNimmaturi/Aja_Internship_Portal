@@ -12,8 +12,10 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      // Simulate API call for UI testing without backend
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await axiosInstance.post("/auth/forgot-password", {
+        email: email,
+      });
+
       setSent(true);
       toast.success("Reset link sent!");
     } catch (error) {

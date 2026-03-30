@@ -55,6 +55,7 @@ const ResetPasswordPage = () => {
       await axiosInstance.post("/auth/reset-password", {
         token,
         newPassword: password,
+        confirmPassword: confirm,
       });
       toast.success("Password reset successfully!");
       navigate("/login");
