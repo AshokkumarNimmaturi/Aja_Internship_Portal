@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Link,
   useParams,
@@ -11,43 +11,13 @@ import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
 
-const packagesData = {
-  1: {
-    icon: "☕",
-    name: "Backend Package",
-    techs: "Java · Spring Boot · Microservices · SQL",
-  },
-  2: {
-    icon: "⚛️",
-    name: "Frontend Package",
-    techs: "React · JavaScript · TypeScript · CSS",
-  },
-  3: {
-    icon: "🐳",
-    name: "DevOps Package",
-    techs: "Docker · Kubernetes · CI/CD · Linux",
-  },
-  4: {
-    icon: "☁️",
-    name: "Salesforce Package",
-    techs: "Apex · LWC · SOQL · Flows · Admin",
-  },
-  5: {
-    icon: "🐍",
-    name: "Python Package",
-    techs: "Core Python · Django · Flask · OOP",
-  },
-};
-
-const tierData = {
+const tierFeatures = {
   30: {
     label: "Basic",
-    price: 299,
     features: ["Full Q&A Access", "Bookmark Questions", "Search & Filter"],
   },
   90: {
     label: "Standard",
-    price: 699,
     features: [
       "Full Q&A Access",
       "Bookmark Questions",
@@ -57,7 +27,6 @@ const tierData = {
   },
   180: {
     label: "Premium",
-    price: 1199,
     features: [
       "Full Q&A Access",
       "Bookmark Questions",
@@ -67,6 +36,17 @@ const tierData = {
       "Certificate",
     ],
   },
+};
+
+const getIcon = (name) => {
+  if (!name) return "📦";
+  const lower = name.toLowerCase();
+  if (lower.includes("backend") || lower.includes("java")) return "☕";
+  if (lower.includes("frontend") || lower.includes("react")) return "⚛️";
+  if (lower.includes("devops") || lower.includes("docker")) return "🐳";
+  if (lower.includes("salesforce")) return "☁️";
+  if (lower.includes("python")) return "🐍";
+  return "📦";
 };
 
 const getExpiryDate = (days) => {
@@ -92,13 +72,35 @@ const CheckoutPage = () => {
   const [searchParams] = useSearchParams();
   const tierDays = Number(searchParams.get("tier")) || 30;
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [pkg, setPkg] = useState(null);
+  
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
-  const pkg = packagesData[id];
-  const tier = tierData[tierDays];
-  const gst = Math.round(tier.price * 0.18);
-  const total = tier.price + gst;
+  useEffect(() => {
+    const fetchPackage = async () => {
+      try {
+        const res = await axiosInstance.get(`/packages/${id}`);
+        setPkg(res.data);
+      } catch (error) {
+        toast.error("Package not found");
+      } finally {
+        setPageLoading(false);
+      }
+    };
+    fetchPackage();
+  }, [id]);
+
+  const tier = tierFeatures[tierDays];
+
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans">
+        <p className="text-gray-500">Loading order details...</p>
+      </div>
+    );
+  }
 
   if (!pkg || !tier) {
     return (
@@ -118,8 +120,19 @@ const CheckoutPage = () => {
     );
   }
 
+  const getPrice = () => {
+    if (tierDays === 30) return pkg.basicPrice;
+    if (tierDays === 90) return pkg.standardPrice;
+    return pkg.premiumPrice;
+  };
+
+  const price = getPrice();
+  const gst = Math.round(price * 0.18);
+  const total = price + gst;
+
   const handlePayment = async () => {
     if (!isAuthenticated) {
+      localStorage.setItem("redirectAfterLogin", `/checkout/${id}?tier=${tierDays}`);
       toast.error("Please log in or register to continue");
       navigate(`/register`);
       return;
@@ -129,30 +142,27 @@ const CheckoutPage = () => {
     try {
       // Step 1 — Create order on backend
       const orderResponse = await axiosInstance.post("/payment/create-order", {
-        packageId: id,
-        durationDays: tierDays,
-        amount: total,
+        packageId: Number(id),
+        tier: tier.label.toUpperCase(),
       });
 
-      const { orderId, amount, currency } = orderResponse.data;
+      const { razorpayOrderId, razorpayKeyId, amount } = orderResponse.data;
 
       // Step 2 — Open Razorpay
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: amount,
-        currency: currency,
+        key: razorpayKeyId,
+        amount: amount * 100,
+        currency: "INR",
         name: "Aja Internship Portal",
         description: `${pkg.name} — ${tier.label} Plan`,
-        order_id: orderId,
+        order_id: razorpayOrderId,
         handler: async (response) => {
           try {
             // Step 3 — Verify payment on backend
             await axiosInstance.post("/payment/verify", {
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-              packageId: id,
-              durationDays: tierDays,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
             });
             toast.success("Payment successful! Welcome aboard.");
             navigate("/payment/success");
@@ -204,13 +214,13 @@ const CheckoutPage = () => {
 
               {/* Package Info */}
               <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl mb-5">
-                <span className="text-3xl">{pkg.icon}</span>
+                <span className="text-3xl">{getIcon(pkg.name)}</span>
                 <div>
                   <div className="text-sm font-semibold text-[#0A1628]">
                     {pkg.name}
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">
-                    {pkg.techs}
+                    {pkg.technologyName || "Technology Package"}
                   </div>
                 </div>
               </div>
@@ -249,7 +259,7 @@ const CheckoutPage = () => {
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400">Subtotal</span>
-                  <span className="text-gray-700">₹{tier.price}</span>
+                  <span className="text-gray-700">₹{price}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400">GST (18%)</span>
@@ -298,18 +308,24 @@ const CheckoutPage = () => {
                   purchase.
                 </p>
                 <div className="flex gap-2">
-                  <Link
-                    to="/register"
+                  <button
+                    onClick={() => {
+                      localStorage.setItem("redirectAfterLogin", `/checkout/${id}?tier=${tierDays}`);
+                      navigate("/register");
+                    }}
                     className="text-xs px-4 py-2 bg-[#0A1628] text-white rounded-lg hover:bg-[#0F2340] transition-all"
                   >
                     Create Account
-                  </Link>
-                  <Link
-                    to="/login"
+                  </button>
+                  <button
+                    onClick={() => {
+                      localStorage.setItem("redirectAfterLogin", `/checkout/${id}?tier=${tierDays}`);
+                      navigate("/login");
+                    }}
                     className="text-xs px-4 py-2 border border-black/10 text-gray-600 rounded-lg hover:bg-gray-50 transition-all"
                   >
                     Log In
-                  </Link>
+                  </button>
                 </div>
               </div>
             )}

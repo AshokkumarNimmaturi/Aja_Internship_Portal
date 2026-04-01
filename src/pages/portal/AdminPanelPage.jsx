@@ -1,98 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Copy,
   Check,
   UserPlus,
   Users,
   ClipboardList,
-  Package,
+  Package as PackageIcon,
   ShieldAlert,
+  Key,
+  CheckCircle,
+  XCircle,
+  Star,
+  RefreshCw,
+  Clock
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { PortalSidebar, StatusBadge } from "./EmployeeDashboard";
+import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import RoleBadge from "../../components/common/RoleBadge";
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
-
-const mockUsers = [
-  {
-    id: 1,
-    name: "Rajesh Kumar",
-    email: "rajesh@aja.com",
-    role: "TUTOR",
-    active: true,
-    firstLoginPending: false,
-  },
-  {
-    id: 2,
-    name: "Priya Menon",
-    email: "priya@aja.com",
-    role: "EMPLOYEE",
-    active: true,
-    firstLoginPending: false,
-  },
-  {
-    id: 3,
-    name: "Anil Sharma",
-    email: "anil@aja.com",
-    role: "EMPLOYEE",
-    active: true,
-    firstLoginPending: true,
-  },
-  {
-    id: 4,
-    name: "Swetha Kiran",
-    email: "swetha@aja.com",
-    role: "TUTOR",
-    active: false,
-    firstLoginPending: false,
-  },
-];
-
-const mockAccessRequests = [
-  {
-    id: 1,
-    name: "Vikram Nair",
-    email: "vikram@gmail.com",
-    requestedDate: "12 Mar 2026",
-  },
-  {
-    id: 2,
-    name: "Anita Joshi",
-    email: "anita@yahoo.com",
-    requestedDate: "11 Mar 2026",
-  },
-];
-
-const mockAuditLog = [
-  {
-    id: 1,
-    timestamp: "13 Mar 2026, 10:22 AM",
-    actor: "Admin",
-    role: "ADMIN",
-    action: "Created User",
-    entity: "Anil Sharma",
-    details: "Role: EMPLOYEE",
-  },
-  {
-    id: 2,
-    timestamp: "12 Mar 2026, 3:45 PM",
-    actor: "Rajesh Kumar",
-    role: "TUTOR",
-    action: "Approved Question",
-    entity: "Q#42",
-    details: "Spring Boot question",
-  },
-  {
-    id: 3,
-    timestamp: "11 Mar 2026, 11:00 AM",
-    actor: "Admin",
-    role: "ADMIN",
-    action: "Deactivated User",
-    entity: "Swetha Kiran",
-    details: "Account suspended",
-  },
-];
 
 const generateTempPassword = () => {
   return `Aja@${Math.floor(1000 + Math.random() * 9000)}Temp`;
@@ -100,49 +27,178 @@ const generateTempPassword = () => {
 
 const AdminPanelPage = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("Users");
-  const [users, setUsers] = useState(mockUsers);
-  const [accessRequests, setAccessRequests] = useState(mockAccessRequests);
+  const location = useLocation();
+
+  // Active view based on URL — order matters: more specific paths first
+  const activeView = location.pathname.includes("/packages")
+    ? "Packages"
+    : location.pathname.includes("/audit")
+    ? "Audit Log"
+    : location.pathname.includes("/access")
+    ? "Access Requests"
+    : location.pathname.includes("/admin/review") || location.pathname.includes("/review")
+    ? "Pending Review"
+    : "Users";
+
+  // --- SECURITY DEBUGGER: Decode JWT to see authorities ---
+  const getRolesFromToken = () => {
+    try {
+      const token = sessionStorage.getItem("accessToken") || localStorage.getItem("token");
+      if (!token) return ["NO_TOKEN_FOUND"];
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(window.atob(base64).split('').map((c) => {
+          return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+      }).join(''));
+      const decoded = JSON.parse(jsonPayload);
+      console.log("Decoded Token Payload:", decoded);
+      return decoded.authorities || decoded.roles || decoded.role || [decoded.sub ? "AUTHENTICATED" : "UNKNOWN"];
+    } catch (e) {
+      return ["DECODE_ERROR"];
+    }
+  };
+
+  const [currentRoles] = useState(getRolesFromToken());
+  const [users, setUsers] = useState([]);
+  const [usersLoading, setUsersLoading] = useState(false);
+  const [usersError, setUsersError] = useState(null);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditError, setAuditError] = useState(null);
+  const [packages, setPackages] = useState([]);
+  const [pendingQuestions, setPendingQuestions] = useState([]);
+  const [pendingLoading, setPendingLoading] = useState(false);
+  const [reviewComments, setReviewComments] = useState({});
+  const [reviewRatings, setReviewRatings] = useState({});
+  const [reviewError, setReviewError] = useState(null);
+  const [processing, setProcessing] = useState(null);
+  const [showCreateModal, setShowCreateModal] = useState(false);
   const [createForm, setCreateForm] = useState({
-    name: "",
+    firstName: "",
+    lastName: "",
     email: "",
+    phoneNumber: "",
     role: "EMPLOYEE",
   });
   const [createdUser, setCreatedUser] = useState(null);
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const tabs = [
-    { label: "Users", icon: <Users size={14} /> },
-    { label: "Create User", icon: <UserPlus size={14} /> },
-    { label: "Access Requests", icon: <ShieldAlert size={14} /> },
-    { label: "Audit Log", icon: <ClipboardList size={14} /> },
-    { label: "Packages", icon: <Package size={14} /> },
-  ];
+  // DATA FETCHING
+  const fetchUsers = useCallback(async () => {
+    setUsersError(null);
+    setUsersLoading(true);
+    try {
+      const res = await axiosInstance.get("/admin/users");
+      const data = Array.isArray(res.data) ? res.data : (res.data.content || []);
+      setUsers(data);
+    } catch (err) {
+      console.error("Fetch users error:", err);
+      setUsersError(err.response?.data?.message || `HTTP ${err.response?.status || 'Connection Error'}`);
+    } finally {
+      setUsersLoading(false);
+    }
+  }, []);
 
-  const stats = [
-    { label: "Total Users", value: users.length, color: "text-[#2563EB]" },
-    { label: "Active Subscriptions", value: 24, color: "text-green-600" },
-    { label: "Pending Reviews", value: 5, color: "text-amber-600" },
-    { label: "Questions This Month", value: 18, color: "text-purple-600" },
-  ];
+  const fetchAuditLogs = useCallback(async () => {
+    setAuditError(null);
+    setAuditLoading(true);
+    try {
+      const res = await axiosInstance.get("/admin/audit-log");
+      console.log("🔍 AUDIT LOG RAW RESPONSE:", res.data);
+      
+      // Handle various Spring Page/Wrapper structures
+      const rawData = res.data.content || res.data.data || res.data.auditLogs || (Array.isArray(res.data) ? res.data : []);
+      
+      const normalized = rawData.map(log => ({
+        id: log.id || Math.random(),
+        timestamp: log.createdAt || log.created_at || log.timestamp || new Date().toISOString(),
+        action: log.action || "SYSTEM_ACTION",
+        entity: log.entityType || log.entity_type || log.entity || "N/A",
+        details: log.details || log.description || log.message || "—",
+        performedBy: log.performedByEmail || log.performedBy || log.performed_by || "System"
+      }));
+      
+      setAuditLogs(normalized);
+    } catch (err) {
+      console.error("Fetch audit logs error:", err);
+      // Capture the specific backend message if available
+      const msg = err.response?.data?.message || err.response?.data || `HTTP ${err.response?.status || 'Network Error'}`;
+      setAuditError(msg);
+    } finally {
+      setAuditLoading(false);
+    }
+  }, []);
 
+  const fetchPendingQuestions = useCallback(async () => {
+    setPendingLoading(true);
+    setReviewError(null);
+    try {
+      // Direct call to the backend's review queue
+      const res = await axiosInstance.get("/questions/pending");
+      const list = Array.isArray(res.data) ? res.data : (res.data.content || []);
+      setPendingQuestions(list);
+    } catch (err) {
+      console.error("PENDING QUEUE ERROR:", err);
+      const code = err.code || (err.response ? `HTTP ${err.response.status}` : "NETWORK_ERROR");
+      setReviewError(`${code}: Could not reach review queue`);
+    } finally {
+      setPendingLoading(false);
+    }
+  }, []);
+
+  const fetchPackages = async () => {
+    try {
+      const res = await axiosInstance.get("/packages");
+      setPackages(res.data);
+    } catch (err) {
+      toast.error("Failed to load packages");
+    }
+  };
+
+  useEffect(() => {
+    if (activeView === "Users") fetchUsers();
+    else if (activeView === "Audit Log") fetchAuditLogs();
+    else if (activeView === "Packages") fetchPackages();
+    else if (activeView === "Pending Review") fetchPendingQuestions();
+  }, [activeView, fetchAuditLogs, fetchPendingQuestions]);
+
+  // CREATE USER
   const handleCreateUser = async (e) => {
     e.preventDefault();
     setLoading(true);
-    const tempPassword = generateTempPassword();
+
     try {
+      const tempPassword = generateTempPassword();
+      const fullName = `${createForm.firstName} ${createForm.lastName}`.trim();
+
       await axiosInstance.post("/admin/users", {
-        ...createForm,
-        tempPassword,
+        fullName,
+        email: createForm.email,
+        phone: createForm.phoneNumber,
+        role: createForm.role,
       });
-      setCreatedUser({ ...createForm, tempPassword });
-      setCreateForm({ name: "", email: "", role: "EMPLOYEE" });
-      toast.success("User created successfully! Email sent.");
+
+      setCreatedUser({ ...createForm, fullName, tempPassword });
+      setCreateForm({ firstName: "", lastName: "", email: "", phoneNumber: "", role: "EMPLOYEE" });
+      setShowCreateModal(false);
+
+      toast.success("User created successfully!");
+      fetchUsers();
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to create user");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeactivate = async (id) => {
+    try {
+      await axiosInstance.delete(`/admin/users/${id}`);
+      toast.success("User deactivated");
+      fetchUsers();
+    } catch {
+      toast.error("Failed to deactivate user");
     }
   };
 
@@ -152,494 +208,524 @@ const AdminPanelPage = () => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleToggleActive = (id) => {
-    setUsers((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, active: !u.active } : u)),
-    );
-    toast.success("User status updated");
+  // Approve / Reject question as admin
+  const handleReviewAction = async (id, action) => {
+    setProcessing(id + action);
+    try {
+      const feedback = reviewComments[id] || "";
+      const payload = {
+        decision: action, // ✅ Matches ReviewQuestionRequest.getDecision()
+        rejectionReason: feedback,
+        feedback: feedback,
+        reviewerId: user?.id || user?.userId,
+      };
+
+      await axiosInstance.put(`/questions/${id}/review`, payload);
+      
+      setPendingQuestions((prev) => prev.filter((q) => q.id !== id));
+      toast.success(`Question ${action === "APPROVED" ? "approved ✓" : "rejected"}`);
+    } catch (err) {
+      console.error("REVIEW ACTION FAILED:", err);
+      if (err.response?.status === 403) {
+        toast.error("Access Denied (403): Check your token authorities.");
+      } else {
+        toast.error(err.response?.data?.message || "Connection Error");
+      }
+    } finally {
+      setProcessing(null);
+    }
   };
 
-  const handleAccessAction = (id, action) => {
-    setAccessRequests((prev) => prev.filter((r) => r.id !== id));
-    toast.success(`Access ${action === "grant" ? "granted" : "denied"}`);
+  // Field normalizers
+  const getTechFromQ = (q) => {
+    if (typeof q.technology === "string") return q.technology;
+    return q.technology?.name || q.technologyName || "";
+  };
+  const getBodyFromQ = (q) => q.content || q.description || q.body || q.details || "";
+  const getSubmitterFromQ = (q) => q.submitted_by || q.submittedBy || q.createdBy || q.authorName || q.employee?.fullName || "";
+
+  const viewTitles = {
+    "Users": "Manage Users",
+    "Audit Log": "System Audit Logs",
+    "Packages": "Subscription Packages",
+    "Access Requests": "Pending Access Requests",
+    "Pending Review": "Pending Question Reviews",
+  };
+
+  const viewDesc = {
+    "Users": "Add, deactivate, and manage portal roles.",
+    "Audit Log": "Review all system-level critical actions.",
+    "Packages": "Overview of available active packages and tracks.",
+    "Access Requests": "Approve or deny subscriber package requests.",
+    "Pending Review": "Approve or reject employee-submitted interview questions.",
   };
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans">
-      <PortalSidebar user={user} role="ADMIN" activeItem="Users" />
+      <PortalSidebar 
+        user={user} 
+        role={user?.role || "ADMIN"} 
+        activeItem={activeView} 
+        pendingCount={pendingQuestions.length} 
+      />
 
       <main className="flex-1 p-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="font-serif text-3xl text-[#0A1628] mb-1">
-            Admin Panel
-          </h1>
-          <p className="text-sm text-gray-400 font-light">
-            Manage users, review access requests and monitor platform activity
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="bg-white border border-black/8 rounded-2xl p-5"
-            >
-              <div className={`font-serif text-3xl mb-1 ${stat.color}`}>
-                {stat.value}
-              </div>
-              <div className="text-xs text-gray-400">{stat.label}</div>
+        <div className="max-w-7xl mx-auto">
+          {/* HEADER */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="font-serif text-3xl text-[#0A1628] mb-1">
+                {viewTitles[activeView]}
+              </h1>
+              <p className="text-sm text-gray-400 font-light">
+                {viewDesc[activeView]}
+              </p>
             </div>
-          ))}
-        </div>
-
-        {/* Tabs */}
-        <div className="flex items-center gap-1 bg-gray-100 rounded-2xl p-1.5 mb-6 flex-wrap">
-          {tabs.map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => setActiveTab(tab.label)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                activeTab === tab.label
-                  ? "bg-white text-[#0A1628] shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
-              }`}
-            >
-              {tab.icon}
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* USERS TAB */}
-        {activeTab === "Users" && (
-          <div className="bg-white border border-black/8 rounded-2xl overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-black/5 bg-gray-50">
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      Name
-                    </th>
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      Email
-                    </th>
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      Role
-                    </th>
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      Status
-                    </th>
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      First Login
-                    </th>
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((u) => (
-                    <tr
-                      key={u.id}
-                      className="border-b border-black/5 last:border-b-0 hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-5 py-3">
-                        <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0A1628] to-[#2563EB] text-white text-xs font-semibold flex items-center justify-center shrink-0">
-                            {u.name.charAt(0)}
-                          </div>
-                          <span className="text-sm font-medium text-[#0A1628]">
-                            {u.name}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-5 py-3 text-sm text-gray-500">
-                        {u.email}
-                      </td>
-                      <td className="px-5 py-3">
-                        <RoleBadge role={u.role} />
-                      </td>
-                      <td className="px-5 py-3">
-                        <button
-                          onClick={() => handleToggleActive(u.id)}
-                          className={`text-xs font-medium px-2.5 py-1 rounded-full transition-all ${
-                            u.active
-                              ? "bg-green-50 text-green-600 hover:bg-green-100"
-                              : "bg-red-50 text-red-600 hover:bg-red-100"
-                          }`}
-                        >
-                          {u.active ? "Active" : "Inactive"}
-                        </button>
-                      </td>
-                      <td className="px-5 py-3">
-                        {u.firstLoginPending && (
-                          <span className="text-xs font-medium px-2.5 py-1 bg-amber-50 text-amber-600 rounded-full">
-                            Pending
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-5 py-3">
-                        <select className="text-xs border border-black/10 rounded-lg px-2 py-1.5 text-gray-600 bg-white focus:outline-none focus:border-[#2563EB]">
-                          <option>Change Role</option>
-                          <option value="TUTOR">Make Tutor</option>
-                          <option value="EMPLOYEE">Make Employee</option>
-                        </select>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            
+            {activeView === "Users" && (
+               <button 
+                  onClick={() => setShowCreateModal(!showCreateModal)}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all shadow-sm"
+               >
+                 <UserPlus size={16} /> New User
+               </button>
+            )}
+            
+             {activeView === "Packages" && (
+               <button 
+                  onClick={() => toast("Package creation module coming soon!")}
+                  className="flex items-center gap-2 px-4 py-2.5 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all shadow-sm"
+               >
+                 <PackageIcon size={16} /> New Package
+               </button>
+            )}
           </div>
-        )}
 
-        {/* CREATE USER TAB */}
-        {activeTab === "Create User" && (
-          <div className="max-w-lg">
-            {createdUser ? (
-              <div className="bg-white border border-black/8 rounded-2xl p-7">
-                <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mb-4">
-                  <Check size={24} className="text-green-500" />
-                </div>
-                <h2 className="text-lg font-semibold text-[#0A1628] mb-1">
-                  User Created Successfully!
-                </h2>
-                <p className="text-sm text-gray-400 mb-5">
-                  An email with credentials has been sent to {createdUser.email}
-                  . Share the temporary password below with the employee
-                  securely.
-                </p>
-
-                <div className="bg-green-50 border border-green-100 rounded-xl p-4 mb-5">
-                  <div className="text-xs text-gray-500 mb-2">
-                    Temporary Password
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <code className="text-base font-bold text-[#0A1628] font-mono">
-                      {createdUser.tempPassword}
-                    </code>
-                    <button
-                      onClick={handleCopy}
-                      className="flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 bg-white border border-black/10 rounded-lg hover:bg-gray-50 transition-all"
-                    >
-                      {copied ? (
-                        <Check size={12} className="text-green-500" />
-                      ) : (
-                        <Copy size={12} />
-                      )}
-                      {copied ? "Copied!" : "Copy"}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="text-xs text-gray-400 mb-5 leading-relaxed">
-                  <strong className="text-gray-600">Employee Details:</strong>
-                  <br />
-                  Name: {createdUser.name}
-                  <br />
-                  Email: {createdUser.email}
-                  <br />
-                  Role: {createdUser.role}
-                </div>
-
-                <button
-                  onClick={() => setCreatedUser(null)}
-                  className="w-full py-3 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all"
-                >
-                  Create Another User
-                </button>
-              </div>
-            ) : (
-              <div className="bg-white border border-black/8 rounded-2xl p-7">
-                <h2 className="text-lg font-semibold text-[#0A1628] mb-1">
-                  Create Internal User
-                </h2>
-                <p className="text-sm text-gray-400 mb-6 font-light">
-                  Create accounts for Tutors and Employees. They will receive
-                  login credentials via email.
-                </p>
-
-                <form
-                  onSubmit={handleCreateUser}
-                  className="flex flex-col gap-5"
-                >
+          {/* CREATE USER MODAL INLINE */}
+          {showCreateModal && activeView === "Users" && (
+            <div className="mb-8 bg-white border border-black/8 rounded-2xl p-6 shadow-sm">
+              <h2 className="text-lg font-bold text-[#0A1628] mb-1">Create New Internal User</h2>
+              <p className="text-xs text-gray-400 mb-5">Fill in all fields. A temporary password will be generated automatically.</p>
+              <form onSubmit={handleCreateUser}>
+                <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-2">
-                      Full Name
-                    </label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">First Name</label>
                     <input
-                      type="text"
-                      value={createForm.name}
-                      onChange={(e) =>
-                        setCreateForm({ ...createForm, name: e.target.value })
-                      }
-                      placeholder="John Doe"
                       required
-                      className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all"
+                      placeholder="e.g. Priya"
+                      value={createForm.firstName}
+                      onChange={(e) => setCreateForm({ ...createForm, firstName: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-black/10 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-50 outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-2">
-                      Email Address
-                    </label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Last Name</label>
                     <input
+                      required
+                      placeholder="e.g. Sharma"
+                      value={createForm.lastName}
+                      onChange={(e) => setCreateForm({ ...createForm, lastName: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-black/10 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-50 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Email Address</label>
+                    <input
+                      required
                       type="email"
+                      placeholder="name@aja.com"
                       value={createForm.email}
-                      onChange={(e) =>
-                        setCreateForm({ ...createForm, email: e.target.value })
-                      }
-                      placeholder="john@aja.com"
-                      required
-                      className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all"
+                      onChange={(e) => setCreateForm({ ...createForm, email: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-black/10 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-50 outline-none transition-all"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-600 mb-2">
-                      Role
-                    </label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Phone Number</label>
+                    <input
+                      type="tel"
+                      placeholder="e.g. +91 9876543210"
+                      value={createForm.phoneNumber}
+                      onChange={(e) => setCreateForm({ ...createForm, phoneNumber: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-black/10 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-50 outline-none transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Role</label>
                     <select
                       value={createForm.role}
-                      onChange={(e) =>
-                        setCreateForm({ ...createForm, role: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all bg-white"
+                      onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}
+                      className="w-full px-4 py-2.5 border border-black/10 rounded-xl text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-50 outline-none transition-all bg-white"
                     >
                       <option value="EMPLOYEE">Employee</option>
                       <option value="TUTOR">Tutor</option>
+                      <option value="ADMIN">Admin</option>
                     </select>
-                    <p className="text-xs text-gray-400 mt-1">
-                      Admin accounts cannot be created here for security
-                      reasons.
-                    </p>
                   </div>
-                  <button
-                    type="submit"
+                </div>
+                <div className="flex gap-3">
+                  <button 
+                    type="submit" 
                     disabled={loading}
-                    className="w-full py-3.5 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all disabled:opacity-60"
+                    className="px-6 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition-all"
                   >
-                    {loading
-                      ? "Creating User..."
-                      : "Create User & Send Credentials"}
+                    {loading ? "Creating..." : "Create User"}
                   </button>
-                </form>
-              </div>
-            )}
-          </div>
-        )}
+                  <button 
+                    type="button" 
+                    onClick={() => setShowCreateModal(false)}
+                    className="px-4 py-2.5 border border-black/10 text-gray-600 text-sm font-semibold rounded-xl hover:bg-gray-50 transition-all"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
 
-        {/* ACCESS REQUESTS TAB */}
-        {activeTab === "Access Requests" && (
-          <div className="bg-white border border-black/8 rounded-2xl overflow-hidden">
-            {accessRequests.length > 0 ? (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-black/5 bg-gray-50">
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      Name
-                    </th>
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      Email
-                    </th>
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      Requested
-                    </th>
-                    <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {accessRequests.map((req) => (
-                    <tr
-                      key={req.id}
-                      className="border-b border-black/5 last:border-b-0 hover:bg-gray-50"
-                    >
-                      <td className="px-5 py-4 text-sm font-medium text-[#0A1628]">
-                        {req.name}
-                      </td>
-                      <td className="px-5 py-4 text-sm text-gray-500">
-                        {req.email}
-                      </td>
-                      <td className="px-5 py-4 text-xs text-gray-400">
-                        {req.requestedDate}
-                      </td>
-                      <td className="px-5 py-4">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleAccessAction(req.id, "deny")}
-                            className="text-xs px-3 py-1.5 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition-all"
-                          >
-                            Deny
-                          </button>
-                          <button
-                            onClick={() => handleAccessAction(req.id, "grant")}
-                            className="text-xs px-3 py-1.5 bg-green-50 text-green-600 border border-green-100 rounded-lg hover:bg-green-100 transition-all"
-                          >
-                            Grant
-                          </button>
-                        </div>
-                      </td>
+          {/* TEMPORARY PASSWORD COPY */}
+          {createdUser && (
+             <div className="mb-8 flex flex-col md:flex-row items-center justify-between p-4 bg-green-50 border border-green-200 rounded-2xl">
+               <div className="flex items-center gap-3">
+                 <div className="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
+                   <UserPlus size={16} />
+                 </div>
+                 <div>
+                   <p className="text-sm font-semibold text-green-900">{createdUser.fullName || `${createdUser.firstName} ${createdUser.lastName}`} ({createdUser.email}) created</p>
+                   <p className="text-xs text-green-700 font-mono mt-0.5">Temporary Password: <strong>{createdUser.tempPassword}</strong></p>
+                 </div>
+               </div>
+               <button
+                 onClick={handleCopy}
+                 className="flex items-center gap-1.5 px-3 py-1.5 bg-white text-green-700 text-xs font-bold uppercase tracking-wide rounded-lg border border-green-200 shadow-sm hover:bg-green-50"
+               >
+                 {copied ? <Check size={14} /> : <Copy size={14} />}
+                 {copied ? "Copied" : "Copy Password"}
+               </button>
+             </div>
+          )}
+
+          {/* USERS TABLE */}
+          {activeView === "Users" && (
+            <div className="bg-white border border-black/5 rounded-2xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead className="bg-gray-50/50 text-[10px] uppercase tracking-wider text-gray-500 font-bold border-b border-black/5">
+                    <tr>
+                      <th className="px-6 py-4">Name</th>
+                      <th className="px-6 py-4">Role</th>
+                      <th className="px-6 py-4">Status</th>
+                      <th className="px-6 py-4 text-right">Action</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <div className="text-4xl mb-3">🎉</div>
-                <p className="text-sm text-gray-400">
-                  No pending access requests
-                </p>
+                  </thead>
+                  <tbody className="divide-y divide-black/5 text-sm text-[#0A1628]">
+                    {users.map((u) => (
+                      <tr key={u.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-bold">{u.fullName || `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.name || '—'}</div>
+                           <div className="text-xs text-gray-400 mt-0.5">{u.email}</div>
+                           {u.phone && <div className="text-xs text-gray-300 mt-0.5">{u.phone}</div>}
+                        </td>
+                        <td className="px-6 py-4">
+                          <RoleBadge role={u.role} />
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] uppercase tracking-widest font-bold ${u.enabled ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                            {u.enabled ? "Active" : "Inactive"}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          {u.email !== user?.email && u.enabled && (
+                            <button
+                              onClick={() => handleDeactivate(u.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50 text-xs font-bold uppercase tracking-wider px-3 py-1.5 rounded-lg transition-all"
+                            >
+                              Deactivate
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {users.length === 0 && !usersError && (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-12 text-center text-gray-400">Loading users...</td>
+                      </tr>
+                    )}
+                    {usersError && (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-10 text-center">
+                          <div className="inline-flex flex-col items-center gap-2">
+                            <span className="text-3xl">⚠️</span>
+                            <p className="text-red-600 font-semibold text-sm">{usersError}</p>
+                            <p className="text-xs text-gray-400">Make sure the backend is running and the admin endpoint is accessible.</p>
+                            <button onClick={fetchUsers} className="mt-2 px-4 py-2 bg-[#0A1628] text-white text-xs font-semibold rounded-lg hover:bg-[#0F2340] transition-all">Retry</button>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
-            )}
-          </div>
-        )}
+            </div>
+          )}
 
-        {/* AUDIT LOG TAB */}
-        {activeTab === "Audit Log" && (
-          <div className="bg-white border border-black/8 rounded-2xl overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-black/5 bg-gray-50">
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Timestamp
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Actor
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Role
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Action
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Entity
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Details
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockAuditLog.map((log) => (
-                  <tr
-                    key={log.id}
-                    className="border-b border-black/5 last:border-b-0 hover:bg-gray-50"
-                  >
-                    <td className="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
-                      {log.timestamp}
-                    </td>
-                    <td className="px-5 py-3 text-sm font-medium text-[#0A1628]">
-                      {log.actor}
-                    </td>
-                    <td className="px-5 py-3">
-                      <RoleBadge role={log.role} />
-                    </td>
-                    <td className="px-5 py-3 text-sm text-gray-600">
-                      {log.action}
-                    </td>
-                    <td className="px-5 py-3 text-sm text-gray-500">
-                      {log.entity}
-                    </td>
-                    <td className="px-5 py-3 text-xs text-gray-400">
-                      {log.details}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          {/* PACKAGES TABLE */}
+          {activeView === "Packages" && (
+            <div className="bg-white border border-black/5 rounded-2xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead className="bg-gray-50/50 text-[10px] uppercase tracking-wider text-gray-500 font-bold border-b border-black/5">
+                    <tr>
+                      <th className="px-6 py-4">Package Details</th>
+                      <th className="px-6 py-4">Technology</th>
+                      <th className="px-6 py-4">Base Price</th>
+                      <th className="px-6 py-4">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/5 text-sm text-[#0A1628]">
+                    {packages.map((pkg) => (
+                      <tr key={pkg.id} className="hover:bg-gray-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="font-bold">{pkg.name}</div>
+                          <div className="text-xs text-gray-400 mt-0.5 max-w-xs truncate">{pkg.description || "Package description"}</div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-[10px] uppercase tracking-widest font-bold border border-blue-100">
+                            {pkg.technology?.name || pkg.technologyName || 'N/A'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 font-mono font-bold text-gray-600">
+                          ₹{pkg.basicPrice || pkg.premiumPrice || 299}
+                        </td>
+                        <td className="px-6 py-4">
+                           <span className="text-green-600 text-[10px] font-bold tracking-widest bg-green-50 border border-green-200 px-2.5 py-1 rounded-full uppercase">ACTIVE</span>
+                        </td>
+                      </tr>
+                    ))}
+                    {packages.length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-20 text-center">
+                          <PackageIcon className="mx-auto h-8 w-8 text-gray-300 mb-3" />
+                          <p className="text-gray-500 font-medium">Loading package library...</p>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-        {/* PACKAGES TAB */}
-        {activeTab === "Packages" && (
-          <div className="bg-white border border-black/8 rounded-2xl overflow-hidden">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-black/5 bg-gray-50">
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Package
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Questions
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Price (30d)
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 px-5 py-3">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  {
-                    icon: "☕",
-                    name: "Backend Package",
-                    questions: 120,
-                    price: "₹299",
-                    active: true,
-                  },
-                  {
-                    icon: "⚛️",
-                    name: "Frontend Package",
-                    questions: 110,
-                    price: "₹299",
-                    active: true,
-                  },
-                  {
-                    icon: "🐳",
-                    name: "DevOps Package",
-                    questions: 90,
-                    price: "₹299",
-                    active: true,
-                  },
-                  {
-                    icon: "☁️",
-                    name: "Salesforce Package",
-                    questions: 95,
-                    price: "₹299",
-                    active: true,
-                  },
-                  {
-                    icon: "🐍",
-                    name: "Python Package",
-                    questions: 100,
-                    price: "₹299",
-                    active: true,
-                  },
-                ].map((pkg, i) => (
-                  <tr
-                    key={i}
-                    className="border-b border-black/5 last:border-b-0 hover:bg-gray-50"
-                  >
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-xl">{pkg.icon}</span>
-                        <span className="text-sm font-medium text-[#0A1628]">
-                          {pkg.name}
-                        </span>
+          {/* AUDIT LOG TABLE */}
+          {activeView === "Audit Log" && (
+            <div className="bg-white border border-black/5 rounded-2xl shadow-sm overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse whitespace-nowrap">
+                  <thead className="bg-gray-50/50 text-[10px] uppercase tracking-wider text-gray-500 font-bold border-b border-black/5">
+                    <tr>
+                      <th className="px-6 py-4 text-gray-500">Timestamp</th>
+                      <th className="px-6 py-4 text-gray-500">Action</th>
+                      <th className="px-6 py-4 text-gray-500">Actor</th>
+                      <th className="px-6 py-4 text-gray-500">Entity</th>
+                      <th className="px-6 py-4 text-gray-500">Details</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-black/5 text-sm text-[#0A1628]">
+                    {auditLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-gray-50/50 transition-colors border-l-4 border-transparent hover:border-blue-400">
+                        <td className="px-6 py-4 text-[11px] font-mono text-gray-400">
+                          {(() => {
+                            try {
+                              const d = Array.isArray(log.timestamp) 
+                                ? new Date(log.timestamp[0], log.timestamp[1]-1, log.timestamp[2], log.timestamp[3], log.timestamp[4])
+                                : new Date(log.timestamp);
+                              return isNaN(d.getTime()) ? "Just now" : d.toLocaleString();
+                            } catch { return "—"; }
+                          })()}
+                        </td>
+                        <td className="px-6 py-4">
+                           <span className={`px-2 py-0.5 rounded-md font-mono text-[9px] font-bold tracking-tighter uppercase border ${
+                             log.action.includes('LOGIN') ? 'bg-blue-50 text-blue-600 border-blue-100' :
+                             log.action.includes('CREATE') ? 'bg-green-50 text-green-600 border-green-100' :
+                             log.action.includes('UPDATE') ? 'bg-amber-50 text-amber-600 border-amber-100' :
+                             'bg-gray-50 text-gray-600 border-gray-100'
+                           }`}>
+                             {log.action}
+                           </span>
+                        </td>
+                        <td className="px-6 py-4 text-xs font-semibold text-gray-600">
+                           {log.performedBy}
+                        </td>
+                        <td className="px-6 py-4 text-[10px] font-bold text-blue-500 tracking-wider uppercase">
+                          {log.entity}
+                        </td>
+                        <td className="px-6 py-4 text-gray-500 max-w-xs text-xs">
+                          <div className="line-clamp-2 leading-relaxed">
+                            {log.details}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    {auditLogs.length === 0 && (
+                      <tr>
+                        <td colSpan="4" className="px-6 py-20 text-center">
+                          <div className="flex flex-col items-center">
+                            <ClipboardList className="mx-auto h-8 w-8 text-gray-300 mb-3" />
+                            <p className="text-gray-500 font-medium">No audit logs recorded yet</p>
+                            
+                            {auditError && (
+                              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-2xl max-w-md">
+                                 <div className="flex items-center gap-2 text-red-700 font-bold text-xs uppercase mb-2">
+                                   <ShieldAlert size={14} /> Critical API Failure
+                                 </div>
+                                 <p className="text-red-600 text-xs font-mono mb-3">Error: {auditError}</p>
+                                 <div className="text-[10px] text-red-500 bg-white/50 p-2 rounded-lg border border-red-100 text-left">
+                                   <p className="font-bold mb-2 uppercase tracking-wide">Suggested Fixes:</p>
+                                   <ul className="space-y-2 list-disc pl-3">
+                                      <li><strong>Clear Session:</strong> If your JWT is expired, you need a fresh login.</li>
+                                      <li><strong>Backend Port:</strong> Check if Port 8080 is accessible.</li>
+                                   </ul>
+                                   <button 
+                                      onClick={() => {
+                                        localStorage.clear();
+                                        sessionStorage.clear();
+                                        window.location.href = "/login";
+                                      }}
+                                      className="mt-3 w-full bg-red-600 text-white py-1.5 rounded-lg font-bold hover:bg-red-700 transition uppercase tracking-tighter"
+                                   >
+                                      Force Logout & Re-Login
+                                   </button>
+                                 </div>
+                              </div>
+                            )}
+                            
+                            {!auditError && <p className="text-xs text-gray-400 mt-1">Logs appear here once users perform tracked actions.</p>}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* PENDING REVIEW — Admin can approve/reject directly */}
+          {activeView === "Pending Review" && (
+            <div>
+              <div className="flex items-center justify-between mb-6">
+                {!pendingLoading && pendingQuestions.length > 0 && (
+                  <span className="bg-amber-100 text-amber-700 text-xs font-bold px-3 py-1 rounded-full border border-amber-200">
+                    {pendingQuestions.length} awaiting review
+                  </span>
+                )}
+                <button
+                  onClick={fetchPendingQuestions}
+                  className="ml-auto flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 border border-black/10 rounded-xl hover:bg-gray-50 transition-all"
+                >
+                  <RefreshCw size={14} className={pendingLoading ? "animate-spin" : ""} /> Refresh
+                </button>
+              </div>
+
+              {pendingLoading ? (
+                <div className="flex flex-col items-center justify-center py-24 bg-white border border-black/5 rounded-2xl shadow-sm">
+                  <RefreshCw className="animate-spin text-gray-300 mb-4" size={32} />
+                  <p className="text-gray-400 text-sm">Loading pending questions...</p>
+                </div>
+              ) : pendingQuestions.length > 0 ? (
+                <div className="flex flex-col gap-5">
+                  {pendingQuestions.map((q) => (
+                    <div key={q.id} className="bg-white border border-black/5 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 pr-4">
+                          <h3 className="font-bold text-[#0A1628] text-base leading-snug">{q.title}</h3>
+                          {getSubmitterFromQ(q) && (
+                            <p className="text-xs text-gray-400 mt-1">By <span className="font-semibold text-gray-600">{getSubmitterFromQ(q)}</span></p>
+                          )}
+                        </div>
+                        <div className="flex gap-2 shrink-0 flex-wrap justify-end">
+                          {getTechFromQ(q) && (
+                            <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold border border-blue-100">{getTechFromQ(q)}</span>
+                          )}
+                          {q.difficulty && (
+                            <span className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold border ${
+                              q.difficulty === "EASY" ? "bg-green-50 text-green-700 border-green-200" :
+                              q.difficulty === "MEDIUM" ? "bg-amber-50 text-amber-700 border-amber-200" :
+                              "bg-red-50 text-red-700 border-red-200"}`}>{q.difficulty}</span>
+                          )}
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200 uppercase">
+                            <Clock size={10} /> Pending
+                          </span>
+                        </div>
                       </div>
-                    </td>
-                    <td className="px-5 py-4 text-sm text-gray-500">
-                      {pkg.questions}+
-                    </td>
-                    <td className="px-5 py-4 text-sm font-medium text-[#0A1628]">
-                      {pkg.price}
-                    </td>
-                    <td className="px-5 py-4">
-                      <span className="text-xs font-medium px-2.5 py-1 bg-green-50 text-green-600 rounded-full">
-                        Active
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+
+                      {getBodyFromQ(q) && (
+                        <p className="text-sm text-gray-500 leading-relaxed mb-4 bg-gray-50 rounded-xl p-3 border border-black/5">{getBodyFromQ(q)}</p>
+                      )}
+
+                      <div className="flex items-center gap-1 mb-4">
+                        <span className="text-xs font-semibold text-gray-400 mr-2 uppercase tracking-wide">Rate:</span>
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <button key={s} onClick={() => setReviewRatings({ ...reviewRatings, [q.id]: s })} className="hover:scale-110 transition-transform">
+                            <Star size={18} className={s <= (reviewRatings[q.id] || 0) ? "text-amber-400 fill-amber-400" : "text-gray-200 fill-gray-200"} />
+                          </button>
+                        ))}
+                        {reviewRatings[q.id] && <span className="text-xs text-amber-500 font-semibold ml-2">{reviewRatings[q.id]}/5</span>}
+                      </div>
+
+                      <input
+                        placeholder="Add reviewer comment (optional)..."
+                        value={reviewComments[q.id] || ""}
+                        onChange={(e) => setReviewComments({ ...reviewComments, [q.id]: e.target.value })}
+                        className="w-full px-4 py-2.5 border border-black/10 rounded-xl text-sm placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition-all mb-4"
+                      />
+
+                      <div className="flex gap-3">
+                        <button onClick={() => handleReviewAction(q.id, "REJECTED")} disabled={!!processing}
+                          className="flex items-center gap-2 px-5 py-2 rounded-xl bg-red-50 text-red-600 border border-red-200 text-sm font-semibold hover:bg-red-500 hover:text-white hover:border-red-500 transition-all disabled:opacity-50">
+                          <XCircle size={15} />{processing === q.id + "REJECTED" ? "Rejecting..." : "Reject"}
+                        </button>
+                        <button onClick={() => handleReviewAction(q.id, "APPROVED")} disabled={!!processing}
+                          className="flex items-center gap-2 px-5 py-2 rounded-xl bg-green-50 text-green-700 border border-green-200 text-sm font-semibold hover:bg-green-500 hover:text-white hover:border-green-500 transition-all disabled:opacity-50">
+                          <CheckCircle size={15} />{processing === q.id + "APPROVED" ? "Approving..." : "Approve"}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-24 bg-white border border-black/5 rounded-2xl shadow-sm text-center">
+                  <div className="text-5xl mb-4">✅</div>
+                  <h3 className="text-lg font-bold text-[#0A1628] mb-2">All reviews complete!</h3>
+                  {reviewError && (
+                     <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl border border-red-100 text-xs font-mono">
+                        Error fetching pending questions: {reviewError}
+                     </div>
+                  )}
+                  <p className="text-sm text-gray-400 max-w-sm leading-relaxed mb-4">No pending questions right now.</p>
+                  <button onClick={fetchPendingQuestions} className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-500 border border-black/10 rounded-xl hover:bg-gray-50 transition-all">
+                    <RefreshCw size={14} /> Refresh
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ACCESS REQUESTS */}
+          {activeView === "Access Requests" && (
+            <div className="bg-white border border-black/5 rounded-2xl shadow-sm overflow-hidden">
+               <div className="flex flex-col items-center justify-center py-24 text-center">
+                 <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mb-4 border border-amber-100 shadow-sm">
+                   <Key size={28} />
+                 </div>
+                 <h3 className="text-lg font-bold text-[#0A1628] mb-2 leading-snug">No Pending Requests</h3>
+                 <p className="text-gray-400 text-sm max-w-sm leading-relaxed">
+                   All subscription access requests have been cleared. New requests will automatically appear here for your approval.
+                 </p>
+               </div>
+            </div>
+          )}
+
+        </div>
       </main>
     </div>
   );

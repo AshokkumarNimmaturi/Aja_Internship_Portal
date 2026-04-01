@@ -4,145 +4,80 @@ import { ArrowLeft, Bookmark, ThumbsUp, Star } from "lucide-react";
 import TechBadge from "../../components/common/TechBadge";
 import DifficultyBadge from "../../components/common/DifficultyBadge";
 import { useAuth } from "../../context/AuthContext";
-
-const mockQuestion = {
-  id: 1,
-  title:
-    "What is the difference between HashMap and ConcurrentHashMap in Java? When would you use each?",
-  technology: "Java",
-  difficulty: "MEDIUM",
-  rating: 4.8,
-  tutorComment: {
-    tutor: "Rajesh Kumar",
-    initials: "RK",
-    comment:
-      "This is one of the most frequently asked Java concurrency questions. Make sure you understand thread safety concepts before answering. Mention segment locking in ConcurrentHashMap and give a real use case.",
-  },
-  answers: [
-    {
-      id: 1,
-      user: "Priya S.",
-      initials: "PS",
-      text: "HashMap is not thread-safe. It allows one null key and multiple null values. It is faster in single-threaded environments. ConcurrentHashMap is thread-safe and uses segment-level locking (in Java 7) or CAS operations (in Java 8+). It does not allow null keys or values. Use HashMap when working in a single-threaded context. Use ConcurrentHashMap when multiple threads need to read and write concurrently without external synchronization.",
-      upvotes: 24,
-      upvoted: false,
-      time: "2 days ago",
-    },
-    {
-      id: 2,
-      user: "Arun M.",
-      initials: "AM",
-      text: "To add to the above answer — in Java 8, ConcurrentHashMap was redesigned. Instead of segment locking it now uses a combination of CAS (Compare and Swap) operations and synchronized blocks on individual buckets. This makes it more efficient. The compute(), merge() and forEach() methods are also atomic which makes complex operations easier to implement safely.",
-      upvotes: 18,
-      upvoted: true,
-      time: "1 day ago",
-    },
-    {
-      id: 3,
-      user: "Sneha R.",
-      initials: "SR",
-      text: "A practical use case: if you are building a web application that maintains a session cache accessed by multiple threads, use ConcurrentHashMap. If you are building a utility method that processes a list sequentially and needs a lookup table, HashMap is fine and more performant.",
-      upvotes: 12,
-      upvoted: false,
-      time: "5 hours ago",
-    },
-  ],
-};
+import { Sidebar } from "../../components/subscriber/Sidebar";
 
 const QuestionDetailPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const [question, setQuestion] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
-  const [answers, setAnswers] = useState(mockQuestion.answers);
   const [visibleCount, setVisibleCount] = useState(2);
+  const [newAnswer, setNewAnswer] = useState("");
+  const [submittingAnswer, setSubmittingAnswer] = useState(false);
 
-  const handleUpvote = (answerId) => {
-    setAnswers((prev) =>
-      prev.map((a) =>
-        a.id === answerId
-          ? {
-              ...a,
-              upvoted: !a.upvoted,
-              upvotes: a.upvoted ? a.upvotes - 1 : a.upvotes + 1,
-            }
-          : a,
-      ),
-    );
+  const fetchQuestion = async () => {
+    try {
+      const res = await axiosInstance.get(`/questions/${id}`);
+      setQuestion(res.data);
+    } catch (error) {
+      console.error("Failed to fetch question detail", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    fetchQuestion();
+  }, [id]);
+
+  const handlePostAnswer = async (e) => {
+    e.preventDefault();
+    if (!newAnswer.trim()) return;
+
+    setSubmittingAnswer(true);
+    try {
+      await axiosInstance.post(`/questions/${id}/answers`, {
+        text: newAnswer,
+        content: newAnswer,
+        user_id: user?.id || user?.userId,
+      });
+      toast.success("Answer posted successfully!");
+      setNewAnswer("");
+      fetchQuestion(); // reload to show new answer
+    } catch (err) {
+      toast.error("Failed to post answer");
+    } finally {
+      setSubmittingAnswer(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-50 items-center justify-center">
+        <p className="text-gray-500 animate-pulse text-sm">Loading question details...</p>
+      </div>
+    );
+  }
+
+  if (!question) {
+    return (
+      <div className="flex h-screen bg-gray-50 items-center justify-center flex-col">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">Question not found</h2>
+        <Link to="/dashboard" className="text-blue-600 underline">Back to Dashboard</Link>
+      </div>
+    );
+  }
+
+  // Answer handling — fall back to empty list if no answers yet
+  const displayAnswers = question.answers || [];
+
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
-      {/* Sidebar — reuse same sidebar style */}
-      <aside className="w-64 shrink-0 bg-white border-r border-black/5 min-h-screen flex flex-col">
-        <div className="p-6 border-b border-black/5">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#0A1628] rounded-xl flex items-center justify-center">
-              <span className="text-white text-xs font-bold">AIP</span>
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-[#0A1628] leading-tight">
-                Aja Internship Portal
-              </div>
-              <div className="text-xs text-gray-400 leading-tight">
-                Interview Question Bank
-              </div>
-            </div>
-          </Link>
-        </div>
-        <nav className="flex-1 p-4 flex flex-col gap-1">
-          {[
-            { label: "Dashboard", icon: "🏠", path: "/dashboard" },
-            {
-              label: "My Questions",
-              icon: "📚",
-              path: "/dashboard/questions",
-              active: true,
-            },
-            { label: "Bookmarks", icon: "🔖", path: "/dashboard/bookmarks" },
-            {
-              label: "My Subscription",
-              icon: "💳",
-              path: "/dashboard/subscription",
-            },
-            { label: "Profile", icon: "👤", path: "/dashboard/profile" },
-          ].map((item) => (
-            <Link
-              key={item.label}
-              to={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
-                item.active
-                  ? "bg-blue-50 text-[#2563EB] font-medium"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-              }`}
-            >
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="p-4 border-t border-black/5 flex flex-col gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-xl">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs font-medium text-green-700">
-              Active · 24 days left
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0A1628] to-[#2563EB] text-white text-xs font-semibold flex items-center justify-center">
-              {user?.name?.charAt(0) || "U"}
-            </div>
-            <div>
-              <div className="text-xs font-medium text-[#0A1628]">
-                {user?.name || "User"}
-              </div>
-              <div className="text-xs text-gray-400">Subscriber</div>
-            </div>
-          </div>
-        </div>
-      </aside>
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+      <Sidebar />
 
       {/* Main */}
-      <main className="flex-1 p-8 max-w-4xl">
+      <main className="flex-1 p-8 h-screen overflow-y-auto max-w-4xl mx-auto w-full">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-xs text-gray-400 mb-6">
           <Link
@@ -166,7 +101,7 @@ const QuestionDetailPage = () => {
         <div className="bg-white border border-black/8 rounded-2xl p-7 mb-5">
           <div className="flex items-start justify-between gap-4 mb-4">
             <h1 className="font-serif text-2xl text-[#0A1628] leading-snug flex-1">
-              {mockQuestion.title}
+              {question.title}
             </h1>
             <button
               onClick={() => setBookmarked(!bookmarked)}
@@ -183,50 +118,66 @@ const QuestionDetailPage = () => {
 
           {/* Meta Row */}
           <div className="flex items-center gap-3 flex-wrap">
-            <TechBadge tech={mockQuestion.technology} />
-            <DifficultyBadge difficulty={mockQuestion.difficulty} />
+            <TechBadge tech={question.technology?.name || question.technology || "Technology"} />
+            <DifficultyBadge difficulty={question.difficulty} />
             <div className="flex items-center gap-1">
               {[1, 2, 3, 4, 5].map((s) => (
                 <Star
                   key={s}
                   size={12}
                   className={
-                    s <= Math.floor(mockQuestion.rating)
+                    s <= Math.floor(question.rating || 0)
                       ? "text-amber-400 fill-amber-400"
                       : "text-gray-200 fill-gray-200"
                   }
                 />
               ))}
               <span className="text-xs text-gray-400 ml-1">
-                {mockQuestion.rating} rated by tutors
+                {question.rating || "No ratings"}
               </span>
             </div>
+            {question.status === "REJECTED" && (
+               <span className="bg-red-50 text-red-600 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-red-100">Rejected</span>
+            )}
+            {question.status === "PENDING" && (
+               <span className="bg-amber-50 text-amber-600 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest border border-amber-100">Review Pending</span>
+            )}
           </div>
         </div>
 
-        {/* Tutor Comment */}
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-5 border-l-4 border-l-[#2563EB]">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-[#0A1628] text-white text-xs font-semibold flex items-center justify-center shrink-0">
-              {mockQuestion.tutorComment.initials}
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-[#0A1628]">
-                {mockQuestion.tutorComment.tutor}
-              </div>
-              <div className="text-xs text-[#2563EB]">Tutor's Note</div>
-            </div>
-          </div>
-          <p className="text-sm text-blue-800 leading-relaxed font-light">
-            {mockQuestion.tutorComment.comment}
-          </p>
+        {/* Question Content */}
+        <div className="bg-white border border-black/8 rounded-2xl p-7 mb-5 shadow-sm">
+           <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Question Details</h3>
+           <div className="text-[#0A1628] leading-relaxed whitespace-pre-wrap text-sm">
+             {question.content}
+           </div>
         </div>
+
+        {/* Tutor Comment / Rejection Reason */}
+        {(question.rejection_reason || question.comment) && (
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-5 border-l-4 border-l-[#2563EB]">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-8 h-8 rounded-full bg-[#0A1628] text-white text-xs font-semibold flex items-center justify-center shrink-0 uppercase">
+                {question.reveiwed_by?.charAt(0) || "T"}
+              </div>
+              <div>
+                <div className="text-xs font-semibold text-[#0A1628]">
+                  Tutor Feedback
+                </div>
+                <div className="text-xs text-[#2563EB]">Status: {question.status}</div>
+              </div>
+            </div>
+            <p className="text-sm text-blue-800 leading-relaxed font-light italic">
+              "{question.rejection_reason || question.comment}"
+            </p>
+          </div>
+        )}
 
         {/* Answers Section */}
         <div className="bg-white border border-black/8 rounded-2xl p-6">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-base font-semibold text-[#0A1628]">
-              {answers.length} Answers
+              {displayAnswers.length} Answers
             </h2>
             <span className="text-xs px-3 py-1 bg-gray-50 border border-black/5 text-gray-400 rounded-full">
               Most upvoted first
@@ -234,55 +185,73 @@ const QuestionDetailPage = () => {
           </div>
 
           <div className="flex flex-col gap-5">
-            {answers.slice(0, visibleCount).map((answer) => (
-              <div
-                key={answer.id}
-                className="border border-black/5 rounded-xl p-5 hover:border-blue-50 transition-all"
-              >
-                {/* Answer Header */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600 text-xs font-semibold flex items-center justify-center">
-                      {answer.initials}
-                    </div>
-                    <div>
-                      <div className="text-xs font-medium text-[#0A1628]">
-                        {answer.user}
+            {displayAnswers.length > 0 ? (
+              displayAnswers.slice(0, visibleCount).map((answer, i) => (
+                <div
+                  key={answer.id || i}
+                  className="border border-black/5 rounded-xl p-5 hover:border-blue-50 transition-all"
+                >
+                  {/* Answer Header */}
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600 text-xs font-semibold flex items-center justify-center">
+                        {answer.user?.charAt(0) || "A"}
                       </div>
-                      <div className="text-xs text-gray-400">{answer.time}</div>
+                      <div>
+                        <div className="text-xs font-medium text-[#0A1628]">
+                          {answer.user || "Anonymous"}
+                        </div>
+                        <div className="text-xs text-gray-400">{answer.created_at || "Just now"}</div>
+                      </div>
                     </div>
                   </div>
-                  <button
-                    onClick={() => handleUpvote(answer.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
-                      answer.upvoted
-                        ? "bg-blue-50 border-blue-100 text-[#2563EB]"
-                        : "border-black/8 text-gray-400 hover:border-blue-100 hover:text-[#2563EB]"
-                    }`}
-                  >
-                    <ThumbsUp size={12} />
-                    {answer.upvotes}
-                  </button>
-                </div>
 
-                {/* Answer Text */}
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {answer.text}
-                </p>
-              </div>
-            ))}
+                  {/* Answer Text */}
+                  <p className="text-sm text-gray-600 leading-relaxed">
+                    {answer.text || answer.content}
+                  </p>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-gray-400 text-center py-5">No answers yet for this question.</p>
+            )}
           </div>
 
           {/* Load More */}
-          {visibleCount < answers.length && (
+          {visibleCount < displayAnswers.length && (
             <button
-              onClick={() => setVisibleCount(answers.length)}
+              onClick={() => setVisibleCount(displayAnswers.length)}
               className="w-full mt-5 py-3 border border-black/8 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-all"
             >
-              Load {answers.length - visibleCount} more answers
+              Load {displayAnswers.length - visibleCount} more answers
             </button>
           )}
         </div>
+
+        {/* Add Answer Form — for portal roles */}
+        {["ADMIN", "TUTOR", "EMPLOYEE"].includes(user?.role?.toUpperCase()) && (
+          <div className="mt-6 bg-white border border-black/8 rounded-2xl p-6 shadow-sm">
+            <h3 className="text-sm font-semibold text-[#0A1628] mb-4">Contribute an Answer</h3>
+            <form onSubmit={handlePostAnswer}>
+              <textarea
+                value={newAnswer}
+                onChange={(e) => setNewAnswer(e.target.value)}
+                placeholder="Share your knowledge or experience with this question..."
+                required
+                className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all min-h-[120px] resize-none"
+              />
+              <div className="flex justify-end mt-4">
+                <button
+                  type="submit"
+                  disabled={submittingAnswer || !newAnswer.trim()}
+                  className="px-6 py-2.5 bg-[#0A1628] text-white text-xs font-semibold rounded-xl hover:bg-[#0F2340] transition-all disabled:opacity-50"
+                >
+                  {submittingAnswer ? "Posting..." : "Post Answer"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
 
         {/* Back Button */}
         <Link

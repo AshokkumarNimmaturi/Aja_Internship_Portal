@@ -9,55 +9,75 @@ const LoginPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // ✅ validation
+    if (!formData.email || !formData.password) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
     setLoading(true);
+
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const res = await axiosInstance.post("/auth/login", {
+        email: formData.email,
+        password: formData.password,
+      });
 
-      let mockUser = null;
-      let mockToken = "mock_token_123";
+      const user = res.data.user;
+      const accessToken = res.data.accessToken;
 
-      const email = formData.email.toLowerCase();
-      if (email === "admin@test.com") {
-        mockUser = { id: 1, name: "Admin User", role: "ADMIN", isFirstLogin: false };
-      } else if (email === "tutor@test.com") {
-        mockUser = { id: 2, name: "Tutor User", role: "TUTOR", isFirstLogin: false };
-      } else if (email === "employee@test.com") {
-        mockUser = { id: 3, name: "Employee User", role: "EMPLOYEE", isFirstLogin: false };
-      } else if (email === "student@test.com") {
-        mockUser = { id: 4, name: "Student User", role: "SUBSCRIBER", isFirstLogin: false };
-      } else {
-        throw new Error("Invalid credentials. Try admin@test.com, tutor@test.com, employee@test.com, or student@test.com");
-      }
+      // ✅ STORE TOKEN (ONLY ONE SOURCE)
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("user", JSON.stringify(user));
 
-      const user = mockUser;
-      const accessToken = mockToken;
-
+      // ✅ Update AuthContext (no duplication issue now)
       login(user, accessToken);
 
-      toast.success(`Welcome back, ${user.name}!`);
+      toast.success(`Welcome back, ${user.fullName}!`);
 
-      if (user.isFirstLogin) {
+      // 🔥 REDIRECT AFTER LOGIN
+      const redirectPath = localStorage.getItem("redirectAfterLogin");
+
+      if (redirectPath) {
+        localStorage.removeItem("redirectAfterLogin");
+        navigate(redirectPath);
+        return;
+      }
+
+      // First login
+      if (user.firstLogin) {
         navigate("/change-password");
         return;
       }
 
+      // Role-based routing
       if (user.role === "ADMIN") navigate("/portal/admin");
       else if (user.role === "TUTOR") navigate("/portal/review");
       else if (user.role === "EMPLOYEE") navigate("/portal/dashboard");
       else navigate("/dashboard");
+
     } catch (error) {
-      const message = error.message;
-      toast.error(message);
+      console.error(error);
+
+      if (error.response?.status === 401) {
+        toast.error("Invalid email or password");
+      } else {
+        toast.error(error.response?.data?.message || "Login failed");
+      }
     } finally {
       setLoading(false);
     }
@@ -65,178 +85,102 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex font-sans">
-      {/* LEFT — Brand Panel */}
+      {/* LEFT PANEL */}
       <div className="hidden lg:flex lg:w-1/2 bg-[#0A1628] flex-col justify-between p-12">
         <Link to="/" className="flex items-center gap-3">
           <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-            <span className="text-white text-sm font-bold tracking-wide">
-              AIP
-            </span>
+            <span className="text-white text-sm font-bold">AIP</span>
           </div>
           <div>
-            <div className="text-white text-sm font-semibold leading-tight">
+            <div className="text-white text-sm font-semibold">
               Aja Internship Portal
             </div>
-            <div className="text-white/40 text-xs leading-tight">
+            <div className="text-white/40 text-xs">
               Interview Question Bank
             </div>
           </div>
         </Link>
 
         <div>
-          <h2 className="font-serif text-4xl text-white leading-snug mb-4">
-            Welcome to
-            <br />
-            <em className="text-[#2563EB]">Aja Internship Portal</em>
+          <h2 className="text-4xl text-white mb-4">
+            Welcome to <br />
+            <span className="text-[#2563EB]">
+              Aja Internship Portal
+            </span>
           </h2>
-          <p className="text-white/50 font-light text-sm leading-relaxed mb-10">
-            Real questions. Real experience. Real confidence.
-          </p>
 
           <div className="flex flex-col gap-4">
             {[
-              "Questions from real employee interviews",
-              "Reviewed and rated by expert tutors",
-              "Technology-specific packages from ₹299",
+              "Questions from real interviews",
+              "Reviewed by expert tutors",
+              "Packages from ₹299",
             ].map((text, i) => (
               <div key={i} className="flex items-center gap-3">
-                <CheckCircle size={16} className="text-[#2563EB] shrink-0" />
+                <CheckCircle size={16} className="text-[#2563EB]" />
                 <span className="text-white/60 text-sm">{text}</span>
               </div>
             ))}
           </div>
         </div>
-
-        <div className="text-white/20 text-xs">
-          © 2026 Aja Consulting Services LLP. All rights reserved.
-        </div>
       </div>
 
-      {/* RIGHT — Login Form */}
+      {/* RIGHT PANEL */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-white">
         <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <Link to="/" className="flex items-center gap-3 mb-10 lg:hidden">
-            <div className="w-9 h-9 bg-[#0A1628] rounded-xl flex items-center justify-center">
-              <span className="text-white text-xs font-bold">AIP</span>
-            </div>
-            <span className="text-sm font-semibold text-[#0A1628]">
-              Aja Internship Portal
-            </span>
-          </Link>
-
-          <h1 className="text-2xl font-semibold text-[#0A1628] mb-2">
+          <h1 className="text-2xl font-semibold mb-2">
             Log in to your account
           </h1>
-          <p className="text-sm text-gray-400 font-light mb-8">
-            Enter your credentials to continue
-          </p>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                Email Address
-              </label>
+            {/* EMAIL */}
+            <input
+              type="email"
+              name="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              required
+              className="px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-100"
+            />
+
+            {/* PASSWORD */}
+            <div className="relative">
               <input
-                type="email"
-                name="email"
-                value={formData.email}
+                type={showPassword ? "text" : "password"}
+                name="password"
+                value={formData.password}
                 onChange={handleChange}
-                placeholder="you@example.com"
+                placeholder="Password"
                 required
-                className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all"
+                className="px-4 py-3 border rounded-xl w-full focus:outline-none focus:ring-2 focus:ring-blue-100"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-gray-400"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
 
-            {/* Password */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-medium text-gray-600">
-                  Password
-                </label>
-                {/* ✅ FIXED — was a <button>, now a proper <Link> */}
-                <Link
-                  to="/forgot-password"
-                  className="text-xs text-[#2563EB] hover:underline transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <div className="relative">
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Enter your password"
-                  required
-                  className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all pr-12"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
-                </button>
-              </div>
-            </div>
-
-            {/* Submit Button */}
+            {/* BUTTON */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-1"
+              className="py-3 bg-[#0A1628] text-white rounded-xl hover:bg-[#0F2340] transition disabled:opacity-60"
             >
-              {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="animate-spin h-4 w-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    />
-                  </svg>
-                  Logging in...
-                </span>
-              ) : (
-                "Log in"
-              )}
+              {loading ? "Logging in..." : "Login"}
             </button>
 
-            {/* Internal Staff Note */}
-            <p className="text-xs text-center text-gray-400 italic">
-              Internal staff — use credentials provided by your administrator.
-            </p>
+            {/* LINKS */}
+            <Link to="/forgot-password" className="text-blue-500 text-sm">
+              Forgot password?
+            </Link>
 
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-black/5" />
-              <span className="text-xs text-gray-300">or</span>
-              <div className="flex-1 h-px bg-black/5" />
-            </div>
-
-            {/* Register Link */}
-            <p className="text-center text-sm text-gray-400">
-              New here?{" "}
-              <Link
-                to="/register"
-                className="text-[#2563EB] font-medium hover:underline"
-              >
-                Create a learner account →
+            <p className="text-sm text-center">
+              New user?{" "}
+              <Link to="/register" className="text-blue-500 font-medium">
+                Register
               </Link>
             </p>
           </form>

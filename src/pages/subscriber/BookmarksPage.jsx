@@ -4,6 +4,7 @@ import { Bookmark, MessageCircle, Search } from "lucide-react";
 import TechBadge from "../../components/common/TechBadge";
 import DifficultyBadge from "../../components/common/DifficultyBadge";
 import { useAuth } from "../../context/AuthContext";
+import { Sidebar } from "../../components/subscriber/Sidebar";
 
 const mockBookmarks = [
   {
@@ -43,78 +44,11 @@ const BookmarksPage = () => {
   );
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
-      {/* Sidebar */}
-      <aside className="w-64 shrink-0 bg-white border-r border-black/5 min-h-screen flex flex-col">
-        <div className="p-6 border-b border-black/5">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#0A1628] rounded-xl flex items-center justify-center">
-              <span className="text-white text-xs font-bold">AIP</span>
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-[#0A1628] leading-tight">
-                Aja Internship Portal
-              </div>
-              <div className="text-xs text-gray-400 leading-tight">
-                Interview Question Bank
-              </div>
-            </div>
-          </Link>
-        </div>
-        <nav className="flex-1 p-4 flex flex-col gap-1">
-          {[
-            { label: "Dashboard", icon: "🏠", path: "/dashboard" },
-            { label: "My Questions", icon: "📚", path: "/dashboard/questions" },
-            {
-              label: "Bookmarks",
-              icon: "🔖",
-              path: "/dashboard/bookmarks",
-              active: true,
-            },
-            {
-              label: "My Subscription",
-              icon: "💳",
-              path: "/dashboard/subscription",
-            },
-            { label: "Profile", icon: "👤", path: "/dashboard/profile" },
-          ].map((item) => (
-            <Link
-              key={item.label}
-              to={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
-                item.active
-                  ? "bg-blue-50 text-[#2563EB] font-medium"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-              }`}
-            >
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="p-4 border-t border-black/5 flex flex-col gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-xl">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs font-medium text-green-700">
-              Active · 24 days left
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0A1628] to-[#2563EB] text-white text-xs font-semibold flex items-center justify-center">
-              {user?.name?.charAt(0) || "U"}
-            </div>
-            <div>
-              <div className="text-xs font-medium text-[#0A1628]">
-                {user?.name || "User"}
-              </div>
-              <div className="text-xs text-gray-400">Subscriber</div>
-            </div>
-          </div>
-        </div>
-      </aside>
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+      <Sidebar />
 
       {/* Main */}
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 h-screen overflow-y-auto">
         <div className="mb-8">
           <h1 className="font-serif text-3xl text-[#0A1628] mb-1">Bookmarks</h1>
           <p className="text-sm text-gray-400 font-light">

@@ -1,272 +1,141 @@
-import { Link } from "react-router-dom";
-import { CheckCircle, Calendar, Package, Clock, RefreshCw } from "lucide-react";
+import { useEffect, useState } from "react";
+import axiosInstance from "../../api/axiosInstance";
 import { useAuth } from "../../context/AuthContext";
-
-const paymentHistory = [
-  {
-    date: "13 Mar 2026",
-    package: "Frontend Package",
-    amount: "₹824",
-    status: "Success",
-  },
-  {
-    date: "13 Dec 2025",
-    package: "Backend Package",
-    amount: "₹824",
-    status: "Success",
-  },
-];
+import toast from "react-hot-toast";
+import { Sidebar } from "../../components/subscriber/Sidebar";
 
 const SubscriptionPage = () => {
   const { user } = useAuth();
-  const daysTotal = 90;
-  const daysLeft = 24;
-  const daysUsed = daysTotal - daysLeft;
-  const progress = Math.round((daysUsed / daysTotal) * 100);
+  const [subscriptions, setSubscriptions] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchSubscription = async () => {
+    try {
+      const res = await axiosInstance.get("/subscriptions/my");
+      if (Array.isArray(res.data)) {
+        setSubscriptions(res.data);
+      } else if (res.data && res.data.endDate) {
+        setSubscriptions([res.data]);
+      } else {
+        setSubscriptions([]);
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to load subscriptions");
+      setSubscriptions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscription();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading subscriptions...</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
-      {/* Sidebar */}
-      <aside className="w-64 shrink-0 bg-white border-r border-black/5 min-h-screen flex flex-col">
-        <div className="p-6 border-b border-black/5">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#0A1628] rounded-xl flex items-center justify-center">
-              <span className="text-white text-xs font-bold">AIP</span>
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-[#0A1628] leading-tight">
-                Aja Internship Portal
-              </div>
-              <div className="text-xs text-gray-400 leading-tight">
-                Interview Question Bank
-              </div>
-            </div>
-          </Link>
-        </div>
-        <nav className="flex-1 p-4 flex flex-col gap-1">
-          {[
-            { label: "Dashboard", icon: "🏠", path: "/dashboard" },
-            { label: "My Questions", icon: "📚", path: "/dashboard/questions" },
-            { label: "Bookmarks", icon: "🔖", path: "/dashboard/bookmarks" },
-            {
-              label: "My Subscription",
-              icon: "💳",
-              path: "/dashboard/subscription",
-              active: true,
-            },
-            { label: "Profile", icon: "👤", path: "/dashboard/profile" },
-          ].map((item) => (
-            <Link
-              key={item.label}
-              to={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
-                item.active
-                  ? "bg-blue-50 text-[#2563EB] font-medium"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-              }`}
-            >
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="p-4 border-t border-black/5 flex flex-col gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-xl">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs font-medium text-green-700">
-              Active · {daysLeft} days left
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0A1628] to-[#2563EB] text-white text-xs font-semibold flex items-center justify-center">
-              {user?.name?.charAt(0) || "U"}
-            </div>
-            <div>
-              <div className="text-xs font-medium text-[#0A1628]">
-                {user?.name || "User"}
-              </div>
-              <div className="text-xs text-gray-400">Subscriber</div>
-            </div>
-          </div>
-        </div>
-      </aside>
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+      <Sidebar />
+      <main className="flex-1 flex flex-col items-center py-10 px-4 h-screen overflow-y-auto w-full">
+        <div className="w-full max-w-4xl mb-6 flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-[#0A1628]">My Subscriptions</h1>
+        <button
+          onClick={() => (window.location.href = "/packages")}
+          className="px-5 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition"
+        >
+          Browse Packages
+        </button>
+      </div>
 
-      {/* Main */}
-      <main className="flex-1 p-8">
-        <div className="mb-8">
-          <h1 className="font-serif text-3xl text-[#0A1628] mb-1">
-            My Subscription
-          </h1>
-          <p className="text-sm text-gray-400 font-light">
-            Manage your active subscription and view payment history
+      {subscriptions.length === 0 ? (
+        <div className="bg-white p-10 rounded-2xl shadow-sm border border-black/5 w-full max-w-3xl flex flex-col items-center text-center">
+          <div className="text-5xl mb-4">💳</div>
+          <h2 className="text-xl font-semibold mb-2 text-[#0A1628]">No Active Subscription</h2>
+          <p className="text-gray-500 mb-6 max-w-md">
+            You haven't unlocked any of our premium packages yet. Purchase a package to get full access to the interview question bank.
           </p>
+          <button
+            onClick={() => (window.location.href = "/packages")}
+            className="px-6 py-3 bg-[#0A1628] text-white font-medium rounded-xl hover:bg-gray-800 transition"
+          >
+            Explore Packages
+          </button>
         </div>
+      ) : (
+        <div className="w-full max-w-3xl flex flex-col gap-5">
+          {subscriptions.map((sub, idx) => {
+            const start = new Date(sub.startDate || new Date());
+            const end = new Date(sub.endDate || new Date());
+            const now = new Date();
+            const totalDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+            const leftDays = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+            const used = totalDays - leftDays;
+            const progress = Math.min(100, Math.round((used / totalDays) * 100));
+            const isActive = sub.status === "ACTIVE" || leftDays > 0;
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Status Card */}
-          <div className="bg-white border border-black/8 rounded-2xl p-6">
-            <div className="flex items-center justify-between mb-5">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">
-                Current Plan
-              </h2>
-              <span className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1 bg-green-50 text-green-600 rounded-full">
-                <div className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
-                Active
-              </span>
-            </div>
-
-            {/* Package Info */}
-            <div className="flex items-center gap-3 mb-5">
-              <span className="text-3xl">⚛️</span>
-              <div>
-                <div className="text-base font-semibold text-[#0A1628]">
-                  Frontend Package
-                </div>
-                <div className="text-xs text-gray-400">
-                  Standard Plan · 90 Days
-                </div>
-              </div>
-            </div>
-
-            {/* Days Countdown */}
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <Clock size={14} className="text-[#2563EB]" />
-                <span className="text-sm text-gray-500">Days Remaining</span>
-              </div>
-              <span className="font-serif text-3xl text-[#0A1628]">
-                {daysLeft}
-              </span>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
-              <div
-                className="h-full bg-[#2563EB] rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              />
-            </div>
-            <div className="flex justify-between text-xs text-gray-300">
-              <span>{daysUsed} days used</span>
-              <span>{daysLeft} days left</span>
-            </div>
-
-            {/* Dates */}
-            <div className="mt-5 flex flex-col gap-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400 flex items-center gap-2">
-                  <Calendar size={13} className="text-[#2563EB]" />
-                  Start Date
-                </span>
-                <span className="font-medium text-[#0A1628]">13 Mar 2026</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-400 flex items-center gap-2">
-                  <Calendar size={13} className="text-[#2563EB]" />
-                  Expiry Date
-                </span>
-                <span className="font-medium text-[#0A1628]">11 Jun 2026</span>
-              </div>
-            </div>
-
-            {/* Renew Button */}
-            <Link
-              to="/packages"
-              className="flex items-center justify-center gap-2 w-full mt-6 py-3 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all"
-            >
-              <RefreshCw size={14} />
-              Renew / Upgrade Plan
-            </Link>
-          </div>
-
-          {/* What's Included */}
-          <div className="bg-white border border-black/8 rounded-2xl p-6">
-            <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-5">
-              What's Included
-            </h2>
-            <div className="flex flex-col gap-3">
-              {[
-                "Full Q&A Access to Frontend Package",
-                "Bookmark Questions",
-                "Search and Filter by Difficulty",
-                "Download Notes",
-                "Access to 110+ Questions",
-                "Regular Content Updates",
-              ].map((feature) => (
-                <div key={feature} className="flex items-center gap-3">
-                  <div className="w-5 h-5 bg-green-50 rounded-full flex items-center justify-center shrink-0">
-                    <CheckCircle size={12} className="text-green-500" />
+            return (
+              <div key={sub.id || idx} className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-black/5 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between transition hover:shadow-md">
+                <div className="flex-1 w-full">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h2 className="text-xl font-bold text-[#0A1628]">
+                      {sub.packageName || "Premium Package"}
+                    </h2>
+                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                      {sub.status || (isActive ? "ACTIVE" : "EXPIRED")}
+                    </span>
                   </div>
-                  <span className="text-sm text-gray-600">{feature}</span>
+
+                  {/* DATES */}
+                  <div className="flex gap-4 text-sm text-gray-500 mt-1 mb-4">
+                    <p>Start: <span className="text-gray-700 font-medium">{start.toLocaleDateString()}</span></p>
+                    <p>Expires: <span className="text-gray-700 font-medium">{end.toLocaleDateString()}</span></p>
+                  </div>
+
+                  {/* PROGRESS BAR */}
+                  <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden mb-2">
+                    <div
+                      className={`h-full transition-all duration-500 ${isActive ? 'bg-[#2563EB]' : 'bg-red-500'}`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+                  
+                  {/* WARNINGS */}
+                  <div className="flex justify-between items-center text-xs mt-2">
+                    {leftDays === 0 ? (
+                      <span className="text-red-600 font-medium flex items-center gap-1">❌ Subscription expired</span>
+                    ) : leftDays <= 3 ? (
+                      <span className="text-orange-500 font-medium flex items-center gap-1">⚠️ Expiring soon!</span>
+                    ) : (
+                      <span className="text-green-600 font-medium flex items-center gap-1">✅ Active</span>
+                    )}
+                    <span className="font-semibold text-gray-700">{leftDays} days remaining</span>
+                  </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            );
+          })}
 
-            {/* Upgrade Note */}
-            <div className="mt-6 p-4 bg-blue-50 border border-blue-100 rounded-xl">
-              <p className="text-xs text-blue-700 leading-relaxed">
-                <strong>Want more?</strong> Upgrade to Premium for Priority
-                Tutor Q&A and a Certificate of Completion.
-              </p>
-              <Link
-                to="/packages"
-                className="text-xs text-[#2563EB] font-medium hover:underline mt-1 block"
-              >
-                View Premium Plan →
-              </Link>
+          <div className="mt-4 p-6 bg-blue-50 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4">
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-1">Looking for more topics?</h3>
+              <p className="text-sm text-blue-700">Explore additional packages and expand your interview prep.</p>
             </div>
+            <button
+              onClick={() => (window.location.href = "/packages")}
+              className="shrink-0 px-6 py-2.5 bg-white text-blue-700 font-semibold rounded-xl shadow-sm hover:shadow transition"
+            >
+              View More Packages
+            </button>
           </div>
         </div>
-
-        {/* Payment History */}
-        <div className="bg-white border border-black/8 rounded-2xl p-6">
-          <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-5">
-            Payment History
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-black/5">
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">
-                    Date
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">
-                    Package
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">
-                    Amount
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {paymentHistory.map((payment, i) => (
-                  <tr
-                    key={i}
-                    className="border-b border-black/5 last:border-b-0"
-                  >
-                    <td className="py-3 text-sm text-gray-600">
-                      {payment.date}
-                    </td>
-                    <td className="py-3 text-sm text-gray-600">
-                      {payment.package}
-                    </td>
-                    <td className="py-3 text-sm font-medium text-[#0A1628]">
-                      {payment.amount}
-                    </td>
-                    <td className="py-3">
-                      <span className="text-xs font-medium px-2.5 py-1 bg-green-50 text-green-600 rounded-full">
-                        {payment.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      )}
       </main>
     </div>
   );

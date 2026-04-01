@@ -3,83 +3,9 @@ import { Link } from "react-router-dom";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
 import { Star, Lock, ChevronRight } from "lucide-react";
+import axiosInstance from "../../api/axiosInstance";
 
-const sampleQuestions = [
-  {
-    id: 1,
-    tech: "Java",
-    rating: 5,
-    title:
-      "What is the difference between HashMap and ConcurrentHashMap in Java?",
-    preview:
-      "HashMap is not thread-safe and allows one null key. ConcurrentHashMap is thread-safe and uses segment-level locking...",
-    tutor: "Rajesh K.",
-    initials: "RK",
-    package: "Backend Package",
-  },
-  {
-    id: 2,
-    tech: "React",
-    rating: 5,
-    title:
-      "Explain the difference between useEffect and useLayoutEffect with real use cases.",
-    preview:
-      "useEffect runs asynchronously after the browser paints. useLayoutEffect runs synchronously after DOM updates but before paint...",
-    tutor: "Priya M.",
-    initials: "PM",
-    package: "Frontend Package",
-  },
-  {
-    id: 3,
-    tech: "DevOps",
-    rating: 4,
-    title:
-      "How would you design a zero-downtime deployment pipeline using Docker and Kubernetes?",
-    preview:
-      "Use a rolling update strategy in Kubernetes with readiness probes. Configure the deployment with maxUnavailable 0...",
-    tutor: "Anil S.",
-    initials: "AS",
-    package: "DevOps Package",
-  },
-];
 
-const packages = [
-  {
-    icon: "☕",
-    name: "Backend",
-    techs: "Java · Spring Boot · Microservices · SQL",
-    price: "₹299",
-    featured: false,
-  },
-  {
-    icon: "⚛️",
-    name: "Frontend",
-    techs: "React · JavaScript · TypeScript · CSS",
-    price: "₹299",
-    featured: true,
-  },
-  {
-    icon: "🐳",
-    name: "DevOps",
-    techs: "Docker · Kubernetes · CI/CD · Linux",
-    price: "₹299",
-    featured: false,
-  },
-  {
-    icon: "☁️",
-    name: "Salesforce",
-    techs: "Apex · LWC · SOQL · Flows · Admin",
-    price: "₹299",
-    featured: false,
-  },
-  {
-    icon: "🐍",
-    name: "Python",
-    techs: "Core Python · Django · Flask · OOP",
-    price: "₹299",
-    featured: false,
-  },
-];
 
 const tutors = [
   {
@@ -140,9 +66,40 @@ const StarRating = ({ count }) => (
 
 const LandingPage = () => {
   const [visible, setVisible] = useState(false);
+  const [packages, setPackages] = useState([]);
+  const [sampleQuestions, setSampleQuestions] = useState([]);
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 100);
+
+    const fetchData = async () => {
+      try {
+        const [pkgRes, quesRes] = await Promise.all([
+          axiosInstance.get("/packages"),
+          axiosInstance.get("/questions?limit=3")
+        ]);
+        
+        // Take up to 5 packages
+        setPackages(Array.isArray(pkgRes.data) ? pkgRes.data.slice(0, 5) : []);
+        
+        // Take top 3 questions as samples OR use static if empty
+        const fetchedQues = Array.isArray(quesRes.data) ? quesRes.data.slice(0, 3) : [];
+        if (fetchedQues.length > 0) {
+          setSampleQuestions(fetchedQues);
+        } else {
+          // STATIC FALLBACK SAMPLES
+          setSampleQuestions([
+            { id: 's1', title: "What is the difference between abstract class and interface in Java?", technology: "Java", difficulty: "EASY" },
+            { id: 's2', title: "How does the virtual DOM work in React?", technology: "React", difficulty: "MEDIUM" },
+            { id: 's3', title: "Explain the concept of CI/CD pipelines in DevOps.", technology: "DevOps", difficulty: "HARD" }
+          ]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch landing page data", error);
+      }
+    };
+    
+    fetchData();
   }, []);
 
   return (
@@ -232,47 +189,51 @@ const LandingPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {sampleQuestions.map((q) => (
+          {sampleQuestions.length > 0 ? sampleQuestions.map((q) => (
             <div
               key={q.id}
-              className="bg-white border border-black/8 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl hover:border-blue-100 transition-all duration-250 cursor-pointer"
+              className="bg-white border border-black/8 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl hover:border-blue-100 transition-all duration-300 cursor-pointer group"
             >
               <div className="flex items-start justify-between mb-4">
                 <span
-                  className={`text-xs font-semibold px-2.5 py-1 rounded-md uppercase tracking-wide ${techBadgeStyle[q.tech]}`}
+                  className={`text-xs font-bold px-2.5 py-1 rounded-md uppercase tracking-wide bg-blue-50 text-blue-700`}
                 >
-                  {q.tech}
+                  {q.technology || "General"}
                 </span>
-                <StarRating count={q.rating} />
+                <StarRating count={5} />
               </div>
 
-              <h3 className="text-sm font-semibold text-[#0A1628] leading-snug mb-4">
+              <h3 className="text-sm font-semibold text-[#0A1628] leading-snug mb-4 group-hover:text-blue-600 transition-colors">
                 {q.title}
               </h3>
 
               {/* Blurred Answer */}
               <div className="relative rounded-xl overflow-hidden bg-gray-50 p-3">
-                <p className="text-xs text-gray-500 leading-relaxed blur-sm select-none pointer-events-none">
-                  {q.preview}
+                <p className="text-xs text-gray-500 leading-relaxed blur-sm select-none pointer-events-none line-clamp-2">
+                  {q.description || "The answer to this question involves understanding the core principles..."}
                 </p>
-                <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded-xl">
-                  <button className="flex items-center gap-1.5 text-xs font-medium text-[#2563EB] bg-white border border-blue-100 px-3 py-1.5 rounded-lg hover:bg-blue-50 transition-all">
+                <div className="absolute inset-0 flex items-center justify-center bg-white/60 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <Link to="/packages" className="flex items-center gap-1.5 text-xs font-medium text-[#2563EB] bg-white border border-blue-100 px-3 py-1.5 rounded-lg shadow-sm hover:bg-blue-50 transition-all transform scale-95 group-hover:scale-100">
                     <Lock size={11} /> Unlock Answer
-                  </button>
+                  </Link>
                 </div>
               </div>
 
               <div className="flex items-center justify-between mt-4">
                 <div className="flex items-center gap-2 text-xs text-gray-400">
-                  <div className="w-6 h-6 rounded-full bg-[#0A1628] text-white flex items-center justify-center text-xs font-semibold">
-                    {q.initials}
+                  <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#0A1628] to-[#2563EB] text-white flex items-center justify-center text-[10px] font-bold shadow-sm">
+                    AIP
                   </div>
-                  Reviewed by {q.tutor}
+                  Verified
                 </div>
-                <span className="text-xs text-gray-300">{q.package}</span>
+                <span className="text-[10px] font-semibold tracking-wider uppercase text-gray-400">{q.difficulty}</span>
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="col-span-3 text-center py-10 text-gray-400">
+              Loading sample questions...
+            </div>
+          )}
         </div>
       </section>
 
@@ -292,43 +253,49 @@ const LandingPage = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {packages.map((pkg, i) => (
+            {packages.length > 0 ? packages.map((pkg, i) => (
               <div
                 key={i}
-                className={`bg-white rounded-2xl p-5 border transition-all duration-250 hover:-translate-y-1 hover:shadow-lg cursor-pointer relative
-                  ${pkg.featured ? "border-2 border-[#2563EB]" : "border-black/8"}`}
+                className={`bg-white rounded-2xl p-5 border transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer relative group
+                  ${i === 1 ? "border-2 border-[#2563EB] shadow-md" : "border-black/8"}`}
               >
-                {pkg.featured && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2563EB] text-white text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">
+                {i === 1 && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2563EB] text-white text-[10px] uppercase tracking-widest font-bold px-3 py-1 rounded-full whitespace-nowrap shadow-sm">
                     Most Popular
                   </div>
                 )}
-                <div className="text-3xl mb-3">{pkg.icon}</div>
-                <div className="text-sm font-semibold text-[#0A1628] mb-1">
-                  {pkg.name}
+                <div className="text-3xl mb-3 transform group-hover:scale-110 transition-transform origin-left text-[#2563EB]">
+                  {i === 0 ? "⚙️" : i === 1 ? "⚛️" : i === 2 ? "☁️" : i === 3 ? "🐍" : "☕"}
                 </div>
-                <div className="text-xs text-gray-400 leading-relaxed mb-4">
-                  {pkg.techs}
+                <div className="text-sm font-bold text-[#0A1628] mb-1">
+                  {pkg.name || "Package"}
+                </div>
+                <div className="text-xs text-gray-400 font-medium leading-relaxed mb-4 line-clamp-2">
+                  {pkg.technologyName || pkg.description || "Core concepts and advanced topics"}
                 </div>
                 <div className="font-serif text-2xl text-[#0A1628]">
-                  {pkg.price}{" "}
-                  <span className="font-sans text-xs text-gray-400 font-normal">
+                  ₹{pkg.basicPrice || 299}{" "}
+                  <span className="font-sans text-[10px] tracking-wide text-gray-400 font-semibold uppercase">
                     / 30 days
                   </span>
                 </div>
                 <Link
-                  to={`/packages`}
-                  className={`block w-full mt-4 py-2 rounded-lg text-xs font-medium text-center transition-all
+                  to={`/packages/${pkg.id}`}
+                  className={`flex items-center justify-center gap-2 w-full mt-5 py-2.5 rounded-xl text-xs font-semibold transition-all duration-300
                     ${
-                      pkg.featured
-                        ? "bg-[#0A1628] text-white hover:bg-[#0F2340]"
-                        : "border border-black/10 text-gray-700 hover:bg-[#0A1628] hover:text-white"
+                      i === 1
+                        ? "bg-[#2563EB] text-white hover:bg-blue-700 shadow-sm"
+                        : "bg-gray-50 text-gray-700 hover:bg-[#0A1628] hover:text-white"
                     }`}
                 >
-                  Get Access
+                  Get Access <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
-            ))}
+            )) : (
+              <div className="col-span-5 text-center py-10 text-gray-400">
+                Loading available packages...
+              </div>
+            )}
           </div>
 
           <div className="text-center mt-8">

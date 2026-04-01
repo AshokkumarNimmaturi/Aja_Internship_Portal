@@ -21,6 +21,7 @@ import EmployeeDashboard from "./pages/portal/EmployeeDashboard";
 import SubmitQuestionPage from "./pages/portal/SubmitQuestionPage";
 import TutorReviewPage from "./pages/portal/TutorReviewPage";
 import AdminPanelPage from "./pages/portal/AdminPanelPage";
+import ProfilePage from "./pages/common/ProfilePage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RoleRoute from "./routes/RoleRoute";
@@ -90,6 +91,15 @@ function App() {
             />
 
             <Route
+              path="/dashboard/questions"
+              element={
+                <ProtectedRoute>
+                  <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               element={<RoleRoute allowedRoles={["SUBSCRIBER", "ADMIN"]} />}
             />
             <Route
@@ -137,6 +147,15 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/dashboard/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage isPortal={false} />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/portal/dashboard"
               element={
@@ -153,6 +172,15 @@ function App() {
                 </RoleRoute>
               }
             />
+
+            <Route
+              path="/portal/profile"
+              element={
+                <ProtectedRoute>
+                  <ProfilePage isPortal={true} />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/portal/review"
               element={
@@ -164,9 +192,55 @@ function App() {
             <Route
               path="/portal/admin"
               element={
-                <RoleRoute allowedRoles={["ADMIN"]}>
-                  <AdminPanelPage />
-                </RoleRoute>
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["ADMIN"]}>
+                    <AdminPanelPage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/portal/admin/review"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["ADMIN"]}>
+                    <AdminPanelPage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/portal/packages"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["ADMIN"]}>
+                    <AdminPanelPage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/portal/audit"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["ADMIN"]}>
+                    <AdminPanelPage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/portal/access"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["ADMIN", "TUTOR"]}>
+                    <AdminPanelPage />
+                  </RoleRoute>
+                </ProtectedRoute>
               }
             />
           </Routes>

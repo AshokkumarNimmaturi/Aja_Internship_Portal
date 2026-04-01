@@ -127,7 +127,7 @@ const ChangePasswordPage = () => {
                 Set Your New Password
               </h1>
               <p className="text-xs text-gray-400">
-                Hi {user?.name || 'there'}, secure your account now
+                Hi {user?.fullName?.split(" ")[0] || user?.name || 'there'}, secure your account now
               </p>
             </div>
           </div>

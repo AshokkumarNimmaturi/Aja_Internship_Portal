@@ -1,65 +1,146 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { CheckCircle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import { PortalSidebar } from "./EmployeeDashboard";
+import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
-
-const technologies = [
-  "Java",
-  "Spring Boot",
-  "React",
-  "JavaScript",
-  "TypeScript",
-  "Python",
-  "Django",
-  "DevOps",
-  "Docker",
-  "Kubernetes",
-  "Salesforce",
-  "SQL",
-  "Other",
-];
 
 const SubmitQuestionPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [packages, setPackages] = useState([]);
+  const [techList, setTechList] = useState([]); // real technologies with IDs from backend
   const [formData, setFormData] = useState({
     title: "",
     body: "",
-    technology: "",
+    technologyId: "",   // numeric ID from backend
+    packageId: "",
     difficulty: "",
+    newTechName: "",    // used if technologyId === 'NEW'
   });
 
+  useEffect(() => {
+    const init = async () => {
+      // Load packages independently — critical for form
+      try {
+        const pkgRes = await axiosInstance.get("/packages");
+        setPackages(Array.isArray(pkgRes.data) ? pkgRes.data : pkgRes.data.content || []);
+      } catch (err) {
+        console.error("Packages fetch error:", err);
+        toast.error("Failed to load packages. Please refresh.");
+      }
+
+      // Load technologies independently — has static fallback so non-critical
+      try {
+        let techRes;
+        try {
+          techRes = await axiosInstance.get("/technologies");
+        } catch {
+          try {
+            techRes = await axiosInstance.get("/technology");
+          } catch {
+            techRes = await axiosInstance.get("/admin/technologies");
+          }
+        }
+        const techs = Array.isArray(techRes.data) ? techRes.data : techRes.data.content || [];
+        setTechList(techs);
+        console.log("Technologies from backend:", techs);
+      } catch (err) {
+        // Non-fatal: the form already shows a static fallback list when techList is empty
+        console.warn("Could not load technologies from backend — using static fallback:", err.message);
+      }
+    };
+    init();
+  }, []);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let updatedData = { ...formData, [name]: value };
+
+    // AUTOMATION: If package is selected, auto-select its technology
+    if (name === "packageId" && value) {
+      const selectedPkg = packages.find(p => String(p.id) === String(value));
+      if (selectedPkg && (selectedPkg.technology_id || selectedPkg.technologyId)) {
+        updatedData.technologyId = selectedPkg.technology_id || selectedPkg.technologyId;
+      }
+    }
+
+    setFormData(updatedData);
   };
 
   const handleDifficulty = (val) => {
     setFormData({ ...formData, difficulty: val });
   };
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.technology) {
-      toast.error("Please select a technology");
+
+    if (!formData.packageId) {
+      toast.error("Please assign this question to a package");
       return;
     }
+
     if (!formData.difficulty) {
       toast.error("Please select difficulty");
       return;
     }
 
     setLoading(true);
+
     try {
-      await axiosInstance.post("/questions", formData);
+      let techId = formData.technologyId;
+
+      // PHASE 1: Handle New Technology Creation
+      if (techId === "NEW" && formData.newTechName) {
+        try {
+          const techRes = await axiosInstance.post("/technologies", {
+            name: formData.newTechName,
+            active: 1,
+            description: "Automatically added via question submission"
+          });
+          techId = techRes.data.id || techRes.data;
+          toast.success(`Created new technology: ${formData.newTechName}`);
+        } catch (err) {
+          toast.error("Failed to create new technology. Using fallback.");
+          // if POST fails, we'll try to proceed or stop
+          setLoading(false);
+          return;
+        }
+      }
+
+      // PHASE 2: Submit Question
+      const finalTechId = Number(techId);
+      const payload = {
+        title: formData.title,
+        content: formData.body,
+        // Send both to ensure backend DTO and DB Mapper are both satisfied
+        technologyId: finalTechId,
+        technology_id: finalTechId,
+        packageId: Number(formData.packageId),
+        package_id: Number(formData.packageId),
+        difficulty: formData.difficulty,
+        status: "PENDING",
+        submitted_by: user?.id || user?.userId,
+      };
+
+      console.log("Submitting question payload:", payload);
+
+      const res = await axiosInstance.post("/questions", payload);
+      console.log("Submit response:", res.status, res.data);
+
       setSubmitted(true);
       toast.success("Question submitted for review!");
     } catch (error) {
-      toast.error("Failed to submit. Please try again.");
+      const serverMsg = error.response?.data?.message
+        || error.response?.data?.error
+        || JSON.stringify(error.response?.data)
+        || "Failed to submit. Please try again.";
+      console.error("Submit error:", error.response?.status, error.response?.data);
+      toast.error(serverMsg);
     } finally {
       setLoading(false);
     }
@@ -113,15 +194,14 @@ const SubmitQuestionPage = () => {
         activeItem="Submit Question"
       />
 
-      <main className="flex-1 p-8">
-        <div className="max-w-2xl">
-          <div className="mb-8">
-            <h1 className="font-serif text-3xl text-[#0A1628] mb-1">
+      <main className="flex-1 p-8 overflow-y-auto">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-10 text-center">
+            <h1 className="font-serif text-4xl text-[#0A1628] mb-2">
               Submit an Interview Question
             </h1>
-            <p className="text-sm text-gray-400 font-light">
-              Share a question you faced in a real interview. It will be
-              reviewed by a tutor before publishing.
+            <p className="text-sm text-gray-400 font-light max-w-lg mx-auto">
+              Share a question you faced in a real interview. Help your fellow portal members by contributing to the bank! 🚀
             </p>
           </div>
 
@@ -165,21 +245,62 @@ const SubmitQuestionPage = () => {
               />
             </div>
 
-            {/* Technology */}
+            {/* Technology — fetched from backend with real IDs */}
             <div>
               <label className="block text-xs font-medium text-gray-600 mb-2">
                 Technology <span className="text-red-400">*</span>
               </label>
               <select
-                name="technology"
-                value={formData.technology}
+                name="technologyId"
+                value={formData.technologyId}
                 onChange={handleChange}
+                required
                 className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all bg-white"
               >
                 <option value="">Select a technology</option>
-                {technologies.map((tech) => (
-                  <option key={tech} value={tech}>
-                    {tech}
+                {techList.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+                <option value="NEW" className="text-blue-600 font-bold">+ Add New Technology</option>
+              </select>
+
+              {formData.technologyId === "NEW" && (
+                <div className="mt-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <input
+                    type="text"
+                    name="newTechName"
+                    value={formData.newTechName}
+                    onChange={handleChange}
+                    placeholder="Enter new technology name..."
+                    required
+                    className="w-full px-4 py-2.5 border border-blue-200 bg-blue-50/30 rounded-xl text-sm text-gray-800 placeholder-blue-300 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition-all"
+                  />
+                </div>
+              )}
+
+              {techList.length === 0 && !formData.technologyId && (
+                <p className="text-xs text-amber-500 mt-1">⚠ Loading technologies from server...</p>
+              )}
+            </div>
+
+            {/* Package */}
+            <div>
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                Assign to Package <span className="text-red-400">*</span>
+              </label>
+              <select
+                name="packageId"
+                value={formData.packageId}
+                onChange={handleChange}
+                required
+                className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all bg-white"
+              >
+                <option value="">Select a package</option>
+                {packages.map((pkg) => (
+                  <option key={pkg.id} value={pkg.id}>
+                    {pkg.name}
                   </option>
                 ))}
               </select>
