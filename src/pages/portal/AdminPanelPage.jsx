@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import {
   Copy,
   Check,
@@ -13,7 +13,8 @@ import {
   XCircle,
   Star,
   RefreshCw,
-  Clock
+  Clock,
+  ChevronRight
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
@@ -38,6 +39,8 @@ const AdminPanelPage = () => {
     ? "Access Requests"
     : location.pathname.includes("/admin/review") || location.pathname.includes("/review")
     ? "Pending Review"
+    : location.pathname.includes("/portal/questions") || location.pathname.includes("/questions")
+    ? "Questions"
     : "Users";
 
   // --- SECURITY DEBUGGER: Decode JWT to see authorities ---
@@ -68,8 +71,11 @@ const AdminPanelPage = () => {
   const [packages, setPackages] = useState([]);
   const [pendingQuestions, setPendingQuestions] = useState([]);
   const [pendingLoading, setPendingLoading] = useState(false);
+  const [questions, setQuestions] = useState([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
   const [reviewComments, setReviewComments] = useState({});
   const [reviewRatings, setReviewRatings] = useState({});
+  const [correctedAnswers, setCorrectedAnswers] = useState({}); // ✅ ADDED
   const [reviewError, setReviewError] = useState(null);
   const [processing, setProcessing] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -138,12 +144,33 @@ const AdminPanelPage = () => {
       const res = await axiosInstance.get("/questions/pending");
       const list = Array.isArray(res.data) ? res.data : (res.data.content || []);
       setPendingQuestions(list);
+
+      // ✅ Pre-fill corrections with employee's initial answer
+      const initialMap = {};
+      list.forEach(q => {
+        if (q.initialAnswer) initialMap[q.id] = q.initialAnswer;
+      });
+      setCorrectedAnswers(initialMap);
     } catch (err) {
       console.error("PENDING QUEUE ERROR:", err);
       const code = err.code || (err.response ? `HTTP ${err.response.status}` : "NETWORK_ERROR");
       setReviewError(`${code}: Could not reach review queue`);
     } finally {
       setPendingLoading(false);
+    }
+  }, []);
+
+  const fetchQuestions = useCallback(async () => {
+    setQuestionsLoading(true);
+    try {
+      const res = await axiosInstance.get("/questions");
+      const list = Array.isArray(res.data) ? res.data : (res.data.content || []);
+      setQuestions(list);
+    } catch (err) {
+      console.error("Fetch questions error:", err);
+      toast.error("Failed to load question bank");
+    } finally {
+      setQuestionsLoading(false);
     }
   }, []);
 
@@ -161,7 +188,8 @@ const AdminPanelPage = () => {
     else if (activeView === "Audit Log") fetchAuditLogs();
     else if (activeView === "Packages") fetchPackages();
     else if (activeView === "Pending Review") fetchPendingQuestions();
-  }, [activeView, fetchAuditLogs, fetchPendingQuestions]);
+    else if (activeView === "Questions") fetchQuestions();
+  }, [activeView, fetchAuditLogs, fetchPendingQuestions, fetchQuestions]);
 
   // CREATE USER
   const handleCreateUser = async (e) => {
@@ -216,7 +244,7 @@ const AdminPanelPage = () => {
       const payload = {
         decision: action, // ✅ Matches ReviewQuestionRequest.getDecision()
         rejectionReason: feedback,
-        feedback: feedback,
+        correctedAnswer: correctedAnswers[id] || "", // ✅ Sent to backend
         reviewerId: user?.id || user?.userId,
       };
 
@@ -250,6 +278,7 @@ const AdminPanelPage = () => {
     "Packages": "Subscription Packages",
     "Access Requests": "Pending Access Requests",
     "Pending Review": "Pending Question Reviews",
+    "Questions": "Full Question Bank",
   };
 
   const viewDesc = {
@@ -257,7 +286,7 @@ const AdminPanelPage = () => {
     "Audit Log": "Review all system-level critical actions.",
     "Packages": "Overview of available active packages and tracks.",
     "Access Requests": "Approve or deny subscriber package requests.",
-    "Pending Review": "Approve or reject employee-submitted interview questions.",
+    "Questions": "Browse and manage all published interview questions.",
   };
 
   return (
@@ -609,6 +638,68 @@ const AdminPanelPage = () => {
             </div>
           )}
 
+          {/* ALL QUESTIONS TABLE */}
+          {activeView === "Questions" && (
+            <div className="bg-white border border-black/5 rounded-2xl shadow-sm overflow-hidden">
+               <div className="overflow-x-auto">
+                 <table className="w-full text-left border-collapse whitespace-nowrap">
+                   <thead className="bg-gray-50/50 text-[10px] uppercase tracking-wider text-gray-500 font-bold border-b border-black/5">
+                     <tr>
+                       <th className="px-6 py-4 text-gray-500">Title</th>
+                       <th className="px-6 py-4 text-gray-500">Technology</th>
+                       <th className="px-6 py-4 text-gray-500 text-center">Status</th>
+                       <th className="px-6 py-4 text-gray-500 text-right">Added On</th>
+                       <th className="px-6 py-4 text-gray-500 text-right">Action</th>
+                     </tr>
+                   </thead>
+                   <tbody className="divide-y divide-black/5 text-sm text-[#0A1628]">
+                     {questions.map((q) => (
+                       <tr key={q.id} className="hover:bg-gray-50/50 transition-colors">
+                         <td className="px-6 py-4">
+                           <div className="font-bold max-w-lg truncate">{q.title}</div>
+                         </td>
+                         <td className="px-6 py-4">
+                            <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-[10px] uppercase tracking-widest font-bold border border-blue-100">
+                               {getTechFromQ(q) || "General"}
+                            </span>
+                         </td>
+                         <td className="px-6 py-4 text-center">
+                            <span className={`bg-green-50 text-green-600 text-[10px] font-bold tracking-widest px-2.5 py-1 rounded-full border border-green-200 uppercase ${q.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-200' : ''}`}>
+                              {q.status || "APPROVED"}
+                            </span>
+                         </td>
+                         <td className="px-6 py-4 text-right text-xs text-gray-400 font-mono italic">
+                           {q.createdAt ? new Date(q.createdAt).toLocaleDateString() : "—"}
+                         </td>
+                         <td className="px-6 py-4 text-right">
+                            <Link 
+                               to={`/portal/questions/${q.id}`}
+                               className="p-1.5 text-gray-300 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all border border-transparent hover:border-blue-100 shadow-sm inline-block"
+                            >
+                               <ChevronRight size={16} />
+                            </Link>
+                          </td>
+                       </tr>
+                     ))}
+                     {questions.length === 0 && !questionsLoading && (
+                       <tr>
+                         <td colSpan="4" className="px-6 py-20 text-center text-gray-400">
+                            <div className="text-4xl mb-3">📚</div>
+                            <p className="font-medium italic">Your question library is currently empty.</p>
+                         </td>
+                       </tr>
+                     )}
+                     {questionsLoading && (
+                        <tr>
+                           <td colSpan="4" className="px-6 py-12 text-center text-gray-400">Syncing question library...</td>
+                        </tr>
+                     )}
+                   </tbody>
+                 </table>
+               </div>
+            </div>
+          )}
+
           {/* PENDING REVIEW — Admin can approve/reject directly */}
           {activeView === "Pending Review" && (
             <div>
@@ -659,8 +750,30 @@ const AdminPanelPage = () => {
                       </div>
 
                       {getBodyFromQ(q) && (
-                        <p className="text-sm text-gray-500 leading-relaxed mb-4 bg-gray-50 rounded-xl p-3 border border-black/5">{getBodyFromQ(q)}</p>
+                        <p className="text-sm text-gray-500 leading-relaxed mb-4 bg-gray-50 rounded-xl p-3 border border-black/5 italic">"{getBodyFromQ(q)}"</p>
                       )}
+
+                      {/* ✅ ADDED: Proposed Answer View */}
+                      <div className="bg-blue-50/30 rounded-xl p-4 border border-blue-100 mb-4">
+                        <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-2 block">Submitter's Proposed Answer</span>
+                        <p className="text-sm text-blue-700/80 leading-relaxed italic font-light">
+                          {q.initialAnswer ? `"${q.initialAnswer}"` : "No answer provided."}
+                        </p>
+                      </div>
+
+                      {/* ✅ ADDED: Correction Editor */}
+                      <div className="bg-white border-2 border-dashed border-blue-100 rounded-xl p-4 mb-4">
+                        <div className="flex items-center gap-2 mb-2 text-blue-600">
+                          <span className="text-[10px] font-bold uppercase tracking-widest">Final Polished Answer</span>
+                        </div>
+                        <textarea
+                          placeholder="Polish the answer here..."
+                          value={correctedAnswers[q.id] || ""}
+                          onChange={(e) => setCorrectedAnswers({ ...correctedAnswers, [q.id]: e.target.value })}
+                          className="w-full px-4 py-3 bg-gray-50/50 border border-black/10 rounded-xl text-sm focus:outline-none focus:border-blue-400 transition-all resize-none shadow-inner"
+                          rows={3}
+                        />
+                      </div>
 
                       <div className="flex items-center gap-1 mb-4">
                         <span className="text-xs font-semibold text-gray-400 mr-2 uppercase tracking-wide">Rate:</span>

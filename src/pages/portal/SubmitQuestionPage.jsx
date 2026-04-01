@@ -20,6 +20,7 @@ const SubmitQuestionPage = () => {
     packageId: "",
     difficulty: "",
     newTechName: "",    // used if technologyId === 'NEW'
+    initialAnswer: "",  // ✅ ADDED
   });
 
   useEffect(() => {
@@ -123,6 +124,7 @@ const SubmitQuestionPage = () => {
         packageId: Number(formData.packageId),
         package_id: Number(formData.packageId),
         difficulty: formData.difficulty,
+        initialAnswer: formData.initialAnswer, // ✅ ADDED
         status: "PENDING",
         submitted_by: user?.id || user?.userId,
       };
@@ -242,6 +244,25 @@ const SubmitQuestionPage = () => {
                 required
                 rows={5}
                 className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all resize-none"
+              />
+            </div>
+
+            {/* Proposed Answer */}
+            <div>
+              <label className="block text-xs font-bold text-[#0A1628] mb-2 uppercase tracking-wide">
+                Proposed Best Answer <span className="text-red-400">*</span>
+              </label>
+              <p className="text-xs text-gray-400 mb-3">
+                Provide the ideal response for this question. Tutors will review and polish it.
+              </p>
+              <textarea
+                name="initialAnswer"
+                value={formData.initialAnswer}
+                onChange={handleChange}
+                placeholder="Write the correct answer here..."
+                required
+                rows={6}
+                className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all resize-none bg-blue-50/20"
               />
             </div>
 

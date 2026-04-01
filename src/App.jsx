@@ -22,6 +22,9 @@ import SubmitQuestionPage from "./pages/portal/SubmitQuestionPage";
 import TutorReviewPage from "./pages/portal/TutorReviewPage";
 import AdminPanelPage from "./pages/portal/AdminPanelPage";
 import ProfilePage from "./pages/common/ProfilePage";
+import MySubmissionsPage from "./pages/portal/MySubmissionsPage";
+import MyAnswersPage from "./pages/portal/MyAnswersPage";
+import PortalQuestionDetailPage from "./pages/portal/PortalQuestionDetailPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RoleRoute from "./routes/RoleRoute";
@@ -182,6 +185,30 @@ function App() {
               }
             />
             <Route
+              path="/portal/submissions"
+              element={
+                <RoleRoute allowedRoles={["EMPLOYEE", "TUTOR", "ADMIN"]}>
+                  <MySubmissionsPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/portal/questions/:id"
+              element={
+                <RoleRoute allowedRoles={["EMPLOYEE", "TUTOR", "ADMIN"]}>
+                  <PortalQuestionDetailPage />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/portal/answers"
+              element={
+                <RoleRoute allowedRoles={["EMPLOYEE", "TUTOR", "ADMIN"]}>
+                  <MyAnswersPage />
+                </RoleRoute>
+              }
+            />
+            <Route
               path="/portal/review"
               element={
                 <RoleRoute allowedRoles={["TUTOR", "ADMIN"]}>
@@ -194,6 +221,17 @@ function App() {
               element={
                 <ProtectedRoute>
                   <RoleRoute allowedRoles={["ADMIN"]}>
+                    <AdminPanelPage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/portal/questions"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["TUTOR", "ADMIN"]}>
                     <AdminPanelPage />
                   </RoleRoute>
                 </ProtectedRoute>
