@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Bookmark, ThumbsUp, Star } from "lucide-react";
 import TechBadge from "../../components/common/TechBadge";
 import DifficultyBadge from "../../components/common/DifficultyBadge";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
+import axiosInstance from "../../api/axiosInstance";
+import toast from "react-hot-toast";
 
 const QuestionDetailPage = () => {
   const { id } = useParams();
@@ -16,19 +18,28 @@ const QuestionDetailPage = () => {
   const [newAnswer, setNewAnswer] = useState("");
   const [submittingAnswer, setSubmittingAnswer] = useState(false);
 
-  const fetchQuestion = async () => {
+  const [answers, setAnswers] = useState([]);
+
+  const fetchData = async () => {
+    setLoading(true);
     try {
-      const res = await axiosInstance.get(`/questions/${id}`);
-      setQuestion(res.data);
+      // 1. Fetch Question
+      const qRes = await axiosInstance.get(`/questions/${id}`);
+      setQuestion(qRes.data);
+
+      // 2. Fetch Answers (Separate call like Portal)
+      const aRes = await axiosInstance.get(`/answers/${id}`);
+      setAnswers(aRes.data);
     } catch (error) {
-      console.error("Failed to fetch question detail", error);
+      console.error("Failed to fetch detail", error);
+      toast.error("Could not find question details");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchQuestion();
+    fetchData();
   }, [id]);
 
   const handlePostAnswer = async (e) => {
@@ -37,14 +48,12 @@ const QuestionDetailPage = () => {
 
     setSubmittingAnswer(true);
     try {
-      await axiosInstance.post(`/questions/${id}/answers`, {
-        text: newAnswer,
+      await axiosInstance.post(`/answers/${id}`, {
         content: newAnswer,
-        user_id: user?.id || user?.userId,
       });
       toast.success("Answer posted successfully!");
       setNewAnswer("");
-      fetchQuestion(); // reload to show new answer
+      fetchData(); // reload to show new answer
     } catch (err) {
       toast.error("Failed to post answer");
     } finally {
@@ -69,8 +78,8 @@ const QuestionDetailPage = () => {
     );
   }
 
-  // Answer handling — fall back to empty list if no answers yet
-  const displayAnswers = question.answers || [];
+  // Answer handling
+  const displayAnswers = answers || [];
 
   return (
     <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
