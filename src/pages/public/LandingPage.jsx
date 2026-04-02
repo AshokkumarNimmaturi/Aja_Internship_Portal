@@ -79,13 +79,16 @@ const LandingPage = () => {
           axiosInstance.get("/questions?limit=3")
         ]);
         
-        // Take up to 5 packages
-        setPackages(Array.isArray(pkgRes.data) ? pkgRes.data.slice(0, 5) : []);
+        // Handle Spring Boot "Page" objects vs "List" arrays
+        const pkgData = pkgRes.data.content || pkgRes.data;
+        const quesData = quesRes.data.content || quesRes.data;
+
+        setPackages(Array.isArray(pkgData) ? pkgData.content || pkgData : []);
         
         // Take top 3 questions as samples OR use static if empty
-        const fetchedQues = Array.isArray(quesRes.data) ? quesRes.data.slice(0, 3) : [];
+        const fetchedQues = Array.isArray(quesData) ? quesData : [];
         if (fetchedQues.length > 0) {
-          setSampleQuestions(fetchedQues);
+          setSampleQuestions(fetchedQues.slice(0, 3));
         } else {
           // STATIC FALLBACK SAMPLES
           setSampleQuestions([
@@ -189,7 +192,7 @@ const LandingPage = () => {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {sampleQuestions.length > 0 ? sampleQuestions.map((q) => (
+          {Array.isArray(sampleQuestions) && sampleQuestions.length > 0 ? sampleQuestions.map((q) => (
             <div
               key={q.id}
               className="bg-white border border-black/8 rounded-2xl p-6 hover:-translate-y-1 hover:shadow-xl hover:border-blue-100 transition-all duration-300 cursor-pointer group"
@@ -253,7 +256,7 @@ const LandingPage = () => {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            {packages.length > 0 ? packages.map((pkg, i) => (
+            {Array.isArray(packages) && packages.length > 0 ? packages.map((pkg, i) => (
               <div
                 key={i}
                 className={`bg-white rounded-2xl p-5 border transition-all duration-300 hover:-translate-y-2 hover:shadow-xl cursor-pointer relative group

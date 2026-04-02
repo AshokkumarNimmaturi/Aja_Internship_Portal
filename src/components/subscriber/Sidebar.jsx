@@ -40,9 +40,9 @@ export const Sidebar = () => {
 
   const navItems = [
     { label: "Dashboard", icon: "🏠", path: "/dashboard" },
-    { label: "My Questions", icon: "📚", path: "/dashboard/questions" },
+    { label: "Questions", icon: "📚", path: "/dashboard/questions" },
     { label: "Bookmarks", icon: "🔖", path: "/dashboard/bookmarks" },
-    { label: "My Subscriptions", icon: "💳", path: "/dashboard/subscription" },
+    { label: "Subscription", icon: "💳", path: "/dashboard/subscription" },
     { label: "Profile", icon: "👤", path: "/dashboard/profile" },
   ];
 

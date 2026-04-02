@@ -12,6 +12,7 @@ import PackageDetailPage from "./pages/public/PackageDetailPage";
 import CheckoutPage from "./pages/public/CheckoutPage";
 import PaymentSuccessPage from "./pages/public/PaymentSuccessPage";
 import DashboardPage from "./pages/subscriber/DashboardPage";
+import QuestionsPage from "./pages/subscriber/QuestionsPage";
 import QuestionDetailPage from "./pages/subscriber/QuestionDetailPage";
 import ForgotPasswordPage from "./pages/public/ForgotPasswordPage";
 import ResetPasswordPage from "./pages/public/ResetPasswordPage";
@@ -97,7 +98,7 @@ function App() {
               path="/dashboard/questions"
               element={
                 <ProtectedRoute>
-                  <DashboardPage />
+                  <QuestionsPage />
                 </ProtectedRoute>
               }
             />

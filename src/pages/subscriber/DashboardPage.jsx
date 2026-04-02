@@ -1,342 +1,197 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import {
+import { 
+  BookOpen, 
+  BarChart3, 
+  Clock, 
+  CheckCircle, 
+  Star, 
   Search,
-  Bookmark,
-  MessageCircle,
-  Bell,
-  ChevronDown,
-  LogOut,
-  User,
-  CreditCard,
+  Filter,
+  Lock,
+  ArrowRight,
+  TrendingUp,
+  Award,
+  Zap,
+  RefreshCw
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
-import TechBadge from "../../components/common/TechBadge";
-import DifficultyBadge from "../../components/common/DifficultyBadge";
-import axiosInstance from "../../api/axiosInstance";
 import { Sidebar } from "../../components/subscriber/Sidebar";
-
-
-
-const ITEMS_PER_PAGE = 6;
+import axiosInstance from "../../api/axiosInstance";
+import TechBadge from "../../components/common/TechBadge";
 
 const DashboardPage = () => {
-  const { user, logout } = useAuth();
-  const [search, setSearch] = useState("");
-  const [difficulty, setDifficulty] = useState("ALL");
-  const [bookmarks, setBookmarks] = useState([]);
-  const [page, setPage] = useState(1);
+  const { user } = useAuth();
+  const [stats, setStats] = useState({
+    totalSolved: 0,
+    accuracy: 0,
+    currentStreak: 0,
+    nextGoalProgress: 0
+  });
+  const [recentQuestions, setRecentQuestions] = useState([]);
   const [subscription, setSubscription] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [questions, setQuestions] = useState([]);
-  const [loadingQuestions, setLoadingQuestions] = useState(false);
 
   useEffect(() => {
-    const fetchSubscription = async () => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
       try {
-        const res = await axiosInstance.get("/subscriptions/my");
+        const [subRes, qRes] = await Promise.all([
+          axiosInstance.get("/subscriptions/my").catch(() => ({ data: [] })),
+          axiosInstance.get("/questions/recent")
+        ]);
         
-        let activeSub = null;
-        if (Array.isArray(res.data) && res.data.length > 0) {
-          activeSub = res.data.find(sub => sub.status === "ACTIVE") || res.data[0];
-        } else if (res.data && !Array.isArray(res.data)) {
-          activeSub = res.data;
-        }
+        const subData = Array.isArray(subRes.data) ? subRes.data : (subRes.data ? [subRes.data] : []);
+        const activeSubRaw = subData.find(s => s.status?.toUpperCase() === "ACTIVE") || subData[0];
+        setSubscription(activeSubRaw && (activeSubRaw.endDate || activeSubRaw.expiryDate) ? activeSubRaw : null);
 
-        if (activeSub && activeSub.endDate) {
-          setSubscription(activeSub);
-        } else {
-          setSubscription(null);
-        }
+        // Derive allowed techs for filtering
+        const allowedTechs = subData.flatMap(s => {
+          const t = [];
+          if (s.technologyName) t.push(s.technologyName);
+          const pName = s.packageName || "";
+          const pType = s.packageType || "";
+          if (pName.includes("Backend") || pType === "BACKEND") t.push("Java", "Spring", "SpringBoot", "Node", "Backend", "Express", "Microservices");
+          if (pName.includes("Frontend") || pType === "FRONTEND") t.push("React", "Frontend", "JavaScript", "Redux", "Angular", "Vue", "CSS", "HTML");
+          return t;
+        });
+
+        // Safe filter for recent questions
+        const rawQs = qRes.data || [];
+        const filteredQs = (user?.role === "SUBSCRIBER") 
+          ? rawQs.filter(q => allowedTechs.includes(q.technologyName) || (q.packageType && allowedTechs.some(at => at.toUpperCase() === q.packageType.toUpperCase())))
+          : rawQs;
+
+        setRecentQuestions(filteredQs);
+        
+        // Mock stats for high-fidelity UI (can be connected to backend later)
+        setStats({
+          totalSolved: 124,
+          accuracy: 85,
+          currentStreak: 7,
+          nextGoalProgress: 65
+        });
       } catch (error) {
-        setSubscription(null);
+        console.error("Dashboard Data Error:", error);
       } finally {
         setLoading(false);
       }
     };
-    fetchSubscription();
+    fetchDashboardData();
   }, []);
 
-  useEffect(() => {
-    if (subscription) {
-      setLoadingQuestions(true);
-      // ✅ Fetch global questions (not just 'my' submitted ones)
-      axiosInstance.get("/questions")
-        .then(res => setQuestions(res.data.content || res.data))
-        .catch(err => console.error("Failed to load questions", err))
-        .finally(() => setLoadingQuestions(false));
-
-      // ✅ Fetch your real bookmarked question IDs
-      axiosInstance.get("/bookmarks/ids")
-        .then(res => setBookmarks(res.data))
-        .catch(err => console.error("Failed to load bookmark IDs", err));
-    }
-  }, [subscription]);
-
-  const handleLogout = () => {
-    logout();
-    window.location.href = "/";
-  };
-
-   const toggleBookmark = async (id) => {
-    try {
-      // ✅ Toggle with backend
-      await axiosInstance.post(`/bookmarks/${id}`);
-      setBookmarks((prev) =>
-        prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id],
-      );
-    } catch (err) {
-      console.error("Failed to toggle bookmark", err);
-    }
-  };
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Good morning";
-    if (hour < 17) return "Good afternoon";
-    return "Good evening";
-  };
-
-  // Filter questions
-  const filtered = questions.filter((q) => {
-    const techName = typeof q.technology === 'string' ? q.technology : (q.technology?.name || "");
-    const matchSearch =
-      q.title.toLowerCase().includes(search.toLowerCase()) ||
-      techName.toLowerCase().includes(search.toLowerCase());
-    const matchDiff = difficulty === "ALL" || q.difficulty === difficulty;
-    return matchSearch && matchDiff;
-  });
-
-  // Paginate
-  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
-  const paginated = filtered.slice(
-    (page - 1) * ITEMS_PER_PAGE,
-    page * ITEMS_PER_PAGE,
-  );
-
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
-      <Sidebar user={user} subscription={subscription} onLogout={handleLogout} />
-
-      {/* Main Content */}
-      <main className="flex-1 flex flex-col">
-        {/* Top Bar */}
-        <header className="bg-white border-b border-black/5 px-8 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-semibold text-[#0A1628]">
-              {getGreeting()}, {(user?.fullName || user?.name)?.split(" ")[0] || "there"} 👋
-            </h1>
-            <p className="text-xs text-gray-400 mt-0.5">
-              Here are your questions. Keep practising!
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button className="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
-              <Bell size={18} />
-              <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-red-400 rounded-full" />
-            </button>
-            <div className="flex items-center gap-2 px-3 py-2 border border-black/8 rounded-xl cursor-pointer hover:bg-gray-50 transition-all">
-              <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#0A1628] to-[#2563EB] text-white text-xs font-semibold flex items-center justify-center">
-                {(user?.fullName || user?.name)?.charAt(0)?.toUpperCase() || "U"}
-              </div>
-              <span className="text-sm text-gray-600">
-                {(user?.fullName || user?.name)?.split(" ")[0]}
-              </span>
-              <ChevronDown size={13} className="text-gray-300" />
-            </div>
-          </div>
-        </header>
-
-        {/* Content Area */}
-        <div className="flex-1 p-8">
-          {/* Search + Filter */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-6">
-            {/* Search Bar */}
-            <div className="relative flex-1">
-              <Search
-                size={15}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
-              />
-              <input
-                type="text"
-                placeholder="Search questions by title or technology..."
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                className="w-full pl-10 pr-4 py-3 bg-white border border-black/8 rounded-xl text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all"
-              />
-            </div>
-
-            {/* Difficulty Filter Chips */}
-            <div className="flex items-center gap-2">
-              {["ALL", "EASY", "MEDIUM", "HARD"].map((d) => (
-                <button
-                  key={d}
-                  onClick={() => {
-                    setDifficulty(d);
-                    setPage(1);
-                  }}
-                  className={`px-4 py-2.5 rounded-xl text-xs font-medium transition-all ${
-                    difficulty === d
-                      ? d === "ALL"
-                        ? "bg-[#0A1628] text-white"
-                        : d === "EASY"
-                          ? "bg-green-500 text-white"
-                          : d === "MEDIUM"
-                            ? "bg-amber-500 text-white"
-                            : "bg-red-500 text-white"
-                      : "bg-white border border-black/8 text-gray-500 hover:bg-gray-50"
-                  }`}
-                >
-                  {d}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Main Dashboard UI Based on Subscription */}
-          {subscription ? (
-            <>
-              {/* Results Count */}
-              {!loadingQuestions && (
-                <p className="text-xs text-gray-400 mb-4">
-                  Showing {paginated.length} of {filtered.length} questions
-                </p>
-              )}
-
-              {/* Questions Grid */}
-              {loadingQuestions ? (
-                <div className="flex items-center justify-center py-20 text-gray-500">
-                  <div className="flex items-center gap-2">
-                    <svg className="animate-spin h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    Loading your questions...
-                  </div>
-                </div>
-              ) : questions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-24 text-center bg-white border border-black/5 rounded-2xl w-full max-w-2xl mx-auto shadow-sm">
-                  <div className="text-5xl mb-5">📭</div>
-                  <h3 className="text-lg font-bold text-[#0A1628] mb-2 leading-snug">
-                    No questions to display
-                  </h3>
-                  <p className="text-sm text-gray-500 max-w-sm leading-relaxed">
-                    Questions for your package will automatically appear here once added by our expert tutors.
-                  </p>
-                </div>
-              ) : paginated.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mb-8">
-                  {paginated.map((q) => (
-                    <Link
-                      key={q.id}
-                      to={`/dashboard/questions/${q.id}`}
-                      className="block bg-white border border-black/8 rounded-2xl p-5 hover:border-blue-100 hover:-translate-y-1 hover:shadow-lg transition-all duration-200 cursor-pointer"
-                    >
-                      {/* Card Top */}
-                      <div className="flex items-start justify-between mb-3">
-                        <TechBadge tech={q.technology} />
-                        <button
-                          onClick={(e) => {
-                            e.preventDefault();
-                            toggleBookmark(q.id);
-                          }}
-                          className="transition-colors"
-                        >
-                          <Bookmark
-                            size={15}
-                            className={
-                              bookmarks.includes(q.id)
-                                ? "text-[#2563EB] fill-[#2563EB]"
-                                : "text-gray-200 hover:text-[#2563EB]"
-                            }
-                          />
-                        </button>
-                      </div>
-
-                      {/* Title */}
-                      <h3 className="text-sm font-semibold text-[#0A1628] leading-snug mb-4 line-clamp-2">
-                        {q.title}
-                      </h3>
-
-                      {/* Card Bottom */}
-                      <div className="flex items-center justify-between">
-                        <DifficultyBadge difficulty={q.difficulty} />
-                        <div className="flex items-center gap-1 text-gray-400 text-xs">
-                          <MessageCircle size={12} />
-                          <span>{q.answerCount} answers</span>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-20 text-center">
-                  <div className="text-4xl mb-4">🔍</div>
-                  <h3 className="text-lg font-semibold text-[#0A1628] mb-2">
-                    No questions found
-                  </h3>
-                  <p className="text-sm text-gray-400">
-                    Try a different search term or filter
-                  </p>
-                </div>
-              )}
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-center gap-2">
-                  <button
-                    onClick={() => setPage((p) => Math.max(1, p - 1))}
-                    disabled={page === 1}
-                    className="px-4 py-2 border border-black/8 rounded-xl text-sm text-gray-500 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                  >
-                    ← Previous
-                  </button>
-
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={`w-9 h-9 rounded-xl text-sm font-medium transition-all ${
-                        page === p
-                          ? "bg-[#0A1628] text-white"
-                          : "border border-black/8 text-gray-500 hover:bg-white"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={page === totalPages}
-                    className="px-4 py-2 border border-black/8 rounded-xl text-sm text-gray-500 hover:bg-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                  >
-                    Next →
-                  </button>
-                </div>
-              )}
-            </>
-          ) : !loading ? (
-            <div className="flex flex-col items-center justify-center py-20 mt-10 text-center bg-white border border-black/8 rounded-2xl w-full max-w-2xl mx-auto shadow-sm">
-              <div className="text-6xl mb-6">🔒</div>
-              <h3 className="text-xl font-semibold text-[#0A1628] mb-3">
-                Unlock Premium Questions
-              </h3>
-              <p className="text-sm text-gray-500 mb-8 max-w-sm leading-relaxed">
-                You need an active subscription to access our full interview question bank. Choose a package to start practising today!
+    <div className="flex min-h-screen bg-gray-50 font-sans overflow-hidden">
+      <Sidebar activeItem="Dashboard" />
+      
+      <main className="flex-1 p-8 overflow-y-auto">
+        <div className="max-w-6xl mx-auto">
+          {/* Header Section */}
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h1 className="text-3xl font-serif text-[#0A1628] mb-1">
+                Welcome back, {user?.fullName?.split(" ")[0] || "Subscriber"}! 🚀
+              </h1>
+              <p className="text-sm text-gray-400 font-light font-sans uppercase tracking-widest">
+                {subscription ? `${subscription.packageName} Plan Active` : "Choose a plan to unlock full potential"}
               </p>
-              <Link
-                to="/packages"
-                className="px-7 py-3.5 bg-[#2563EB] text-white text-sm font-semibold rounded-xl hover:bg-blue-700 transition shadow-sm"
-              >
-                Browse Packages
-              </Link>
             </div>
-          ) : (
-            <div className="flex items-center justify-center py-20">
-              <p className="text-gray-500">Loading your questions...</p>
+            
+            <div className="flex items-center gap-4">
+               <div className="bg-white border border-black/5 rounded-2xl px-4 py-2 flex items-center gap-3 shadow-sm">
+                  <div className="p-2 bg-amber-50 text-amber-500 rounded-lg"><Zap size={16} fill="currentColor" /></div>
+                  <div>
+                    <div className="text-sm font-bold text-[#0A1628]">{stats.currentStreak} Day Streak!</div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-widest">Consistency is key</div>
+                  </div>
+               </div>
             </div>
-          )}
+          </div>
+
+          {/* UI Cleanup: Removed hardcoded stats grid for Questions Solved, Accuracy, Rate, Rank */}
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column: Recent Activity & Question Bank */}
+            <div className="lg:col-span-2 space-y-8">
+              <div className="bg-white rounded-[40px] border border-black/5 p-8 shadow-sm">
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-xl font-serif text-[#0A1628]">Recent Questions</h2>
+                  <Link to="/portal/questions" className="text-xs font-bold text-blue-600 uppercase tracking-widest hover:underline flex items-center gap-1">
+                    Full Question Bank <ArrowRight size={14} />
+                  </Link>
+                </div>
+                
+                <div className="space-y-4">
+                  {loading ? (
+                    <div className="py-20 text-center"><div className="animate-spin text-blue-100 flex justify-center"><RefreshCw size={32} /></div></div>
+                  ) : Array.isArray(recentQuestions) && recentQuestions.length > 0 ? (
+                    recentQuestions.map(q => (
+                      <Link key={q.id} to={`/portal/question/${q.id}`} className="flex items-center justify-between p-5 rounded-3xl border border-black/5 hover:border-blue-100 hover:bg-blue-50/10 transition-all group">
+                         <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                              <Star size={18} />
+                            </div>
+                            <div>
+                               <h4 className="font-bold text-[#0A1628] text-sm mb-1 group-hover:text-blue-600 transition-colors">{q.title}</h4>
+                               <div className="flex items-center gap-2">
+                                  <TechBadge tech={q.technologyName} />
+                                  <span className="text-[10px] text-gray-300 font-bold uppercase tracking-widest">• {q.difficulty}</span>
+                               </div>
+                            </div>
+                         </div>
+                         <div className="text-gray-300 group-hover:text-blue-400 transform group-hover:translate-x-1 transition-all"><ArrowRight size={18} /></div>
+                      </Link>
+                    ))
+                  ) : (
+                     <div className="py-20 text-center bg-gray-50 rounded-3xl border border-dashed border-black/10">
+                       <p className="text-sm text-gray-400 font-serif italic font-light">No recently viewed questions.</p>
+                       <Link to="/dashboard/questions" className="text-[10px] text-blue-600 font-bold uppercase tracking-widest mt-2 block">Explore Question Bank</Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Right Column: Subscription & Goals */}
+            <div className="space-y-8">
+               {/* Subscription Card */}
+               <div className={`rounded-[40px] p-8 border shadow-sm ${subscription ? 'bg-gradient-to-br from-[#0A1628] to-[#1E3A5F] text-white border-transparent' : 'bg-white border-black/5'}`}>
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className={`p-3 rounded-2xl ${subscription ? 'bg-white/10 text-blue-300' : 'bg-blue-50 text-blue-600'}`}>
+                      <Star size={24} fill={subscription ? "currentColor" : "none"} />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-lg leading-tight">{subscription ? subscription.packageName : "Unlock Premium"}</h3>
+                      <p className={`text-[10px] font-bold uppercase tracking-widest ${subscription ? 'text-blue-200' : 'text-gray-400'}`}>
+                        {subscription ? 'Active Membership' : 'Practice with the best'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {!subscription ? (
+                    <>
+                      <p className="text-sm text-gray-500 mb-8 leading-relaxed italic">Get access to premium questions, mock interviews, and advanced curation analytics.</p>
+                      <Link to="/portal/packages" className="block w-full py-4 bg-[#0A1628] text-white rounded-2xl text-center text-xs font-bold uppercase tracking-widest hover:bg-blue-900 transition-all shadow-lg shadow-blue-900/10">Upgrade Now</Link>
+                    </>
+                  ) : (
+                    <>
+                      <div className="space-y-4 mb-8">
+                         <div className="flex justify-between text-xs">
+                            <span className="text-blue-200">Valid Until</span>
+                             <span className="font-mono">{new Date(subscription.endDate || subscription.expiryDate).toLocaleDateString()}</span>
+                         </div>
+                         <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
+                            <div className="h-full bg-blue-400 rounded-full" style={{ width: '45%' }} />
+                         </div>
+                      </div>
+                      <Link to="/dashboard/subscription" className="block w-full py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-2xl text-center text-xs font-bold uppercase tracking-widest hover:bg-white/20 transition-all">Manage Subscription</Link>
+                    </>
+                  )}
+               </div>
+
+               {/* UI Cleanup: Removed Learning Paths / Goals section as it was not being tracked */}
+            </div>
+          </div>
         </div>
       </main>
     </div>

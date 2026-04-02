@@ -33,7 +33,7 @@ export const PortalSidebar = ({ user, role, pendingCount = 0 }) => {
   const adminNav = [
     { label: "Dashboard", icon: "🏠", path: "/portal/dashboard" },
     { label: "Users", icon: "👥", path: "/portal/admin" },
-    { label: "Pending Review", icon: "⏳", path: "/portal/admin/review", badge: pendingCount },
+    { label: "Pending Review", icon: "⏳", path: "/portal/review", badge: pendingCount },
     { label: "Submit Question", icon: "✏️", path: "/portal/submit" },
     { label: "My Submissions", icon: "📋", path: "/portal/submissions" },
     { label: "Access Requests", icon: "🔑", path: "/portal/access" },
@@ -42,18 +42,28 @@ export const PortalSidebar = ({ user, role, pendingCount = 0 }) => {
     { label: "Profile", icon: "👤", path: "/portal/profile" },
   ];
 
-  const navItems = role === "ADMIN" ? adminNav : role === "TUTOR" ? tutorNav : employeeNav;
+  const subscriberNav = [
+    { label: "Dashboard", icon: "🏠", path: "/dashboard" },
+    { label: "Questions", icon: "📚", path: "/dashboard/questions" },
+    { label: "Bookmarks", icon: "🔖", path: "/dashboard/bookmarks" },
+    { label: "Subscription", icon: "💳", path: "/dashboard/subscription" },
+    { label: "Profile", icon: "👤", path: "/dashboard/profile" },
+  ];
+
+  const navItems = role === "ADMIN" ? adminNav : role === "TUTOR" ? tutorNav : role === "SUBSCRIBER" ? subscriberNav : employeeNav;
 
   const roleBadgeStyle = {
     ADMIN: "bg-indigo-500 text-white shadow-indigo-500/30",
     TUTOR: "bg-blue-500 text-white shadow-blue-500/30",
     EMPLOYEE: "bg-amber-500 text-white shadow-amber-500/30",
+    SUBSCRIBER: "bg-emerald-500 text-white shadow-emerald-500/30",
   };
 
   const roleLabels = {
     ADMIN: "AD",
     TUTOR: "TU",
-    EMPLOYEE: "EM"
+    EMPLOYEE: "EM",
+    SUBSCRIBER: "SB"
   };
 
   return (

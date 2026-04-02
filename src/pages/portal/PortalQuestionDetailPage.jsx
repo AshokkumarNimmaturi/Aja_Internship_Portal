@@ -9,7 +9,11 @@ import {
   Save, 
   X,
   Clock,
-  ThumbsUp
+  ThumbsUp,
+  Briefcase,
+  FileText,
+  ShieldCheck,
+  Zap
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
@@ -175,6 +179,14 @@ const PortalQuestionDetailPage = () => {
                     <div className="flex items-center gap-3">
                       <TechBadge tech={question.technologyName} />
                       <DifficultyBadge difficulty={question.difficulty} />
+                      {/* ✅ NEW: Client Name with Redaction support */}
+                      <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${
+                        question.clientName?.includes("REDACTED") 
+                        ? "bg-gray-50 text-gray-400 border-black/5" 
+                        : "bg-blue-50 text-blue-700 border-blue-100"
+                      }`}>
+                        <Briefcase size={10} /> {question.clientName || "General Interview"}
+                      </span>
                       <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 text-green-700 text-[10px] font-bold uppercase tracking-widest border border-green-200">
                         <CheckCircle size={10} /> {question.status}
                       </span>
@@ -206,6 +218,51 @@ const PortalQuestionDetailPage = () => {
               <p className="text-sm text-amber-800 leading-relaxed italic">"{question.rejectionReason}"</p>
             </div>
           )}
+
+          {/* Discussion & Mastery Section */}
+          <div className="mb-12">
+            <h2 className="text-xl font-bold text-[#0A1628] mb-6 flex items-center gap-2">
+              <MessageSquare size={20} className="text-blue-500" /> Mastery Discussion
+            </h2>
+            
+            <div className="flex flex-col gap-6">
+              {/* Proposed Answer (Original) */}
+              <div className="bg-white border border-black/5 rounded-[32px] p-8 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-1 h-full bg-gray-200 group-hover:bg-blue-400 transition-colors" />
+                <div className="flex items-center gap-3 mb-4">
+                   <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 border border-black/5">
+                      <FileText size={14} />
+                   </div>
+                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Your Proposed Explanation</span>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed italic">
+                  {question.initialAnswer || "No initial explanation provided."}
+                </p>
+              </div>
+
+              {/* Master Answer (Corrected) */}
+              {question.correctedAnswer && (
+                <div className="bg-[#0A1628] rounded-[32px] p-8 shadow-xl relative overflow-hidden group border border-white/5">
+                  <div className="absolute top-0 right-0 p-4 opacity-10">
+                     <ShieldCheck size={120} className="text-white" />
+                  </div>
+                  <div className="flex items-center gap-3 mb-4 relative z-10">
+                     <div className="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 border border-white/10">
+                        <Zap size={14} />
+                     </div>
+                     <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Tutor Verified Master Answer</span>
+                  </div>
+                  <p className="text-sm text-white/90 leading-relaxed font-medium relative z-10">
+                    {question.correctedAnswer}
+                  </p>
+                  <div className="mt-6 flex items-center gap-2 relative z-10">
+                     <span className="px-3 py-1 bg-blue-500 text-white text-[9px] font-bold uppercase tracking-widest rounded-full shadow-lg shadow-blue-500/20">Official Sync</span>
+                     <span className="text-[9px] font-bold text-white/30 uppercase tracking-widest ml-1 italic">Published to Storefront</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Answers Section */}
           <div className="mb-8">

@@ -21,7 +21,7 @@ const MyAnswersPage = () => {
     const fetchAnswers = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get("/api/answers/my");
+        const res = await axiosInstance.get("/answers/my");
         setAnswers(res.data);
       } catch (error) {
         console.error("Error fetching answers:", error);
@@ -67,7 +67,7 @@ const MyAnswersPage = () => {
                   <div className="w-8 h-8 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
                   <span className="text-sm text-gray-400 font-medium tracking-wide">Syncing your contributions...</span>
                </div>
-            ) : answers.length > 0 ? (
+            ) : Array.isArray(answers) && answers.length > 0 ? (
               answers.map((ans) => (
                 <div key={ans.id} className="bg-white border border-black/8 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all group">
                    <div className="flex items-start justify-between mb-4">
@@ -100,7 +100,7 @@ const MyAnswersPage = () => {
                          <span className="text-[10px] font-bold uppercase tracking-wider font-mono italic">Answered {formatDate(ans.createdAt)}</span>
                       </div>
                       
-                      <Link to={`/portal/questions`} className="flex items-center gap-1.5 text-xs font-bold text-[#0A1628] hover:text-blue-600 transition-colors uppercase tracking-widest">
+                      <Link to={`/portal/questions/${ans.questionId}`} className="flex items-center gap-1.5 text-xs font-bold text-[#0A1628] hover:text-blue-600 transition-colors uppercase tracking-widest">
                          View Discussion <ChevronRight size={14} />
                       </Link>
                    </div>
