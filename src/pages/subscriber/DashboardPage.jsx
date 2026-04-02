@@ -60,10 +60,16 @@ const DashboardPage = () => {
   useEffect(() => {
     if (subscription) {
       setLoadingQuestions(true);
-      axiosInstance.get("/questions/my")
-        .then(res => setQuestions(res.data))
+      // ✅ Fetch global questions (not just 'my' submitted ones)
+      axiosInstance.get("/questions")
+        .then(res => setQuestions(res.data.content || res.data))
         .catch(err => console.error("Failed to load questions", err))
         .finally(() => setLoadingQuestions(false));
+
+      // ✅ Fetch your real bookmarked question IDs
+      axiosInstance.get("/bookmarks/ids")
+        .then(res => setBookmarks(res.data))
+        .catch(err => console.error("Failed to load bookmark IDs", err));
     }
   }, [subscription]);
 
@@ -72,10 +78,16 @@ const DashboardPage = () => {
     window.location.href = "/";
   };
 
-  const toggleBookmark = (id) => {
-    setBookmarks((prev) =>
-      prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id],
-    );
+   const toggleBookmark = async (id) => {
+    try {
+      // ✅ Toggle with backend
+      await axiosInstance.post(`/bookmarks/${id}`);
+      setBookmarks((prev) =>
+        prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id],
+      );
+    } catch (err) {
+      console.error("Failed to toggle bookmark", err);
+    }
   };
 
   const getGreeting = () => {

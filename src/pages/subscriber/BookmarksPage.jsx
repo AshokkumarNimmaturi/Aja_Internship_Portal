@@ -1,42 +1,41 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Bookmark, MessageCircle, Search } from "lucide-react";
 import TechBadge from "../../components/common/TechBadge";
 import DifficultyBadge from "../../components/common/DifficultyBadge";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
+import axiosInstance from "../../api/axiosInstance";
 
-const mockBookmarks = [
-  {
-    id: 2,
-    title: "Explain the Spring Bean lifecycle and different scopes available.",
-    technology: "Spring Boot",
-    difficulty: "HARD",
-    answerCount: 8,
-  },
-  {
-    id: 5,
-    title: "Explain event bubbling and event delegation in JavaScript.",
-    technology: "JavaScript",
-    difficulty: "EASY",
-    answerCount: 20,
-  },
-  {
-    id: 9,
-    title: "What is the GIL in Python and how does it affect multithreading?",
-    technology: "Python",
-    difficulty: "HARD",
-    answerCount: 7,
-  },
-];
+// Mock data removed — using real API data 🚀
 
 const BookmarksPage = () => {
   const { user } = useAuth();
-  const [bookmarks, setBookmarks] = useState(mockBookmarks);
+  const [bookmarks, setBookmarks] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const removeBookmark = (id) => {
-    setBookmarks((prev) => prev.filter((b) => b.id !== id));
+  useEffect(() => {
+    const fetchBookmarks = async () => {
+      try {
+        const res = await axiosInstance.get("/bookmarks");
+        setBookmarks(res.data);
+      } catch (err) {
+        console.error("Failed to load bookmarks", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBookmarks();
+  }, []);
+
+  const removeBookmark = async (id) => {
+    try {
+      await axiosInstance.post(`/bookmarks/${id}`);
+      setBookmarks((prev) => prev.filter((b) => b.id !== id));
+    } catch (err) {
+      console.error("Failed to remove bookmark", err);
+    }
   };
 
   const filtered = bookmarks.filter((b) =>
