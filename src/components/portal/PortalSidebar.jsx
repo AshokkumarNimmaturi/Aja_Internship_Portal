@@ -1,13 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { LogOut } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import axiosInstance from "../../api/axiosInstance";
 
-export const PortalSidebar = ({ user, role, pendingCount = 0 }) => {
+export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) => {
   const [isHovered, setIsHovered] = useState(false);
+  const [livePendingCount, setLivePendingCount] = useState(initialCount);
   const location = useLocation();
   const { logout } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchPendingCount = async () => {
+      if (role === 'ADMIN' || role === 'TUTOR') {
+        try {
+          const res = await axiosInstance.get("/questions/pending");
+          const data = res.data.content || res.data;
+          setLivePendingCount(Array.isArray(data) ? data.length : 0);
+        } catch (err) {
+          console.error("Sidebar count fetch failed");
+        }
+      }
+    };
+
+    fetchPendingCount();
+    const interval = setInterval(fetchPendingCount, 60000); // Refetch every 60s
+    return () => clearInterval(interval);
+  }, [role]);
 
   const handleLogout = () => {
     logout();
@@ -23,7 +43,7 @@ export const PortalSidebar = ({ user, role, pendingCount = 0 }) => {
   ];
   const tutorNav = [
     { label: "Dashboard", icon: "🏠", path: "/portal/dashboard" },
-    { label: "Pending Review", icon: "⏳", path: "/portal/review", badge: pendingCount },
+    { label: "Pending Review", icon: "⏳", path: "/portal/review", badge: livePendingCount },
     { label: "Submit Question", icon: "✏️", path: "/portal/submit" },
     { label: "My Submissions", icon: "📋", path: "/portal/submissions" },
     { label: "Access Requests", icon: "🔑", path: "/portal/access" },
@@ -33,7 +53,7 @@ export const PortalSidebar = ({ user, role, pendingCount = 0 }) => {
   const adminNav = [
     { label: "Dashboard", icon: "🏠", path: "/portal/dashboard" },
     { label: "Users", icon: "👥", path: "/portal/admin" },
-    { label: "Pending Review", icon: "⏳", path: "/portal/review", badge: pendingCount },
+    { label: "Pending Review", icon: "⏳", path: "/portal/review", badge: livePendingCount },
     { label: "Submit Question", icon: "✏️", path: "/portal/submit" },
     { label: "My Submissions", icon: "📋", path: "/portal/submissions" },
     { label: "Access Requests", icon: "🔑", path: "/portal/access" },
@@ -68,15 +88,15 @@ export const PortalSidebar = ({ user, role, pendingCount = 0 }) => {
 
   return (
     <aside 
-      className={`shrink-0 bg-[#0A1628] min-h-screen flex flex-col transition-all duration-300 ease-in-out relative z-50 shadow-xl ${isHovered ? 'w-64' : 'w-[84px]'}`}
+      className={`shrink-0 bg-[#0A1628] h-screen sticky top-0 flex flex-col transition-all duration-300 ease-in-out relative z-50 shadow-xl ${isHovered ? 'w-64' : 'w-[84px]'}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Logo */}
       <div className="p-5 border-b border-white/10 h-28 flex flex-col justify-center shrink-0 overflow-hidden relative">
         <Link to="/" className="flex items-center gap-3 w-full">
-          <div className="w-10 h-10 bg-white/10 rounded-2xl flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
-            <span className="text-white text-xs font-bold tracking-wider">AIP</span>
+          <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shrink-0 border border-white/10 shadow-inner overflow-hidden">
+            <img src="/logo.png" alt="Aja logo" className="w-7 h-auto object-contain" />
           </div>
           <div className={`whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
             <div className="text-white text-sm font-bold tracking-tight leading-tight">
@@ -102,7 +122,7 @@ export const PortalSidebar = ({ user, role, pendingCount = 0 }) => {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-6 flex flex-col gap-2.5 overflow-x-hidden">
+      <nav className="flex-1 px-3 py-6 flex flex-col gap-2.5 overflow-y-auto scrollbar-hide overflow-x-hidden">
         {navItems.map((item) => {
           const isActive = location.pathname.includes(item.path);
           return (

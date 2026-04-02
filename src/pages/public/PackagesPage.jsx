@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { CheckCircle, ShieldCheck } from "lucide-react"; // ✅ ADDED
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
 import Navbar from "../../components/common/Navbar";
@@ -15,7 +16,9 @@ const PackagesPage = () => {
   const fetchPackages = async () => {
     try {
       const res = await axiosInstance.get("/packages");
-      setPackages(res.data);
+      // ✅ Handle Spring Boot "Page" objects vs "List" arrays
+      const data = res.data.content || res.data;
+      setPackages(Array.isArray(data) ? data : []);
     } catch (error) {
       toast.error("Failed to load packages");
     } finally {
@@ -37,101 +40,137 @@ const PackagesPage = () => {
   // ⏳ LOADING
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading packages...</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
+        <div className="w-12 h-12 border-4 border-blue-50 border-t-[#2563EB] rounded-full animate-spin mb-4" />
+        <p className="text-[#0A1628] font-bold text-sm uppercase tracking-widest">Aja Internship Portal</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F9FAFB]">
+    <div className="min-h-screen bg-white">
       <Navbar />
 
       {/* HEADER */}
-      <div className="text-center py-12 px-4">
-        <p className="text-blue-600 text-sm font-semibold tracking-wide">
-          SUBSCRIPTION PACKAGES
-        </p>
+      <div className="max-w-7xl mx-auto pt-32 pb-16 px-6 text-center">
+        <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-[#2563EB] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6">
+          Career Development Plans
+        </div>
 
-        <h1 className="text-4xl font-bold mt-2">
-          Choose Your Technology Track
+        <h1 className="font-serif text-5xl md:text-6xl text-[#0A1628] leading-tight mb-6">
+          Your <span className="text-[#2563EB] italic font-serif">Last Stop</span> <br />
+          For Interview Success
         </h1>
 
-        <p className="text-gray-500 mt-2">
-          Time-limited access to full question banks. Start from ₹299.
+        <p className="text-gray-500 text-lg font-light max-w-3xl mx-auto mb-12 leading-relaxed">
+          If you came here, it means you are preparing for an interview or 
+          looking for an internship. <span className="text-[#0A1628] font-semibold">For both, this is your last stop.</span> Buy our 
+          packages to know what experts are asking in interviews, and our team 
+          will contact you once you've registered with us.
         </p>
-      </div>
 
-      {/* DURATION SELECTOR */}
-      <div className="flex justify-center gap-3 mb-10">
-        {[30, 90, 180].map((d) => (
-          <button
-            key={d}
-            onClick={() => setSelectedDuration(d)}
-            className={`px-5 py-2 rounded-full text-sm font-medium transition ${
-              selectedDuration === d
-                ? "bg-[#0A1628] text-white"
-                : "bg-gray-200 text-gray-700"
-            }`}
-          >
-            {d} Days
-          </button>
-        ))}
-      </div>
-
-      {/* EMPTY STATE */}
-      {packages.length === 0 ? (
-        <p className="text-center text-gray-500">
-          No packages available
-        </p>
-      ) : (
-        <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-6 pb-16">
-          {packages.map((pkg, index) => (
-            <div
-              key={pkg.id}
-              className={`bg-white border rounded-2xl p-6 shadow-sm hover:shadow-xl transition relative ${
-                index === 1 ? "border-blue-500 scale-105" : ""
+        {/* DURATION SELECTOR - Polished Pill Toggle */}
+        <div className="inline-flex p-1.5 bg-gray-100/80 backdrop-blur-sm rounded-2xl border border-gray-200">
+          {[30, 90, 180].map((d) => (
+            <button
+              key={d}
+              onClick={() => setSelectedDuration(d)}
+              className={`px-8 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
+                selectedDuration === d
+                  ? "bg-[#0A1628] text-white shadow-lg"
+                  : "text-gray-500 hover:text-[#0A1628]"
               }`}
             >
-              {/* MOST POPULAR */}
-              {index === 1 && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs px-3 py-1 rounded-full">
-                  Most Popular
-                </div>
-              )}
-
-              <h2 className="text-lg font-semibold">{pkg.name}</h2>
-
-              <p className="text-sm text-gray-500 mt-2">
-                {pkg.description}
-              </p>
-
-              {/* PRICE */}
-              <div className="mt-5 text-3xl font-bold text-[#0A1628]">
-                ₹{getPrice(pkg)}
-                <span className="text-sm text-gray-400">
-                  {" "} / {selectedDuration} days
-                </span>
-              </div>
-
-              {/* TECH */}
-              {pkg.technologyName && (
-                <p className="text-xs text-gray-400 mt-2">
-                  {pkg.technologyName}
-                </p>
-              )}
-
-              {/* BUTTON */}
-              <button
-                onClick={() => navigate(`/packages/${pkg.id}`)} // ✅ FIXED
-                className="mt-6 w-full py-3 bg-[#0A1628] text-white rounded-xl hover:bg-[#0F2340] transition"
-              >
-                Get Access
-              </button>
-            </div>
+              {d} Days Access
+            </button>
           ))}
         </div>
-      )}
+      </div>
+
+      {/* PACKAGES GRID */}
+      <section className="max-w-7xl mx-auto px-6 pb-32">
+        {packages.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed border-gray-100 rounded-[3rem]">
+            <p className="text-gray-400 font-medium">Coming soon: New technology tracks</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {packages.map((pkg, index) => {
+              const isPopular = index === 1; // Standard is usually middle
+              const isPremium = index === packages.length - 1 && index > 1;
+
+              return (
+                <div
+                  key={pkg.id}
+                  className={`relative group flex flex-col p-6 rounded-3xl transition-all duration-500 hover:-translate-y-1 
+                    ${isPopular 
+                      ? "bg-white border-2 border-[#2563EB] shadow-2xl shadow-blue-200" 
+                      : isPremium 
+                        ? "bg-[#0A1628] text-white shadow-2xl shadow-slate-900/40" 
+                        : "bg-white border border-gray-100 shadow-xl shadow-gray-200/50"}`}
+                >
+                  {isPopular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2563EB] text-white text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+                      Most Popular Path
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between mb-4">
+                     <div className={`text-3xl ${!isPremium && "text-[#2563EB]"}`}>
+                        {index === 0 ? "⚙️" : index === 1 ? "⚛️" : index === 2 ? "☁️" : "☕"}
+                     </div>
+                     <div className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider ${isPremium ? "bg-white/10 text-white" : "bg-blue-50 text-[#2563EB]"}`}>
+                        {pkg.technologyName || "Core Tech"}
+                     </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold mb-2">{pkg.name}</h3>
+                  <p className={`text-xs mb-5 font-light leading-relaxed line-clamp-2 ${isPremium ? "text-white/60" : "text-gray-500"}`}>
+                    {pkg.description || "Master core concepts and advanced interview questions."}
+                  </p>
+
+                  <div className="mt-auto">
+                    <div className="flex items-baseline gap-1 mb-5">
+                      <span className="text-3xl font-bold">₹{getPrice(pkg)}</span>
+                      <span className={`text-[10px] font-medium ${isPremium ? "text-white/40" : "text-gray-400"}`}>
+                        / {selectedDuration} Days
+                      </span>
+                    </div>
+
+                    <ul className="space-y-3 mb-6">
+                      {[
+                        "500+ Verified Questions",
+                        "Expert Tutor Reviews",
+                        "Career Path Guidance",
+                        "Full-time Hiring Support"
+                      ].map((feature, fIdx) => (
+                        <li key={fIdx} className="flex items-center gap-2.5">
+                          <CheckCircle size={14} className={isPremium ? "text-white/40" : "text-[#2563EB]"} />
+                          <span className={`text-[11px] font-medium ${isPremium ? "text-white/70" : "text-gray-600"}`}>
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      onClick={() => navigate(`/checkout/${pkg.id}?days=${selectedDuration}`)}
+                      className={`w-full py-3 rounded-xl text-xs font-bold transition-all duration-300 hover:scale-[1.02] active:scale-100 shadow-lg
+                        ${isPremium 
+                          ? "bg-white text-[#0A1628] hover:bg-gray-100 shadow-white/5" 
+                          : isPopular 
+                            ? "bg-[#2563EB] text-white hover:bg-blue-700 shadow-blue-200" 
+                            : "bg-[#0A1628] text-white hover:bg-[#1a2e4d] shadow-slate-200"}`}
+                    >
+                      Begin Your Journey
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </section>
 
       <Footer />
     </div>

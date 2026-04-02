@@ -54,15 +54,15 @@ export const Sidebar = () => {
 
   return (
     <aside 
-      className={`shrink-0 bg-white border-r border-black/5 min-h-screen flex flex-col transition-all duration-300 ease-in-out relative z-50 shadow-sm ${isHovered ? 'w-64' : 'w-[84px]'}`}
+      className={`shrink-0 bg-white border-r border-black/5 h-screen sticky top-0 flex flex-col transition-all duration-300 ease-in-out relative z-50 shadow-sm ${isHovered ? 'w-64' : 'w-[84px]'}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
       {/* Logo */}
       <div className="p-5 border-b border-black/5 h-[84px] flex items-center shrink-0 overflow-hidden">
         <Link to="/" className="flex items-center gap-3 w-full">
-          <div className="w-10 h-10 shrink-0 bg-[#0A1628] rounded-2xl flex items-center justify-center transition-all shadow-md">
-            <span className="text-white text-xs font-bold tracking-wider">AIP</span>
+          <div className="w-10 h-10 shrink-0 bg-[#0A1628] rounded-2xl flex items-center justify-center transition-all shadow-md overflow-hidden">
+            <img src="/logo.png" alt="Aja logo" className="w-7 h-auto object-contain brightness-0 invert" />
           </div>
           <div className={`whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
             <div className="text-sm font-bold text-[#0A1628] leading-tight">
@@ -76,7 +76,7 @@ export const Sidebar = () => {
       </div>
 
       {/* Nav Items */}
-      <nav className="flex-1 px-3 py-6 flex flex-col gap-2.5 overflow-x-hidden">
+      <nav className="flex-1 px-3 py-6 flex flex-col gap-2.5 overflow-y-auto scrollbar-hide overflow-x-hidden">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path || (item.path !== '/dashboard' && location.pathname.includes(item.path));
           

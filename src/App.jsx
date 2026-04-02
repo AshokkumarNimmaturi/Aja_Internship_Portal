@@ -26,6 +26,7 @@ import ProfilePage from "./pages/common/ProfilePage";
 import MySubmissionsPage from "./pages/portal/MySubmissionsPage";
 import MyAnswersPage from "./pages/portal/MyAnswersPage";
 import PortalQuestionDetailPage from "./pages/portal/PortalQuestionDetailPage";
+import PrivacyPolicyPage from "./pages/public/PrivacyPolicyPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RoleRoute from "./routes/RoleRoute";
@@ -42,6 +43,7 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
             {/* We will add more routes here as we build each page */}
 

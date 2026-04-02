@@ -81,7 +81,7 @@ const DashboardPage = () => {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       <Sidebar activeItem="Dashboard" />
       
       <main className="flex-1 p-8 overflow-y-auto">

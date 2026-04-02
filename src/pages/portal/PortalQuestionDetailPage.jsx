@@ -120,7 +120,7 @@ const PortalQuestionDetailPage = () => {
                   ["TUTOR", "ADMIN"].includes(user?.role?.toUpperCase());
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       <PortalSidebar user={user} role={user?.role || "EMPLOYEE"} activeItem="My Submissions" />
 
       <main className="flex-1 p-8 overflow-y-auto">

@@ -120,145 +120,182 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex font-sans">
-      {/* LEFT PANEL */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#0A1628] flex-col justify-between p-12">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-            <span className="text-white text-sm font-bold">AIP</span>
-          </div>
+    <div className="min-h-screen flex font-sans bg-gray-50">
+      {/* LEFT PANEL: Branding & Visuals */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0A1628] via-[#112236] to-[#2563EB] flex-col justify-between p-16 relative overflow-hidden">
+        <div className="absolute top-[-100px] right-[-100px] w-80 h-80 bg-white/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+
+        <Link to="/" className="flex items-center gap-4 relative z-10">
+          <img src="/logo.png" alt="Aja" className="h-10 w-auto brightness-0 invert" />
+          <div className="h-8 w-px bg-white/20 mx-1" />
           <div>
-            <div className="text-white text-sm font-semibold">
+            <div className="text-white text-sm font-bold tracking-tight">
               Aja Internship Portal
             </div>
-            <div className="text-white/40 text-xs">Interview Question Bank</div>
+            <div className="text-blue-200/60 text-[10px] font-bold uppercase tracking-widest">
+              Aja Consulting Services LLP
+            </div>
           </div>
         </Link>
 
-        <div>
-          <h2 className="text-4xl text-white mb-4">
-            Start Your Journey
-            <br />
-            <span className="text-[#2563EB]">To Interview Success</span>
+        <div className="relative z-10">
+          <h2 className="text-5xl font-serif text-white leading-tight mb-8">
+            Build Your <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 font-bold italic">
+              Future In Tech.
+            </span> <br />
+            Join Us.
           </h2>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6 max-w-sm">
             {[
-              "Access 500+ real interview questions",
-              "Reviewed by expert tutors",
-              "Choose your technology track",
-              "Start from just ₹299",
-            ].map((text, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <CheckCircle size={16} className="text-[#2563EB]" />
-                <span className="text-white/60 text-sm">{text}</span>
+              { t: "9-Month Paid Internship", d: "Hands-on experience with core IT projects." },
+              { t: "Employment Pipeline", d: "Top performers get full-time offers at Aja." },
+              { t: "Course Track Included", d: "Structured learning paths for every role." },
+            ].map((item, i) => (
+              <div key={i} className="flex gap-4 group">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                  <CheckCircle size={18} className="text-blue-400" />
+                </div>
+                <div>
+                  <div className="text-white font-semibold text-sm">{item.t}</div>
+                  <div className="text-white/40 text-xs mt-0.5">{item.d}</div>
+                </div>
               </div>
             ))}
           </div>
         </div>
+
+        <div className="text-white/30 text-[10px] uppercase tracking-widest font-bold">
+          © 2026 AJA CONSULTING SERVICES LLP
+        </div>
       </div>
 
-      {/* RIGHT PANEL */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-white">
-        <div className="w-full max-w-md">
-          <h1 className="text-2xl font-semibold mb-2">Create Your Account</h1>
-          
-          {/* AJA EMPLOYEE NOTICE */}
-          <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-2xl mb-6">
-            <Info size={18} className="text-[#2563EB] shrink-0 mt-0.5" />
-            <p className="text-xs text-blue-700 leading-relaxed font-medium">
-              If you are an employee of <span className="font-bold">Aja Consulting Services LLP</span>, please login with the credentials given by your administration.
+      {/* RIGHT PANEL: Register Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16">
+        <div className="w-full max-w-md bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 border border-gray-100">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-[#0A1628] tracking-tight mb-2">
+              Create Account
+            </h1>
+            <p className="text-gray-400 text-xs font-light mb-6">
+              Join the portal to start your professional resource access.
             </p>
+            
+            {/* INTERNAL EMPLOYEE NOTICE */}
+            <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
+              <p className="text-[10px] text-blue-700 leading-relaxed font-bold uppercase tracking-wider mb-1">
+                Internal Employee Notice
+              </p>
+              <p className="text-xs text-blue-600 leading-relaxed">
+                If you are an <span className="font-bold">Aja internal employee</span>, please login with the credentials given by your administration.
+              </p>
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            <input
-              type="text"
-              name="fullName"
-              value={formData.fullName}
-              onChange={handleChange}
-              placeholder="Full Name"
-              className="px-4 py-3 border rounded-xl"
-            />
-
-            <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              placeholder="Email"
-              className="px-4 py-3 border rounded-xl"
-            />
-
-            <input
-              type="tel"
-              name="phone"
-              value={formData.phone}
-              onChange={handleChange}
-              placeholder="Phone (optional)"
-              className="px-4 py-3 border rounded-xl"
-            />
-
-            {/* PASSWORD */}
-            <div className="relative">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Full Name</label>
               <input
-                type={showPassword ? "text" : "password"}
-                name="password"
-                value={formData.password}
+                type="text"
+                name="fullName"
+                value={formData.fullName}
                 onChange={handleChange}
-                placeholder="Password"
-                className="px-4 py-3 border rounded-xl w-full"
+                placeholder="John Doe"
+                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-3"
-              >
-                {showPassword ? <EyeOff /> : <Eye />}
-              </button>
             </div>
 
-            {/* CONFIRM */}
-            <div className="relative">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Email Address</label>
               <input
-                type={showConfirm ? "text" : "password"}
-                name="confirmPassword"
-                value={formData.confirmPassword}
+                type="email"
+                name="email"
+                value={formData.email}
                 onChange={handleChange}
-                placeholder="Confirm Password"
-                className="px-4 py-3 border rounded-xl w-full"
+                placeholder="name@company.com"
+                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
               />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-3 top-3"
-              >
-                {showConfirm ? <EyeOff /> : <Eye />}
-              </button>
             </div>
 
-            <label className="flex gap-2 text-sm">
+            <div className="space-y-2">
+              <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Phone (Optional)</label>
+              <input
+                type="tel"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                placeholder="10-digit number"
+                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+                  />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-4 text-gray-400">
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Confirm</label>
+                <div className="relative">
+                  <input
+                    type={showConfirm ? "text" : "password"}
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleChange}
+                    placeholder="••••••••"
+                    className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+                  />
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-4 text-gray-400">
+                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <label className="flex items-center gap-3 p-1 cursor-pointer group">
               <input
                 type="checkbox"
                 name="agreed"
                 checked={formData.agreed}
                 onChange={handleChange}
+                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
               />
-              I agree to Terms & Privacy
+              <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
+                I agree to the <span className="text-blue-600 font-bold hover:underline">Terms of Service</span> and <span className="text-blue-600 font-bold hover:underline">Privacy Policy</span>
+              </span>
             </label>
 
             <button
               type="submit"
               disabled={loading}
-              className="py-3 bg-[#0A1628] text-white rounded-xl"
+              className="w-full mt-2 py-4 bg-[#0A1628] text-white font-bold rounded-2xl hover:bg-blue-700 hover:scale-[1.02] active:scale-100 shadow-xl shadow-blue-900/10 transition-all disabled:opacity-60 disabled:scale-100"
             >
-              {loading ? "Creating..." : "Register"}
+              {loading ? (
+                 <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Creating...</span>
+                 </div>
+              ) : "Create Professional Account"}
             </button>
 
-            <p className="text-sm text-center">
+            <p className="text-sm text-center text-gray-500 mt-2">
               Already have an account?{" "}
-              <Link to="/login" className="text-blue-500">
-                Login
+              <Link to="/login" className="text-blue-600 font-bold hover:underline">
+                Login here
               </Link>
             </p>
           </form>
