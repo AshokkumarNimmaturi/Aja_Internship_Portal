@@ -44,14 +44,14 @@ const MyAnswersPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden py-10">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       <PortalSidebar 
         user={user} 
         role={user?.role || "EMPLOYEE"} 
         activeItem="My Answers" 
       />
 
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 p-8 py-10 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="mb-10">

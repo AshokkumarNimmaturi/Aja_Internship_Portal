@@ -73,9 +73,9 @@ const QuestionDetailPage = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden py-10">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       <Sidebar activeItem="Questions" />
-      <main className="flex-1 p-10 overflow-y-auto max-w-5xl mx-auto w-full">
+      <main className="flex-1 p-10 py-10 overflow-y-auto max-w-5xl mx-auto w-full">
         {/* Elite Breadcrumb */}
         <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-10 transition-all">
           <Link to="/dashboard" className="hover:text-blue-600 transition-colors">Command</Link>

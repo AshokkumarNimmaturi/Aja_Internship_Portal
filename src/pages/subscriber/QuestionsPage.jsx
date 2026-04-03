@@ -81,10 +81,10 @@ const QuestionsPage = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans overflow-hidden py-10">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       <Sidebar activeItem="Questions" />
       
-      <main className="flex-1 p-8 overflow-y-auto w-full">
+      <main className="flex-1 p-8 py-10 overflow-y-auto w-full">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">

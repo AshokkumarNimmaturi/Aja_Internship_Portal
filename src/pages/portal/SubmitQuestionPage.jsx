@@ -100,10 +100,10 @@ const SubmitQuestionPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden py-10">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       <PortalSidebar user={user} role={user?.role} activeItem="Submit Intel" />
 
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 p-8 py-10 overflow-y-auto">
         <div className="max-w-4xl mx-auto pb-20">
           {/* Header */}
           <div className="mb-10">

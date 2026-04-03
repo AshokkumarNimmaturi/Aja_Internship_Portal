@@ -109,8 +109,9 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
   };
 
   return (
+    <>
     <aside 
-      className={`shrink-0 bg-[#0A1628] h-screen sticky top-0 flex flex-col transition-all duration-300 ease-in-out relative z-50 shadow-xl ${isHovered ? 'w-64' : 'w-[84px]'}`}
+      className={`bg-[#0A1628] h-screen fixed left-0 top-0 flex flex-col transition-all duration-300 ease-in-out z-50 shadow-xl ${isHovered ? 'w-64' : 'w-[84px]'}`}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -207,6 +208,9 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
         </div>
       </div>
     </aside>
+    {/* Sidebar Spacer to maintain flex layout space while sidebar is fixed */}
+    <div className={`shrink-0 transition-all duration-300 ${isHovered ? 'w-64' : 'w-[84px]'}`} />
+    </>
   );
 };
 

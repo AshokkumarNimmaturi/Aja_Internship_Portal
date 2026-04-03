@@ -42,11 +42,11 @@ const BookmarksPage = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden py-10">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       <Sidebar />
 
       {/* Main */}
-      <main className="flex-1 p-8 h-screen overflow-y-auto">
+      <main className="flex-1 p-8 py-10 overflow-y-auto">
         <div className="mb-8">
           <h1 className="font-serif text-3xl text-[#0A1628] mb-1">Bookmarks</h1>
           <p className="text-sm text-gray-400 font-light">

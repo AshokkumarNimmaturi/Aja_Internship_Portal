@@ -146,10 +146,10 @@ const ProfilePage = ({ isPortal = false }) => {
     : <Sidebar />;
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden py-10">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
       {SidebarComponent}
 
-      <main className="flex-1 p-8 overflow-y-auto">
+      <main className="flex-1 p-8 py-10 overflow-y-auto">
         <div className="max-w-3xl mx-auto">
           {/* Hero Avatar Card */}
           <div className="bg-gradient-to-br from-[#0A1628] to-[#1a3a6b] rounded-2xl p-8 mb-8 flex items-center gap-6 shadow-lg shadow-blue-900/10 border border-white/5">
