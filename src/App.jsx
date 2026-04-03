@@ -237,7 +237,7 @@ function App() {
               path="/portal/questions"
               element={
                 <ProtectedRoute>
-                  <RoleRoute allowedRoles={["TUTOR", "ADMIN"]}>
+                  <RoleRoute allowedRoles={["EMPLOYEE", "TUTOR", "ADMIN"]}>
                     <AdminPanelPage />
                   </RoleRoute>
                 </ProtectedRoute>

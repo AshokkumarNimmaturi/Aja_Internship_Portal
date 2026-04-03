@@ -348,11 +348,11 @@ const AdminPanelPage = () => {
              <div className="bg-white rounded-[40px] border border-black/8 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                  <table className="w-full text-left font-sans">
                    <thead className="bg-gray-50/50 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-black/5">
-                     <tr><th className="px-8 py-5">Technical Intelligence</th><th className="px-8 py-5">Core Technology</th><th className="px-8 py-5">Sync State</th></tr>
+                     <tr><th className="px-8 py-5">Intelligence Packet Identification</th><th className="px-8 py-5">Core Technology</th><th className="px-8 py-5">Sync State</th></tr>
                    </thead>
                    <tbody className="divide-y divide-black/5 text-sm">
                       {allQuestions.map(q => (
-                        <tr key={q.id} className="group hover:bg-gray-50/80 transition-all">
+                        <tr key={q.id} className="group hover:bg-gray-50/80 transition-all cursor-pointer" onClick={() => (window.location.href = `/portal/questions/${q.id}`)}>
                           <td className="px-8 py-6">
                             <div className="font-black text-[#0A1628] uppercase tracking-tight group-hover:text-blue-600 transition-colors">{q.title}</div>
                             <div className="text-[11px] text-blue-500 italic font-bold uppercase tracking-widest">{q.clientName || "General Intake"}</div>

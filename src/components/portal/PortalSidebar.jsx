@@ -56,6 +56,7 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
 
   const employeeNav = [
     { label: "Dashboard", icon: <HiHome size={22} />, path: "/portal/dashboard" },
+    { label: "Global Intel", icon: <HiInboxStack size={22} />, path: "/portal/questions" }, // ✅ NEW: Intelligence Directory
     { label: "Submit Question", icon: <HiPencilSquare size={22} />, path: "/portal/submit" },
     { label: "My Submissions", icon: <HiClipboardDocumentList size={22} />, path: "/portal/submissions" },
     { label: "My Answers", icon: <HiChatBubbleLeftEllipsis size={22} />, path: "/portal/answers" },
@@ -64,14 +65,15 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
   const tutorNav = [
     { label: "Dashboard", icon: <HiHome size={22} />, path: "/portal/dashboard" },
     { label: "Pending Review", icon: <HiClock size={22} />, path: "/portal/review", badge: livePendingCount },
+    { label: "Global Intel", icon: <HiInboxStack size={22} />, path: "/portal/questions" }, // ✅ SYNC: Consistent Label
     { label: "Submit Question", icon: <HiPencilSquare size={22} />, path: "/portal/submit" },
     { label: "My Submissions", icon: <HiClipboardDocumentList size={22} />, path: "/portal/submissions" },
     { label: "Access Requests", icon: <HiKey size={22} />, path: "/portal/access" },
-    { label: "All Questions", icon: <HiInboxStack size={22} />, path: "/portal/questions" },
     { label: "Profile", icon: <HiUser size={22} />, path: "/portal/profile" },
   ];
   const adminNav = [
     { label: "Dashboard", icon: <HiHome size={22} />, path: "/portal/dashboard" },
+    { label: "Global Intel", icon: <HiInboxStack size={22} />, path: "/portal/questions" }, // ✅ NEW: Intelligence Directory for Admin
     { label: "Users", icon: <HiUsers size={22} />, path: "/portal/admin" },
     { label: "Pending Review", icon: <HiClock size={22} />, path: "/portal/review", badge: livePendingCount },
     { label: "Submit Question", icon: <HiPencilSquare size={22} />, path: "/portal/submit" },

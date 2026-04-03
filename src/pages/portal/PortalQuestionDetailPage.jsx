@@ -236,15 +236,15 @@ const PortalQuestionDetailPage = () => {
                    <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-300 border border-black/5 shadow-inner">
                       <HiDocumentText size={20} />
                    </div>
-                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Your Proposed Explanation</span>
+                   <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Initial Intel Explanation</span>
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed italic font-light font-sans">
                   {question.initialAnswer || "No initial explanation provided."}
                 </p>
               </div>
 
-              {/* Master Answer */}
-              {question.correctedAnswer && (
+              {/* Master Answer Section — Elite Sync: officialAnswer */}
+              {question.officialAnswer && (
                 <div className="bg-[#0A1628] rounded-[40px] p-9 shadow-2xl relative overflow-hidden group border border-white/5 animate-in zoom-in duration-500">
                   <div className="absolute top-0 right-0 p-8 opacity-5">
                      <HiShieldCheck size={160} className="text-white" />
@@ -253,13 +253,13 @@ const PortalQuestionDetailPage = () => {
                      <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400 border border-white/10 shadow-lg">
                         <HiBolt size={20} />
                      </div>
-                     <span className="text-[11px] font-black text-blue-400 uppercase tracking-[0.2em]">Tutor Verified Master Answer</span>
+                     <span className="text-[11px] font-black text-blue-400 uppercase tracking-[0.2em]">Verified Master Answer</span>
                   </div>
                   <p className="text-base text-white/95 leading-relaxed font-medium relative z-10 italic">
-                    "{question.correctedAnswer}"
+                    "{question.officialAnswer}"
                   </p>
                   <div className="mt-8 flex items-center gap-3 relative z-10">
-                     <span className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-xl shadow-blue-600/30">Storefront Sync Active</span>
+                     <span className="px-4 py-1.5 bg-blue-600 text-white text-[10px] font-black uppercase tracking-widest rounded-full shadow-xl shadow-blue-600/30">Vault Sync Active</span>
                      <div className="h-1 flex-1 bg-white/5 rounded-full" />
                   </div>
                 </div>
@@ -317,7 +317,7 @@ const PortalQuestionDetailPage = () => {
 
             <div className="flex flex-col gap-6">
               {answers.length > 0 ? answers.map((answer) => (
-                <div key={answer.id} className={`bg-white border rounded-[32px] p-7 shadow-sm hover:shadow-md transition-all relative overflow-hidden group ${answer.accepted ? 'border-green-200' : 'border-black/5'}`}>
+                <div key={answer.id} className={`bg-white border rounded-[32px] p-7 shadow-sm hover:shadow-md transition-all relative overflow-hidden group ${answer.accepted ? 'border-green-200 ring-2 ring-green-100' : 'border-black/5'}`}>
                   {answer.accepted && <div className="absolute top-0 left-0 w-1.5 h-full bg-green-500" />}
                   <div className="flex items-start justify-between mb-5">
                     <div className="flex items-center gap-4">
@@ -327,13 +327,32 @@ const PortalQuestionDetailPage = () => {
                       <div>
                         <div className="text-sm font-bold text-[#0A1628] mb-0.5">{answer.authorName || "Anonymous Contributor"}</div>
                         <div className="text-[9px] font-black uppercase tracking-[0.1em] text-gray-300">
-                           {answer.accepted ? <span className="text-green-500">🏆 Verified Master Solution</span> : 'Expert Submission'}
+                           {answer.accepted ? <span className="text-green-500 flex items-center gap-1"><HiCheckCircle /> Verified Master Solution</span> : 'Expert Submission'}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-2xl border border-black/5 text-gray-400 shadow-inner group-hover:bg-white transition-colors duration-300">
-                      <HiHandThumbUp size={14} className={answer.upvoteCount > 0 ? "text-blue-500 fill-blue-500" : ""} />
-                      <span className="text-[10px] font-bold font-mono tracking-tighter">{answer.upvoteCount || 0}</span>
+                    <div className="flex items-center gap-2">
+                       {/* Elite Feature: Promote To Master */}
+                       {!answer.accepted && ["ADMIN", "TUTOR"].includes(user?.role?.toUpperCase()) && (
+                         <button 
+                           onClick={async () => {
+                             try {
+                               await axiosInstance.put(`/questions/${id}/official-answer`, { officialAnswer: answer.content });
+                               toast.success("Response promoted to Master Answer! 🛡️");
+                               fetchData();
+                             } catch(err) {
+                               toast.error("Failed to promote answer");
+                             }
+                           }}
+                           className="px-3 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-95 flex items-center gap-1.5"
+                         >
+                           <HiCheckCircle size={14} /> Promote as Master
+                         </button>
+                       )}
+                       <div className="flex items-center gap-2 px-4 py-2 bg-gray-50 rounded-2xl border border-black/5 text-gray-400 shadow-inner group-hover:bg-white transition-colors duration-300">
+                         <HiHandThumbUp size={14} className={answer.upvotedByCurrentUser ? "text-blue-500 fill-blue-500" : ""} />
+                         <span className="text-[10px] font-bold font-mono tracking-tighter">{answer.upvoteCount || 0}</span>
+                       </div>
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 leading-relaxed font-light font-sans pl-2 border-l border-black/5">
