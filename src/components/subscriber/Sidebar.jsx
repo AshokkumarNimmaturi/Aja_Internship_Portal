@@ -1,6 +1,16 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LogOut } from "lucide-react";
+// ✅ UPGRADED: Switched to elite Heroicons 2 (React Icons)
+import { 
+  HiArrowRightOnRectangle, 
+  HiBars3, 
+  HiXMark,
+  HiHome,
+  HiMagnifyingGlass,
+  HiBookmark,
+  HiCreditCard,
+  HiUser
+} from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../api/axiosInstance";
 
@@ -8,6 +18,7 @@ export const Sidebar = () => {
   const { user, logout } = useAuth();
   const [isHovered, setIsHovered] = useState(false);
   const [subscription, setSubscription] = useState(null);
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
 
   const handleLogout = () => {
@@ -39,11 +50,11 @@ export const Sidebar = () => {
   }, []);
 
   const navItems = [
-    { label: "Dashboard", icon: "🏠", path: "/dashboard" },
-    { label: "Questions", icon: "📚", path: "/dashboard/questions" },
-    { label: "Bookmarks", icon: "🔖", path: "/dashboard/bookmarks" },
-    { label: "Subscription", icon: "💳", path: "/dashboard/subscription" },
-    { label: "Profile", icon: "👤", path: "/dashboard/profile" },
+    { label: "Dashboard", icon: <HiHome size={22} />, path: "/dashboard" },
+    { label: "Questions", icon: <HiMagnifyingGlass size={22} />, path: "/dashboard/questions" },
+    { label: "Bookmarks", icon: <HiBookmark size={22} />, path: "/dashboard/bookmarks" },
+    { label: "Subscription", icon: <HiCreditCard size={22} />, path: "/dashboard/subscription" },
+    { label: "Profile", icon: <HiUser size={22} />, path: "/dashboard/profile" },
   ];
 
   const getDaysLeft = () => {
@@ -66,11 +77,11 @@ export const Sidebar = () => {
           </div>
           <div className={`whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
             <div className="text-sm font-bold text-[#0A1628] leading-tight">
-              Aja Internship Portal
+              Aja Interview Vault
             </div>
-            <div className="text-xs text-gray-400 font-medium leading-tight">
-              Interview Question Bank
-            </div>
+            <button className="md:hidden p-2 text-gray-600" onClick={() => setIsOpen(!isOpen)}>
+              {isOpen ? <HiXMark className="w-6 h-6" /> : <HiBars3 className="w-6 h-6" />}
+            </button>
           </div>
         </Link>
       </div>
@@ -94,7 +105,7 @@ export const Sidebar = () => {
               {isActive && !isHovered && (
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-[#2563EB] rounded-r-md" />
               )}
-              <span className={`text-xl shrink-0 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>{item.icon}</span>
+              <span className={`shrink-0 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>{item.icon}</span>
               <span className={`text-sm font-medium whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
                 {item.label}
               </span>
@@ -144,10 +155,12 @@ export const Sidebar = () => {
             title={!isHovered ? "Logout" : ""}
             className={`text-gray-400 hover:text-white transition-colors shrink-0 p-2.5 rounded-xl hover:bg-red-500 hover:shadow-md ${!isHovered && 'hidden'}`}
           >
-            <LogOut size={16} strokeWidth={2.5} />
+            <HiArrowRightOnRectangle className="w-5 h-5" />
           </button>
         </div>
       </div>
     </aside>
   );
 };
+
+export default Sidebar;

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Bookmark, Briefcase, UserCheck, Star, RefreshCw } from "lucide-react";
+import { HiArrowLeft, HiBookmark, HiBriefcase, HiCheckBadge, HiStar, HiArrowPath, HiBolt } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
 import axiosInstance from "../../api/axiosInstance";
@@ -19,6 +19,9 @@ const QuestionDetailPage = () => {
   const fetchQuestion = async () => {
     setLoading(true);
     try {
+      // ✅ ELITE SYNC: Record visit for Recently Viewed dashboard
+      axiosInstance.post(`/questions/${id}/visit`).catch(() => {});
+
       const [qRes, bRes] = await Promise.all([
         axiosInstance.get(`/questions/${id}`),
         axiosInstance.get("/bookmarks").catch(() => ({ data: [] }))
@@ -29,7 +32,6 @@ const QuestionDetailPage = () => {
       setBookmarked(isBookmarked);
     } catch (e) { 
       toast.error("Could not load details."); 
-      console.error(e);
     } finally { 
       setLoading(false); 
     }
@@ -43,102 +45,131 @@ const QuestionDetailPage = () => {
     try {
       await axiosInstance.post(`/bookmarks/${id}`);
       setBookmarked(!bookmarked);
-      toast.success(bookmarked ? "Bookmark removed" : "Question saved to bookmarks!");
+      toast.success(bookmarked ? "Removed from bookmarks" : "Saved to your vault! 🦾");
     } catch (e) {
       toast.error("Failed to update bookmark.");
-      console.error(e);
     } finally {
       setIsSyncing(false);
     }
   };
 
   if (loading) return (
-    <div className="flex h-screen bg-gray-50 items-center justify-center">
-       <RefreshCw className="animate-spin text-gray-300 mr-2" size={24} />
-       <p className="text-gray-500 animate-pulse text-sm font-medium">Securing connection...</p>
+    <div className="flex h-screen bg-gray-50 items-center justify-center flex-col">
+       <div className="relative">
+          <HiArrowPath className="animate-spin text-blue-500 mb-4" size={40} />
+          <div className="absolute inset-0 flex items-center justify-center"><HiBolt size={12} className="text-blue-500" /></div>
+       </div>
+       <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] animate-pulse">Syncing Intel Packet...</p>
     </div>
   );
 
   if (!question) return (
-    <div className="flex h-screen bg-gray-50 items-center justify-center flex-col">
-       <h2 className="text-xl font-bold text-gray-800 mb-2">Question not found</h2>
-       <Link to="/dashboard" className="text-blue-600 underline">Back to Dashboard</Link>
+    <div className="flex h-screen bg-gray-50 items-center justify-center flex-col p-10 text-center">
+       <div className="text-6xl mb-6">🕵️‍♂️</div>
+       <h2 className="text-2xl font-serif text-[#0A1628] mb-2">Protocol Redacted</h2>
+       <p className="text-sm text-gray-400 italic mb-8 max-w-xs">This intelligence packet has been moved or purged from the central database.</p>
+       <Link to="/dashboard" className="px-8 py-3 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl active:scale-95">Back to Command Center</Link>
     </div>
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
-      <Sidebar />
-      <main className="flex-1 p-8 overflow-y-auto max-w-4xl mx-auto w-full">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-6 font-sans">
-          <Link to="/dashboard" className="hover:text-gray-600 transition-colors">Dashboard</Link>
-          <span>/</span>
-          <span className="text-gray-600">Question #{id}</span>
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden py-10">
+      <Sidebar activeItem="Questions" />
+      <main className="flex-1 p-10 overflow-y-auto max-w-5xl mx-auto w-full">
+        {/* Elite Breadcrumb */}
+        <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-10 transition-all">
+          <Link to="/dashboard" className="hover:text-blue-600 transition-colors">Command</Link>
+          <span className="text-gray-200">/</span>
+          <Link to="/dashboard/questions" className="hover:text-blue-600 transition-colors">Intelligence</Link>
+          <span className="text-gray-200">/</span>
+          <span className="text-[#0A1628]">Packet #{id}</span>
         </div>
 
-        {/* Question Header Card */}
-        <div className="bg-white border border-black/8 rounded-3xl p-8 mb-6 shadow-sm">
-          <div className="flex justify-between items-start mb-6">
-             <div className="flex-1 pr-8">
-               <h1 className="text-3xl font-serif text-[#0A1628] leading-tight mb-4">{question.title}</h1>
-               <div className="flex flex-wrap gap-2 items-center">
-                  <TechBadge tech={question.technologyName || (question.technology?.name) || "General"} />
+        {/* Question Intelligence Section */}
+        <div className="bg-white border border-black/5 rounded-[50px] p-12 mb-10 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5">
+             <HiBriefcase size={180} className="rotate-12" />
+          </div>
+          
+          <div className="flex justify-between items-start mb-10 relative z-10">
+             <div className="flex-1 pr-12">
+               <h1 className="text-4xl font-serif text-[#0A1628] leading-tight mb-6">{question.title}</h1>
+               <div className="flex flex-wrap gap-4 items-center">
+                  <TechBadge tech={question.technologyName || "General"} />
                   <DifficultyBadge difficulty={question.difficulty} />
+                  <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-blue-100/50">
+                     <HiBriefcase size={14} /> {question.clientName || "General Intake"}
+                  </div>
                </div>
              </div>
+             
              <button 
                 onClick={toggleBookmark} 
                 disabled={isSyncing}
-                className={`shrink-0 p-3 rounded-2xl border transition-all shadow-sm ${
+                className={`shrink-0 w-16 h-16 flex items-center justify-center rounded-[24px] border transition-all shadow-xl ${
                   bookmarked 
-                    ? "bg-blue-50 border-blue-100 hover:bg-blue-100" 
-                    : "bg-white border-black/8 hover:border-blue-200"
-                } ${isSyncing ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                    ? "bg-blue-600 border-blue-500 shadow-blue-500/20" 
+                    : "bg-white border-black/5 hover:border-blue-200 shadow-black/5"
+                } ${isSyncing ? "opacity-50" : "active:scale-95"}`}
               >
-                <Bookmark 
-                  size={20} 
-                  className={`${
-                    isSyncing 
-                      ? "animate-pulse text-blue-400" 
-                      : bookmarked 
-                        ? "text-blue-600 fill-blue-600" 
-                        : "text-gray-300"
-                  }`} 
+                <HiBookmark 
+                  size={24} 
+                  className={bookmarked ? "text-white fill-white" : "text-gray-300"} 
                 />
              </button>
           </div>
 
-          <div className="bg-gray-50 p-6 rounded-2xl border border-black/5">
-             <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Interview Context</h3>
-             <p className="text-[#0A1628] leading-relaxed italic whitespace-pre-wrap font-light">"{question.content}"</p>
+          <div className="bg-gray-50/50 p-10 rounded-[40px] border border-black/5 shadow-inner relative z-10">
+             <div className="flex items-center gap-2 mb-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Intel Description</h3>
+             </div>
+             <p className="text-lg text-[#0A1628] leading-relaxed italic whitespace-pre-wrap font-serif font-light">
+               "{question.content}"
+             </p>
           </div>
         </div>
 
-        {/* Official Master Answer */}
-        <div className="bg-white border border-black/8 rounded-3xl p-8 shadow-sm">
-           <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-[#0A1628] flex items-center gap-2">
-                 <UserCheck size={20} className="text-green-500" />
-                 Official Master Answer
-              </h2>
-              <div className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[10px] font-bold uppercase tracking-widest border border-green-100">
-                 Verified by Aja Tutors
-              </div>
-           </div>
-           <div className="text-sm leading-relaxed text-gray-700 bg-gray-50/50 p-6 rounded-2xl border border-black/5 shadow-inner min-h-[200px]">
-             {question.answers?.[0]?.content || "The official answer for this question is being polished by our team. Check back soon!"}
+        {/* Master Official Answer Section */}
+        <div className="bg-[#0A1628] rounded-[60px] p-14 shadow-2xl relative overflow-hidden group border border-white/5 animate-in zoom-in duration-700">
+           <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
+              <HiCheckBadge size={280} className="text-white" />
            </div>
            
-           <div className="mt-8 flex items-center justify-between pt-6 border-t border-black/5">
+           <div className="flex items-center justify-between mb-10 relative z-10">
               <div className="flex items-center gap-4">
-                 <div className="flex items-center gap-1 shadow-sm px-3 py-1.5 rounded-xl border border-black/5 bg-white cursor-pointer hover:bg-gray-50 transition-all">
-                    <Star size={14} className="text-amber-400 fill-amber-400" />
-                    <span className="text-xs font-bold text-gray-700">Excellent content</span>
+                 <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 border border-white/10 shadow-2xl">
+                    <HiCheckBadge size={28} />
+                 </div>
+                 <div>
+                   <h2 className="text-2xl font-black text-white tracking-tight">Master Official Answer</h2>
+                   <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em]">Curation Verified by Aja Tutors</p>
                  </div>
               </div>
-              <Link to="/dashboard" className="text-xs font-bold text-gray-400 uppercase tracking-widest hover:text-blue-600 transition-colors flex items-center gap-2">
-                 <ArrowLeft size={14} /> Back to Dashboard
+              <div className="flex items-center gap-2 px-5 py-2.5 bg-blue-600/20 text-blue-300 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20 shadow-lg">
+                 <HiBolt size={14} className="animate-pulse" /> Final Protocol
+              </div>
+           </div>
+
+           <div className="text-xl leading-relaxed text-white/90 bg-white/5 p-10 rounded-[40px] border border-white/5 shadow-2xl min-h-[300px] italic font-medium font-serif relative z-10 transition-all group-hover:bg-white/[0.07]">
+             {question.officialAnswer ? (
+                `"${question.officialAnswer}"`
+             ) : (
+                <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
+                   <HiArrowPath className="animate-spin mb-4" size={32} />
+                   <p className="text-sm font-black uppercase tracking-widest">Protocol Generation in Progress...</p>
+                </div>
+             )}
+           </div>
+           
+           <div className="mt-12 flex items-center justify-between pt-10 border-t border-white/5 relative z-10">
+              <div className="flex items-center gap-4">
+                 <div className="flex items-center gap-3 px-6 py-3 rounded-2xl border border-white/10 bg-white/5 text-blue-300 font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all cursor-pointer">
+                    <HiStar size={16} /> Mark as Elite Intel
+                 </div>
+              </div>
+              <Link to="/dashboard/questions" className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] hover:text-white transition-colors flex items-center gap-3 group/back">
+                 <HiArrowLeft size={18} className="group-hover/back:-translate-x-1 transition-transform" /> Back to Base
               </Link>
            </div>
         </div>

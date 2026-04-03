@@ -1,13 +1,12 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Bookmark, MessageCircle, Search } from "lucide-react";
+// ✅ UPGRADED: Using elite Heroicons 2
+import { HiBookmark, HiChatBubbleLeftEllipsis, HiMagnifyingGlass } from "react-icons/hi2";
 import TechBadge from "../../components/common/TechBadge";
 import DifficultyBadge from "../../components/common/DifficultyBadge";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
 import axiosInstance from "../../api/axiosInstance";
-
-// Mock data removed — using real API data 🚀
 
 const BookmarksPage = () => {
   const { user } = useAuth();
@@ -43,7 +42,7 @@ const BookmarksPage = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden py-10">
       <Sidebar />
 
       {/* Main */}
@@ -57,7 +56,7 @@ const BookmarksPage = () => {
 
         {/* Search */}
         <div className="relative max-w-md mb-6">
-          <Search
+          <HiMagnifyingGlass
             size={15}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
           />
@@ -83,7 +82,7 @@ const BookmarksPage = () => {
                     onClick={() => removeBookmark(q.id)}
                     className="transition-colors"
                   >
-                    <Bookmark
+                    <HiBookmark
                       size={15}
                       className="text-[#2563EB] fill-[#2563EB] hover:fill-none"
                     />
@@ -97,7 +96,7 @@ const BookmarksPage = () => {
                 <div className="flex items-center justify-between">
                   <DifficultyBadge difficulty={q.difficulty} />
                   <div className="flex items-center gap-1 text-gray-400 text-xs">
-                    <MessageCircle size={12} />
+                    <HiChatBubbleLeftEllipsis size={12} />
                     <span>{q.answerCount} answers</span>
                   </div>
                 </div>
@@ -107,7 +106,7 @@ const BookmarksPage = () => {
         ) : (
           <div className="flex flex-col items-center justify-center py-24 text-center">
             <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
-              <Bookmark size={28} className="text-gray-200" />
+              <HiBookmark size={28} className="text-gray-200" />
             </div>
             <h3 className="text-lg font-semibold text-[#0A1628] mb-2">
               No bookmarks yet

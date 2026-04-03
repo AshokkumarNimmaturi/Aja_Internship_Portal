@@ -6,7 +6,7 @@ import {
   useNavigate,
 } from "react-router-dom";
 import Navbar from "../../components/common/Navbar";
-import { Check, ShieldCheck, ArrowLeft, Tag } from "lucide-react";
+import { HiCheck, HiShieldCheck, HiArrowLeft, HiTag } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
@@ -153,7 +153,7 @@ const CheckoutPage = () => {
         key: razorpayKeyId,
         amount: amount * 100,
         currency: "INR",
-        name: "Aja Internship Portal",
+        name: "Aja Interview Vault",
         description: `${pkg.name} — ${tier.label} Plan`,
         order_id: razorpayOrderId,
         handler: async (response) => {
@@ -196,7 +196,7 @@ const CheckoutPage = () => {
           to={`/packages/${id}`}
           className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-8"
         >
-          <ArrowLeft size={15} /> Back to package
+          <HiArrowLeft size={15} /> Back to package
         </Link>
 
         <h1 className="font-serif text-3xl text-[#0A1628] mb-8">
@@ -228,7 +228,7 @@ const CheckoutPage = () => {
               {/* Tier Badge */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Tag size={13} className="text-[#2563EB]" />
+                  <HiTag size={13} className="text-[#2563EB]" />
                   <span className="text-sm text-gray-600">Selected Plan</span>
                 </div>
                 <span className="text-xs font-semibold px-3 py-1 bg-blue-50 text-[#2563EB] rounded-full">
@@ -286,7 +286,7 @@ const CheckoutPage = () => {
                 {tier.features.map((feature) => (
                   <div key={feature} className="flex items-center gap-3">
                     <div className="w-5 h-5 bg-green-50 rounded-full flex items-center justify-center shrink-0">
-                      <Check size={11} className="text-green-500" />
+                      <HiCheck size={11} className="text-green-500" />
                     </div>
                     <span className="text-sm text-gray-600">{feature}</span>
                   </div>
@@ -378,7 +378,7 @@ const CheckoutPage = () => {
                   </>
                 ) : (
                   <>
-                    <ShieldCheck size={16} />
+                    <HiShieldCheck size={16} />
                     Pay ₹{total} Securely
                   </>
                 )}
@@ -386,7 +386,7 @@ const CheckoutPage = () => {
 
               {/* Razorpay Badge */}
               <div className="flex items-center justify-center gap-2 mt-3">
-                <ShieldCheck size={13} className="text-gray-300" />
+                <HiShieldCheck size={13} className="text-gray-300" />
                 <span className="text-xs text-gray-300">
                   Secured by Razorpay
                 </span>
@@ -394,7 +394,7 @@ const CheckoutPage = () => {
 
               {/* Success Note */}
               <div className="flex items-center justify-center gap-2 mt-4 p-3 bg-green-50 rounded-xl">
-                <Check size={13} className="text-green-500 shrink-0" />
+                <HiCheck size={13} className="text-green-500 shrink-0" />
                 <span className="text-xs text-green-700">
                   You will get instant access after successful payment
                 </span>
@@ -423,7 +423,7 @@ const CheckoutPage = () => {
             {/* Security Note */}
             <div className="bg-white rounded-2xl border border-black/8 p-5">
               <div className="flex items-start gap-3">
-                <ShieldCheck
+                <HiShieldCheck
                   size={18}
                   className="text-[#2563EB] shrink-0 mt-0.5"
                 />

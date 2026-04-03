@@ -1,12 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+// ✅ UPGRADED: Using elite Heroicons 2
 import {
-  CheckCircle,
-  Calendar,
-  Package,
-  Clock,
-  ArrowRight,
-} from "lucide-react";
+  HiCheckCircle,
+  HiCalendar,
+  HiArchiveBox,
+  HiClock,
+  HiArrowLongRight,
+} from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../api/axiosInstance";
 
@@ -53,59 +54,59 @@ const PaymentSuccessPage = () => {
         {/* LOGO */}
         <Link to="/" className="flex items-center justify-center gap-3 mb-10">
           <div className="w-10 h-10 bg-[#0A1628] rounded-xl flex items-center justify-center">
-            <span className="text-white text-sm font-bold">AIP</span>
+            <span className="text-white text-sm font-bold tracking-wide">AIP</span>
           </div>
           <div>
-            <div className="text-sm font-semibold text-[#0A1628]">
-              Aja Internship Portal
+            <div className="text-sm font-semibold text-[#0A1628] leading-tight">
+              Aja Interview Vault
             </div>
-            <div className="text-xs text-gray-400">Interview Question Bank</div>
+            <div className="text-xs text-gray-400 leading-tight">Interview Question Bank</div>
           </div>
         </Link>
 
         {/* CARD */}
-        <div className="bg-white rounded-2xl border p-8 text-center shadow-sm">
+        <div className="bg-white rounded-2xl border border-black/8 p-8 text-center shadow-sm">
           {/* ICON */}
           <div className="flex justify-center mb-6">
-            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center animate-bounce">
-              <CheckCircle size={44} className="text-green-500" />
+            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center animate-bounce shadow-sm">
+              <HiCheckCircle size={44} className="text-green-500" />
             </div>
           </div>
 
           {/* TITLE */}
-          <h1 className="text-3xl font-semibold text-[#0A1628] mb-2">
+          <h1 className="text-3xl font-semibold text-[#0A1628] mb-2 tracking-tight">
             Payment Successful!
           </h1>
 
-          <p className="text-gray-400 text-sm mb-8">
+          <p className="text-gray-400 text-sm mb-8 font-light">
             Welcome aboard{user?.fullName ? `, ${user.fullName}` : ""}! 🎉
           </p>
 
           {/* SUBSCRIPTION DETAILS */}
-          <div className="bg-gray-50 rounded-2xl p-5 mb-6 text-left">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase mb-4">
+          <div className="bg-gray-50 rounded-2xl p-5 mb-6 text-left border border-black/5 shadow-inner">
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
               Subscription Details
             </h2>
 
             <div className="flex flex-col gap-3">
               {/* PACKAGE */}
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Package size={14} />
-                  Package
+                  <HiArchiveBox size={14} />
+                  <span>Package</span>
                 </div>
-                <span className="text-sm font-medium text-[#0A1628]">
+                <span className="text-sm font-bold text-[#0A1628]">
                   {subscription?.packageName || "Your Package"}
                 </span>
               </div>
 
               {/* START DATE */}
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Calendar size={14} />
-                  Start Date
+                  <HiCalendar size={14} />
+                  <span>Start Date</span>
                 </div>
-                <span className="text-sm font-medium text-[#0A1628]">
+                <span className="text-sm font-medium text-[#0D0D0D]">
                   {subscription?.startDate
                     ? new Date(subscription.startDate).toLocaleDateString(
                         "en-IN",
@@ -115,12 +116,12 @@ const PaymentSuccessPage = () => {
               </div>
 
               {/* STATUS */}
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Clock size={14} />
-                  Status
+                  <HiClock size={14} />
+                  <span>Status</span>
                 </div>
-                <span className="text-xs font-semibold px-3 py-1 bg-green-50 text-green-600 rounded-full">
+                <span className="text-[10px] font-bold px-3 py-1 bg-green-50 text-green-600 rounded-full border border-green-100 uppercase tracking-widest leading-none">
                   {subscription?.status || "Active"}
                 </span>
               </div>
@@ -131,21 +132,21 @@ const PaymentSuccessPage = () => {
           <div className="flex flex-col gap-3">
             <Link
               to="/dashboard"
-              className="py-3 bg-[#0A1628] text-white rounded-xl flex justify-center gap-2"
+              className="py-4 bg-[#0A1628] text-white rounded-xl flex items-center justify-center gap-2 font-bold text-sm shadow-xl shadow-blue-900/10 hover:bg-[#0F2340] transition-all"
             >
-              Go to Dashboard <ArrowRight size={14} />
+              Go to Dashboard <HiArrowLongRight size={16} />
             </Link>
 
             <Link
               to="/packages"
-              className="py-3 border rounded-xl text-gray-600"
+              className="py-4 border border-black/8 rounded-xl text-[#0A1628] font-bold text-sm hover:bg-gray-50 transition-all shadow-sm"
             >
               Browse Packages
             </Link>
           </div>
 
           {/* COUNTDOWN */}
-          <p className="text-xs text-gray-400 mt-5">
+          <p className="text-[10px] uppercase font-bold tracking-widest text-gray-300 mt-6">
             Redirecting in <span className="text-blue-500">{countdown}s</span>
           </p>
         </div>

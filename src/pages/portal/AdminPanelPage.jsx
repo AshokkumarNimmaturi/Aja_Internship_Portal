@@ -1,21 +1,23 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
+// ✅ UPGRADED: Using elite Heroicons 2
 import { 
-  Users, 
-  ClipboardList, 
-  Package as PackageIcon, 
-  Key, 
-  Clock, 
-  RefreshCw,
-  MessageSquare,
-  CheckCircle,
-  XCircle,
-  Activity,
-  PlusCircle,
-  UserPlus,
-  ShieldCheck,
-  Briefcase
-} from "lucide-react";
+  HiUsers, 
+  HiClipboardDocumentList, 
+  HiArchiveBox, 
+  HiKey, 
+  HiClock, 
+  HiArrowPath,
+  HiChatBubbleLeftEllipsis,
+  HiCheckCircle,
+  HiXCircle,
+  HiBolt,
+  HiPlusCircle,
+  HiUserPlus,
+  HiShieldCheck,
+  HiBriefcase,
+  HiMagnifyingGlass
+} from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import axiosInstance from "../../api/axiosInstance";
@@ -157,7 +159,6 @@ const AdminPanelPage = () => {
     e.preventDefault();
     setProcessing("package");
     try {
-      // Assuming backend expects these price fields
       await axiosInstance.post("/packages", packageForm);
       toast.success("Package created successfully");
       setShowPackageForm(false);
@@ -184,51 +185,54 @@ const AdminPanelPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden py-10">
       <PortalSidebar user={user} role={user?.role || "TUTOR"} activeItem={activeView} />
       
       <main className="flex-1 p-8 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center justify-between mb-10">
             <div>
-              <h1 className="text-3xl font-serif text-[#0A1628] mb-1">{activeView}</h1>
-              <p className="text-xs text-gray-400 font-light tracking-wide uppercase font-sans">Administrative Control Center</p>
+              <h1 className="text-3xl font-serif text-[#0A1628] mb-1 font-bold">{activeView}</h1>
+              <p className="text-[10px] text-gray-400 font-black tracking-[0.2em] uppercase font-sans">Administrative Command Terminal</p>
             </div>
             
-            <div className="flex gap-3">
+            <div className="flex gap-4">
               {activeView === "Users" && user?.role === 'ADMIN' && (
-                <button onClick={() => setShowUserForm(true)} className="flex items-center gap-2 px-6 py-2.5 bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-blue-900 transition-all shadow-lg shadow-blue-900/10">
-                  <UserPlus size={16} /> Add Member
+                <button onClick={() => setShowUserForm(true)} className="flex items-center gap-2 px-7 py-3.5 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-900 transition-all shadow-2xl shadow-blue-900/10 active:scale-95">
+                  <HiUserPlus size={20} /> Register Team Member
                 </button>
               )}
               {activeView === "Packages" && user?.role === 'ADMIN' && (
-                <button onClick={() => setShowPackageForm(true)} className="flex items-center gap-2 px-6 py-2.5 bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest rounded-xl hover:bg-blue-900 transition-all shadow-lg shadow-blue-900/10">
-                  <PlusCircle size={16} /> New Package
+                <button onClick={() => setShowPackageForm(true)} className="flex items-center gap-2 px-7 py-3.5 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-900 transition-all shadow-2xl shadow-blue-900/10 active:scale-95">
+                  <HiPlusCircle size={20} /> Create New Product
                 </button>
               )}
-              <button onClick={fetchData} className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest text-gray-500 border border-black/10 rounded-xl hover:bg-gray-100 transition-all">
-                <RefreshCw size={14} className={loading ? "animate-spin" : ""} /> Sync
+              <button onClick={fetchData} className="flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border border-black/10 rounded-2xl bg-white hover:bg-gray-50 transition-all shadow-sm active:scale-95">
+                <HiArrowPath size={16} className={loading ? "animate-spin" : ""} /> Sync Data
               </button>
             </div>
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
             {[
-              { label: "Talent Pool", count: stats.users, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
-              { label: "Questions", count: stats.questions, icon: ClipboardList, color: "text-emerald-600", bg: "bg-emerald-50" },
-              { label: "Pending", count: stats.pending, icon: Clock, color: "text-amber-600", bg: "bg-amber-50" },
-              { label: "Tickets", count: stats.support, icon: MessageSquare, color: "text-purple-600", bg: "bg-purple-50" }
+              { label: "Global Talent", count: stats.users, icon: HiUsers, color: "text-blue-600", bg: "bg-blue-50" },
+              { label: "Total Intel", count: stats.questions, icon: HiClipboardDocumentList, color: "text-emerald-600", bg: "bg-emerald-50" },
+              { label: "Awaiting Sync", count: stats.pending, icon: HiClock, color: "text-amber-600", bg: "bg-amber-50" },
+              { label: "Member Tickets", count: stats.support, icon: HiChatBubbleLeftEllipsis, color: "text-purple-600", bg: "bg-purple-50" }
             ].map((s, i) => (
-              <div key={i} className="bg-white p-5 rounded-3xl border border-black/5 shadow-sm">
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-2xl ${s.bg} ${s.color}`}>
-                    <s.icon size={20} />
+              <div key={i} className="bg-white p-6 rounded-[32px] border border-black/5 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
+                <div className="absolute -bottom-4 -right-4 opacity-5 group-hover:scale-125 transition-transform duration-500">
+                   <s.icon size={80} className={s.color} />
+                </div>
+                <div className="flex items-center gap-5 relative z-10">
+                  <div className={`p-4 rounded-2xl ${s.bg} ${s.color} border border-black/5 shadow-inner`}>
+                    <s.icon size={24} />
                   </div>
                   <div>
-                    <div className="text-2xl font-serif text-[#0A1628]">{s.count}</div>
-                    <div className="text-[10px] text-gray-400 uppercase tracking-widest font-bold">{s.label}</div>
+                    <div className="text-3xl font-serif text-[#0A1628] font-black leading-tight tracking-tighter">{s.count}</div>
+                    <div className="text-[10px] text-gray-400 uppercase tracking-widest font-black opacity-80">{s.label}</div>
                   </div>
                 </div>
               </div>
@@ -237,36 +241,36 @@ const AdminPanelPage = () => {
 
           {/* VIEW: Users */}
           {activeView === "Users" && user?.role === 'ADMIN' && (
-             <div className="bg-white rounded-3xl border border-black/5 overflow-hidden shadow-sm">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-black/5">
-                    <tr><th className="p-5">User Profile</th><th className="p-5">Access Level</th><th className="p-5">State</th><th className="p-5 text-right">Action</th></tr>
+             <div className="bg-white rounded-[40px] border border-black/8 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <table className="w-full text-left font-sans">
+                  <thead className="bg-gray-50/50 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-black/5">
+                    <tr><th className="px-8 py-5">Full Member Profile</th><th className="px-8 py-5">Security Clearances</th><th className="px-8 py-5">Status Pulse</th><th className="px-8 py-5 text-right">Access Manager</th></tr>
                   </thead>
-                  <tbody className="divide-y divide-black/5 text-sm font-sans">
+                  <tbody className="divide-y divide-black/5 text-sm">
                     {Array.isArray(users) && users.map(u => (
-                      <tr key={u.id} className="hover:bg-gray-50/50 transition-all">
-                        <td className="p-5">
-                          <div className="font-bold text-[#0A1628]">{u.fullName}</div>
-                          <div className="text-xs text-gray-400">{u.email}</div>
+                      <tr key={u.id} className="hover:bg-gray-50/80 transition-all group">
+                        <td className="px-8 py-6">
+                          <div className="font-black text-[#0A1628] uppercase tracking-tight group-hover:text-blue-600 transition-colors">{u.fullName}</div>
+                          <div className="text-[11px] text-gray-400 font-mono italic">{u.email}</div>
                         </td>
-                        <td className="p-5">
-                          <span className="text-[10px] font-bold px-3 py-1 bg-gray-100 rounded-full border border-black/5 text-gray-600 uppercase tracking-widest">{u.role}</span>
+                        <td className="px-8 py-6">
+                          <span className="text-[10px] font-black px-3.5 py-1.5 bg-gray-100 rounded-xl border border-black/5 text-gray-600 uppercase tracking-widest font-mono">{u.role}</span>
                         </td>
-                        <td className="p-5">
-                          <div className="flex items-center gap-2">
-                             <span className={`w-2 h-2 rounded-full ${u.enabled ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.3)]' : 'bg-red-400'}`} />
-                             <span className="text-xs font-semibold">{u.enabled ? 'Active' : 'Disabled'}</span>
+                        <td className="px-8 py-6">
+                          <div className="flex items-center gap-2.5">
+                             <span className={`w-2.5 h-2.5 rounded-full ${u.enabled ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]' : 'bg-red-400'}`} />
+                             <span className="text-[11px] font-black uppercase tracking-widest opacity-70">{u.enabled ? 'Verified Active' : 'Access Restricted'}</span>
                           </div>
                         </td>
-                        <td className="p-5 text-right">
+                        <td className="px-8 py-6 text-right">
                            {user?.id !== u.id && (
                              <button 
                                onClick={() => handleToggleUser(u.id, u.enabled)}
-                               className={`text-[10px] font-bold uppercase tracking-widest px-3 py-1.5 rounded-lg border transition-all ${
-                                 u.enabled ? 'text-red-600 border-red-100 hover:bg-red-50' : 'text-green-600 border-green-100 hover:bg-green-50'
+                               className={`text-[9px] font-black uppercase tracking-[0.2em] px-4 py-2.5 rounded-xl border-2 transition-all active:scale-95 ${
+                                 u.enabled ? 'text-red-500 border-red-50 hover:bg-red-500 hover:text-white hover:border-red-500' : 'text-emerald-600 border-emerald-50 hover:bg-emerald-600 hover:text-white hover:border-emerald-600'
                                }`}
                              >
-                               {u.enabled ? 'Deactivate' : 'Enable Access'}
+                               {u.enabled ? 'Terminate Access' : 'Restore Connection'}
                              </button>
                            )}
                         </td>
@@ -279,27 +283,31 @@ const AdminPanelPage = () => {
 
           {/* VIEW: Packages */}
           {activeView === "Packages" && (
-             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in zoom-in-95 duration-500">
                 {Array.isArray(packages) && packages.map(pkg => (
-                  <div key={pkg.id} className="bg-white p-7 rounded-[40px] border border-black/5 shadow-sm hover:border-blue-200 transition-all group relative overflow-hidden">
-                     <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 border border-blue-100 group-hover:scale-110 transition-transform"><PackageIcon size={28} /></div>
-                     <h3 className="font-bold text-xl text-[#0A1628] mb-1">{pkg.name}</h3>
-                     <p className="text-sm text-gray-400 mb-6 font-light line-clamp-2">{pkg.description || "Premium interview prep package."}</p>
+                  <div key={pkg.id} className="bg-white p-9 rounded-[50px] border border-black/8 shadow-sm hover:shadow-2xl hover:border-blue-300 transition-all group relative overflow-hidden">
+                     <div className="absolute -top-10 -right-10 opacity-5 group-hover:scale-125 transition-transform duration-700">
+                        <HiArchiveBox size={140} className="text-blue-600" />
+                     </div>
+                     <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mb-8 border border-blue-100 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-inner relative z-10"><HiArchiveBox size={32} /></div>
+                     <h3 className="font-bold text-2xl text-[#0A1628] mb-2 font-serif relative z-10">{pkg.name}</h3>
+                     <p className="text-sm text-gray-400 mb-8 font-light italic leading-loose line-clamp-3 relative z-10">"{pkg.description || "Premium intel packet for professional interview mastery."}"</p>
                      
-                     <div className="space-y-2 mb-6">
-                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400">
-                          <span>Standard</span>
-                          <span className="text-blue-600">₹{pkg.standardPrice || 0}</span>
+                     <div className="space-y-4 mb-8 relative z-10 bg-gray-50/50 p-6 rounded-3xl border border-black/5 shadow-inner">
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-gray-400">
+                          <span>Standard Tier</span>
+                          <span className="text-blue-600 text-base">₹{pkg.standardPrice || 0}</span>
                         </div>
-                        <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-gray-400 font-black">
-                          <span>Full Bundle</span>
-                          <span className="text-emerald-600">₹{pkg.bundlePrice || 0}</span>
+                        <div className="h-px bg-black/5" />
+                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                          <span>Mastery Bundle</span>
+                          <span className="text-xl font-serif font-black underline decoration-emerald-200 underline-offset-8">₹{pkg.bundlePrice || 0}</span>
                         </div>
                      </div>
 
-                     <div className="flex justify-between items-center pt-5 border-t border-black/5">
-                        <span className="text-[8px] uppercase tracking-widest text-gray-300 font-bold">Base Price: ₹{pkg.basicPrice || 0}</span>
-                        <span className="px-3 py-1 bg-green-50 text-green-600 text-[10px] font-bold uppercase tracking-widest rounded-full border border-green-100">Live</span>
+                     <div className="flex justify-between items-center pt-6 border-t border-black/5 relative z-10">
+                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">Base Point: ₹{pkg.basicPrice || 0}</span>
+                        <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-emerald-100 shadow-sm">Sync Active</span>
                      </div>
                   </div>
                 ))}
@@ -308,138 +316,49 @@ const AdminPanelPage = () => {
 
           {/* VIEW: Audit Log */}
           {activeView === "Audit Log" && user?.role === 'ADMIN' && (
-             <div className="bg-white rounded-3xl border border-black/5 overflow-hidden shadow-sm animate-in fade-in zoom-in-95 duration-300">
-                <table className="w-full text-left">
-                  <thead className="bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-black/5">
-                    <tr><th className="p-5">Recorded At</th><th className="p-5">Actor</th><th className="p-5">Action</th><th className="p-5">Details</th></tr>
+             <div className="bg-white rounded-[40px] border border-black/8 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <table className="w-full text-left font-sans">
+                  <thead className="bg-gray-50/50 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-black/5">
+                    <tr><th className="px-8 py-5">Time Intel</th><th className="px-8 py-5">Active Agent</th><th className="px-8 py-5">Operation</th><th className="px-8 py-5">Telemetry Report</th></tr>
                   </thead>
-                  <tbody className="divide-y divide-black/5 text-sm font-sans">
+                  <tbody className="divide-y divide-black/5 text-sm">
                     {Array.isArray(auditLogs) && auditLogs.length > 0 ? auditLogs.map(log => (
-                      <tr key={log.id} className="hover:bg-gray-50/50 transition-all">
-                        <td className="p-5 text-gray-400 text-xs font-mono">{new Date(log.createdAt).toLocaleString()}</td>
-                        <td className="p-5 font-semibold text-[#0A1628]">
-                          {log.performedByEmail || "System"}
+                      <tr key={log.id} className="hover:bg-gray-50/80 transition-all group">
+                        <td className="px-8 py-6 text-gray-400 text-[10px] font-black font-mono tracking-tighter italic">{new Date(log.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</td>
+                        <td className="px-8 py-6 font-black text-[#0A1628] group-hover:text-blue-600 transition-colors uppercase tracking-tight">
+                          {log.performedByEmail || "SYSTEM_DAEMON"}
                         </td>
-                        <td className="p-5">
-                          <span className="text-[10px] font-bold px-2 py-1 bg-blue-50 text-blue-600 rounded border border-blue-100 flex items-center gap-1 w-fit">
-                            <Activity size={10} /> {log.action}
+                        <td className="px-8 py-6">
+                          <span className="text-[9px] font-black px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 flex items-center justify-center gap-1.5 w-fit uppercase tracking-widest shadow-sm">
+                            <HiBolt size={12} /> {log.action}
                           </span>
                         </td>
-                        <td className="p-5 text-gray-500 italic max-w-xs truncate">"{log.details}"</td>
+                        <td className="px-8 py-6 text-gray-400 italic text-[11px] leading-relaxed max-w-sm truncate group-hover:whitespace-normal group-hover:overflow-visible transition-all">"{log.details}"</td>
                       </tr>
                     )) : (
-                       <tr><td colSpan="4" className="p-20 text-center text-gray-400 italic">No system events recorded yet.</td></tr>
+                       <tr><td colSpan="4" className="px-8 py-32 text-center text-gray-300 italic font-serif">Awaiting system telemetry synchronization...</td></tr>
                     )}
                   </tbody>
                 </table>
              </div>
           )}
 
-          {/* MODAL: Create User */}
-          {showUserForm && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-[40px] w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-300">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-serif text-[#0A1628]">Add Team Member</h2>
-                  <button onClick={() => setShowUserForm(false)} className="text-gray-400 hover:text-red-500 transition-colors"><XCircle size={24} /></button>
-                </div>
-                <form onSubmit={handleCreateUser} className="space-y-4">
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Full Name</label>
-                    <input required value={userForm.fullName} onChange={e => setUserForm({...userForm, fullName: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-black/5 focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all" placeholder="John Doe" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Email Address</label>
-                    <input required type="email" value={userForm.email} onChange={e => setUserForm({...userForm, email: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-black/5 focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all" placeholder="name@aja.com" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Initial Password</label>
-                    <input required type="password" value={userForm.password} onChange={e => setUserForm({...userForm, password: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-black/5 focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all" placeholder="••••••••" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Assigned Role</label>
-                    <select value={userForm.role} onChange={e => setUserForm({...userForm, role: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-black/5 focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all">
-                      <option value="EMPLOYEE">Employee (Contributor)</option>
-                      <option value="TUTOR">Tutor (Curator)</option>
-                      <option value="ADMIN">Admin (Overseer)</option>
-                    </select>
-                  </div>
-                  <button disabled={processing === 'user'} className="w-full bg-[#0A1628] text-white py-4 rounded-2xl font-bold uppercase tracking-widest text-xs mt-4 hover:bg-blue-900 transition-all shadow-xl shadow-blue-900/10">
-                    {processing === 'user' ? 'Creating...' : 'Finalize Registration'}
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* MODAL: Create Package */}
-          {showPackageForm && (
-            <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-[40px] w-full max-w-2xl p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-2xl font-serif text-[#0A1628]">Design New Package</h2>
-                  <button onClick={() => setShowPackageForm(false)} className="text-gray-400 hover:text-red-500 transition-colors"><XCircle size={24} /></button>
-                </div>
-                <form onSubmit={handleCreatePackage} className="grid grid-cols-2 gap-4">
-                  <div className="col-span-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Package Display Name</label>
-                    <input required value={packageForm.name} onChange={e => setPackageForm({...packageForm, name: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-black/5 focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all" placeholder="e.g. Full Stack Bundle" />
-                  </div>
-                  <div className="col-span-2">
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Sales Description</label>
-                    <textarea rows="2" value={packageForm.description} onChange={e => setPackageForm({...packageForm, description: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-black/5 focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all" placeholder="What value does this offer?" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Basic Tier Price</label>
-                    <input required type="number" value={packageForm.basicPrice} onChange={e => setPackageForm({...packageForm, basicPrice: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-black/5 focus:border-blue-400 outline-none" placeholder="₹" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Bundle Price</label>
-                    <input required type="number" value={packageForm.bundlePrice} onChange={e => setPackageForm({...packageForm, bundlePrice: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-blue-50 border border-blue-200 focus:border-blue-400 outline-none font-bold" placeholder="₹" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Technology Focus</label>
-                    <input value={packageForm.technologyName} onChange={e => setPackageForm({...packageForm, technologyName: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-black/5 focus:border-blue-400 outline-none" placeholder="Java / React" />
-                  </div>
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-widest text-gray-400 ml-2 block mb-1">Catalog Category</label>
-                    <select value={packageForm.packageType} onChange={e => setPackageForm({...packageForm, packageType: e.target.value})} className="w-full px-5 py-3 rounded-2xl bg-gray-50 border border-black/5 outline-none font-bold">
-                      <option value="FULL_STACK">Full Stack</option>
-                      <option value="BACKEND">Backend</option>
-                      <option value="FRONTEND">Frontend</option>
-                      <option value="SYSTEM_DESIGN">System Design</option>
-                    </select>
-                  </div>
-                  <button className="col-span-2 bg-[#0A1628] text-white py-4 rounded-2xl font-bold uppercase tracking-widest text-xs mt-4 hover:bg-blue-900 transition-all shadow-xl shadow-blue-900/10">
-                    Publish to Storefront
-                  </button>
-                </form>
-              </div>
-            </div>
-          )}
-
-          {/* ACCESS REQUESTS, ETC (KEEPING PREVIOUS FIXES) */}
-          {activeView === "Review Queue" && (
-             <div className="bg-white p-20 rounded-[40px] text-center border border-black/5 italic text-gray-400 font-serif">
-                Review queue has been moved to the primary Curation Module.
-             </div>
-          )}
-
+          {/* VIEW: Questions List */}
           {activeView === "Questions" && (
-             <div className="bg-white rounded-3xl border border-black/5 overflow-hidden shadow-sm">
+             <div className="bg-white rounded-[40px] border border-black/8 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                  <table className="w-full text-left font-sans">
-                   <thead className="bg-gray-50 text-[10px] font-bold uppercase tracking-widest text-gray-400 border-b border-black/5">
-                     <tr><th className="p-5">Intel Summary</th><th className="p-5">Technology</th><th className="p-5">Status</th></tr>
+                   <thead className="bg-gray-50/50 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-black/5">
+                     <tr><th className="px-8 py-5">Technical Intelligence</th><th className="px-8 py-5">Core Technology</th><th className="px-8 py-5">Sync State</th></tr>
                    </thead>
                    <tbody className="divide-y divide-black/5 text-sm">
                       {allQuestions.map(q => (
-                        <tr key={q.id}>
-                          <td className="p-5">
-                            <div className="font-bold text-[#0A1628]">{q.title}</div>
-                            <div className="text-xs text-blue-600 italic font-semibold">{q.clientName || "General"}</div>
+                        <tr key={q.id} className="group hover:bg-gray-50/80 transition-all">
+                          <td className="px-8 py-6">
+                            <div className="font-black text-[#0A1628] uppercase tracking-tight group-hover:text-blue-600 transition-colors">{q.title}</div>
+                            <div className="text-[11px] text-blue-500 italic font-bold uppercase tracking-widest">{q.clientName || "General Intake"}</div>
                           </td>
-                          <td className="p-5"><span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{q.technologyName}</span></td>
-                          <td className="p-5"><span className={`text-[10px] font-bold px-2 py-1 rounded uppercase ${q.status === 'APPROVED' ? 'bg-green-50 text-green-600 border border-green-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>{q.status}</span></td>
+                          <td className="px-8 py-6"><span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-mono italic">{q.technologyName}</span></td>
+                          <td className="px-8 py-6"><span className={`text-[9px] font-black px-3.5 py-1.5 rounded-xl uppercase tracking-widest leading-none shadow-sm ${q.status === 'APPROVED' ? 'bg-emerald-50 text-emerald-600 border border-emerald-100' : 'bg-amber-50 text-amber-600 border border-amber-100'}`}>{q.status === 'APPROVED' ? 'MASTER_ACTIVE' : 'AWAITING_SYNC'}</span></td>
                         </tr>
                       ))}
                    </tbody>
@@ -447,26 +366,127 @@ const AdminPanelPage = () => {
              </div>
           )}
 
+          {/* VIEW: Access Tickets */}
           {activeView === "Access Requests" && (
-             <div className="space-y-4">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-500 py-10">
                 {Array.isArray(supportRequests) && supportRequests.length > 0 ? supportRequests.map(req => (
-                  <div key={req.id} className="bg-white p-7 rounded-[40px] border border-black/5 shadow-sm hover:border-blue-200 transition-all">
-                    <div className="flex justify-between items-start mb-4">
-                       <div>
-                          <h4 className="font-bold text-[#0A1628] text-lg mb-1">{req.subject}</h4>
-                          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">From: {req.userEmail}</span>
-                       </div>
-                       <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase border ${req.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-green-50 text-green-600 border-green-100'}`}>{req.status}</span>
+                  <div key={req.id} className="bg-white p-9 rounded-[50px] border border-black/8 shadow-sm hover:shadow-2xl hover:border-blue-300 transition-all group relative overflow-hidden">
+                    <div className="absolute -top-6 -right-6 opacity-5 group-hover:scale-125 transition-transform duration-700">
+                        <HiChatBubbleLeftEllipsis size={100} className="text-purple-600" />
                     </div>
-                    <div className="bg-gray-50 p-5 rounded-3xl border border-black/5 text-sm text-gray-600 italic mb-5">"{req.message}"</div>
+                    <div className="flex justify-between items-start mb-6 relative z-10">
+                       <div className="flex items-center gap-4">
+                          <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-3xl flex items-center justify-center border border-purple-100 shadow-inner group-hover:rotate-12 transition-transform"><HiChatBubbleLeftEllipsis size={28} /></div>
+                          <div>
+                            <h4 className="font-bold text-[#0A1628] text-xl mb-1 font-serif">{req.subject}</h4>
+                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-mono">{req.userEmail}</span>
+                          </div>
+                       </div>
+                       <span className={`text-[9px] font-black px-4 py-2 rounded-xl uppercase tracking-widest border-2 shadow-sm ${req.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{req.status}</span>
+                    </div>
+                    <div className="bg-gray-50/50 p-6 rounded-[32px] border border-black/5 text-sm text-gray-600 italic mb-8 font-light leading-relaxed shadow-inner">"{req.message}"</div>
                     {req.status === 'PENDING' && (
-                       <button onClick={() => handleSupportStatus(req.id, 'RESOLVED')} className="text-[10px] font-bold text-blue-600 uppercase tracking-widest hover:underline flex items-center gap-2">
-                          <CheckCircle size={14} /> Mark as Resolved
+                       <button onClick={() => handleSupportStatus(req.id, 'RESOLVED')} className="w-full py-4.5 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-emerald-600 transition-all shadow-xl shadow-blue-900/10 active:scale-95 flex items-center justify-center gap-3 relative z-10">
+                          <HiCheckCircle size={20} /> Terminate Ticket & Resolve
                        </button>
                     )}
                   </div>
-                )) : <div className="p-20 text-center text-gray-400 italic">No pending tickets.</div>}
+                )) : <div className="col-span-2 py-32 bg-white rounded-[50px] border-2 border-dashed border-black/5 text-center text-gray-300 italic font-serif text-xl">Command deck clear. No active tickets.</div>}
              </div>
+          )}
+
+          {/* MODALS: (Kept consistent with elite UI) */}
+          {showUserForm && (
+            <div className="fixed inset-0 bg-[#0A1628]/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+              <div className="bg-white rounded-[60px] w-full max-w-md p-10 shadow-2xl border border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-500">
+                <div className="absolute top-0 right-0 p-10 opacity-5">
+                   <HiUserPlus size={160} className="text-[#0A1628]" />
+                </div>
+                <div className="flex justify-between items-center mb-10 relative z-10">
+                  <h2 className="text-3xl font-serif text-[#0A1628] font-black tracking-tighter">Team Induction</h2>
+                  <button onClick={() => setShowUserForm(false)} className="w-10 h-10 flex items-center justify-center bg-gray-100 hover:bg-red-500 hover:text-white rounded-full transition-all active:scale-90"><HiXCircle size={24} /></button>
+                </div>
+                <form onSubmit={handleCreateUser} className="space-y-6 relative z-10">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Agent Name</label>
+                    <input required value={userForm.fullName} onChange={e => setUserForm({...userForm, fullName: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:ring-8 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all font-bold" placeholder="Designate identity..." />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Agent Email</label>
+                    <input required type="email" value={userForm.email} onChange={e => setUserForm({...userForm, email: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:ring-8 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all font-bold" placeholder="agent@aja.com" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Initial Cipher</label>
+                    <input required type="password" value={userForm.password} onChange={e => setUserForm({...userForm, password: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:ring-8 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all font-bold" placeholder="••••••••" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Authority Clearances</label>
+                    <select value={userForm.role} onChange={e => setUserForm({...userForm, role: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:ring-8 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all font-black uppercase italic tracking-widest text-[11px] cursor-pointer">
+                      <option value="EMPLOYEE">Contributor Level</option>
+                      <option value="TUTOR">Curator Level</option>
+                      <option value="ADMIN">Overseer Level</option>
+                    </select>
+                  </div>
+                  <button disabled={processing === 'user'} className="w-full bg-[#0A1628] text-white py-5 rounded-[25px] font-black uppercase tracking-[0.2em] text-[11px] mt-8 hover:bg-blue-600 transition-all shadow-2xl shadow-blue-900/40 active:scale-95">
+                    {processing === 'user' ? 'INDUCTING...' : 'FINALIZE AGENT REGISTRATION'}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {showPackageForm && (
+            <div className="fixed inset-0 bg-[#0A1628]/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+              <div className="bg-white rounded-[70px] w-full max-w-2xl p-12 shadow-2xl border border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-500 overflow-y-auto max-h-[90vh]">
+                <div className="absolute top-0 right-0 p-12 opacity-5">
+                   <HiArchiveBox size={240} className="text-[#0A1628]" />
+                </div>
+                <div className="flex justify-between items-center mb-10 relative z-10">
+                  <h2 className="text-3xl font-serif text-[#0A1628] font-black tracking-tighter">Design Elite Product</h2>
+                  <button onClick={() => setShowPackageForm(false)} className="w-12 h-12 flex items-center justify-center bg-gray-100 hover:bg-red-500 hover:text-white rounded-full transition-all active:scale-90 shadow-sm"><HiXCircle size={28} /></button>
+                </div>
+                <form onSubmit={handleCreatePackage} className="grid grid-cols-2 gap-8 relative z-10">
+                  <div className="col-span-2 space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Product Identification</label>
+                    <input required value={packageForm.name} onChange={e => setPackageForm({...packageForm, name: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:ring-8 focus:ring-blue-50 outline-none transition-all font-bold" placeholder="e.g. System Design Mastery" />
+                  </div>
+                  <div className="col-span-2 space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Value Proposition</label>
+                    <textarea rows="3" value={packageForm.description} onChange={e => setPackageForm({...packageForm, description: e.target.value})} className="w-full px-6 py-5 rounded-[30px] bg-gray-50 border border-black/5 focus:ring-8 focus:ring-blue-50 outline-none transition-all font-light italic leading-loose" placeholder="Define the mastery offered..." />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Entry Tier Price</label>
+                    <div className="relative">
+                       <span className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300 font-black">₹</span>
+                       <input required type="number" value={packageForm.basicPrice} onChange={e => setPackageForm({...packageForm, basicPrice: e.target.value})} className="w-full pl-10 pr-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:border-blue-400 outline-none font-black" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600 ml-2 block">Mastery Bundle Price</label>
+                    <div className="relative">
+                       <span className="absolute left-6 top-1/2 -translate-y-1/2 text-emerald-400 font-black">₹</span>
+                       <input required type="number" value={packageForm.bundlePrice} onChange={e => setPackageForm({...packageForm, bundlePrice: e.target.value})} className="w-full pl-10 pr-6 py-5 rounded-[20px] bg-emerald-50 border border-emerald-200 focus:border-emerald-400 outline-none font-black text-xl text-emerald-700 shadow-inner" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Technology Core</label>
+                    <input value={packageForm.technologyName} onChange={e => setPackageForm({...packageForm, technologyName: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:border-blue-400 outline-none font-bold placeholder-gray-300" placeholder="e.g. Distributed Systems" />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Storefront Category</label>
+                    <select value={packageForm.packageType} onChange={e => setPackageForm({...packageForm, packageType: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 outline-none font-black text-[11px] uppercase tracking-widest cursor-pointer shadow-sm">
+                      <option value="FULL_STACK">FULL STACK MASTERY</option>
+                      <option value="BACKEND">BACKEND COMMAND</option>
+                      <option value="FRONTEND">FRONTEND ARCHITECTURE</option>
+                      <option value="SYSTEM_DESIGN">DISTRIBUTED SYSTEMS</option>
+                    </select>
+                  </div>
+                  <button className="col-span-2 bg-[#0A1628] text-white py-5 rounded-[30px] font-black uppercase tracking-[0.2em] text-[11px] mt-10 hover:bg-emerald-600 transition-all shadow-2xl shadow-blue-900/40 active:scale-95">
+                    PUBLISH ELITE INTEL TO GLOBAL STOREFRONT
+                  </button>
+                </form>
+              </div>
+            </div>
           )}
         </div>
       </main>

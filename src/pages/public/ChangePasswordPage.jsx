@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, AlertTriangle, ShieldCheck } from 'lucide-react'
+import { HiEye, HiEyeSlash, HiExclamationTriangle, HiShieldCheck, HiArrowPath } from "react-icons/hi2";
 import { useAuth } from '../../context/AuthContext'
 import axiosInstance from '../../api/axiosInstance'
 import toast from 'react-hot-toast'
@@ -92,7 +92,7 @@ const ChangePasswordPage = () => {
           </div>
           <div>
             <div className="text-sm font-semibold text-[#0A1628] leading-tight">
-              Aja Internship Portal
+              Aja Interview Vault
             </div>
             <div className="text-xs text-gray-400 leading-tight">
               Interview Question Bank
@@ -105,7 +105,7 @@ const ChangePasswordPage = () => {
 
           {/* Warning Banner */}
           <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
-            <AlertTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
+            <HiExclamationTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
             <div>
               <p className="text-xs font-semibold text-amber-800 mb-1">
                 Action Required — Cannot Skip
@@ -120,7 +120,7 @@ const ChangePasswordPage = () => {
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-              <ShieldCheck size={20} className="text-[#2563EB]" />
+              <HiShieldCheck size={20} className="text-[#2563EB]" />
             </div>
             <div>
               <h1 className="text-lg font-semibold text-[#0A1628]">
@@ -156,7 +156,7 @@ const ChangePasswordPage = () => {
                   type="button"
                   onClick={() => toggleShow('current')}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors">
-                  {show.current ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {show.current ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                 </button>
               </div>
             </div>
@@ -183,7 +183,7 @@ const ChangePasswordPage = () => {
                   type="button"
                   onClick={() => toggleShow('new')}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors">
-                  {show.new ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {show.new ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                 </button>
               </div>
 
@@ -253,7 +253,7 @@ const ChangePasswordPage = () => {
                   type="button"
                   onClick={() => toggleShow('confirm')}
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors">
-                  {show.confirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {show.confirm ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                 </button>
               </div>
               {formData.confirmPassword.length > 0 &&
@@ -271,10 +271,7 @@ const ChangePasswordPage = () => {
               className="w-full py-3.5 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-2">
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                  </svg>
+                  <HiArrowPath className="animate-spin" size={16} />
                   Updating password...
                 </span>
               ) : 'Set New Password & Continue →'}

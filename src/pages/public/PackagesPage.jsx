@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, ShieldCheck } from "lucide-react"; // ✅ ADDED
+import { HiCheckCircle, HiShieldCheck } from "react-icons/hi2"; // ✅ ADDED
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
 import Navbar from "../../components/common/Navbar";
@@ -42,7 +42,7 @@ const PackagesPage = () => {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-white">
         <div className="w-12 h-12 border-4 border-blue-50 border-t-[#2563EB] rounded-full animate-spin mb-4" />
-        <p className="text-[#0A1628] font-bold text-sm uppercase tracking-widest">Aja Internship Portal</p>
+        <p className="text-[#0A1628] font-bold text-sm uppercase tracking-widest">Aja Interview Vault</p>
       </div>
     );
   }
@@ -145,7 +145,7 @@ const PackagesPage = () => {
                         "Full-time Hiring Support"
                       ].map((feature, fIdx) => (
                         <li key={fIdx} className="flex items-center gap-2.5">
-                          <CheckCircle size={14} className={isPremium ? "text-white/40" : "text-[#2563EB]"} />
+                          <HiCheckCircle size={14} className={isPremium ? "text-white/40" : "text-[#2563EB]"} />
                           <span className={`text-[11px] font-medium ${isPremium ? "text-white/70" : "text-gray-600"}`}>
                             {feature}
                           </span>

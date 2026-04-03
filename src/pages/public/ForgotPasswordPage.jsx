@@ -37,7 +37,7 @@ const ForgotPasswordPage = () => {
           </div>
           <div>
             <div className="text-sm font-semibold text-[#0A1628] leading-tight">
-              Aja Internship Portal
+              Aja Interview Vault
             </div>
             <div className="text-xs text-gray-400 leading-tight">
               Interview Question Bank

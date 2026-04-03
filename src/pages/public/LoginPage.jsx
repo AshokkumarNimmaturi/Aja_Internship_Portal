@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, CheckCircle } from "lucide-react";
+import { HiEye, HiEyeSlash, HiCheckCircle } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
@@ -96,7 +96,7 @@ const LoginPage = () => {
           <div className="h-8 w-px bg-white/20 mx-1" />
           <div>
             <div className="text-white text-sm font-bold tracking-tight">
-              Aja Internship Portal
+              Aja Interview Vault
             </div>
             <div className="text-blue-200/60 text-[10px] font-bold uppercase tracking-widest">
               Aja Consulting Services LLP
@@ -121,7 +121,7 @@ const LoginPage = () => {
             ].map((item, i) => (
               <div key={i} className="flex gap-4 group">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                  <CheckCircle size={18} className="text-blue-400" />
+                  <HiCheckCircle size={18} className="text-blue-400" />
                 </div>
                 <div>
                   <div className="text-white font-semibold text-sm">{item.t}</div>
@@ -187,7 +187,7 @@ const LoginPage = () => {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
                 >
-                  {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  {showPassword ? <HiEyeSlash size={20} /> : <HiEye size={20} />}
                 </button>
               </div>
             </div>

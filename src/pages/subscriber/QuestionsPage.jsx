@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { 
-  Search, 
-  Filter, 
-  ChevronRight, 
-  BookOpen, 
-  Star,
-  Zap,
-  RefreshCw
-} from "lucide-react";
+// ✅ UPGRADED: Using elite Heroicons 2
+import { HiMagnifyingGlass, HiAdjustmentsHorizontal, HiChevronRight, HiBookOpen, HiStar, HiBolt, HiArrowPath } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
 import axiosInstance from "../../api/axiosInstance";
@@ -36,8 +29,6 @@ const QuestionsPage = () => {
 
         const allQs = qRes.data.content || qRes.data || [];
         
-        // Filter questions based on active technologies if not admin
-        // (Assuming backend might return all but we only show what's allowed)
         if (user?.role === "SUBSCRIBER") {
            const activeSubsRaw = activeSubs.filter(s => 
              s.status?.toUpperCase() === "ACTIVE" || 
@@ -47,8 +38,6 @@ const QuestionsPage = () => {
            const allowedTechs = activeSubsRaw.flatMap(s => {
              const t = [];
              if (s.technologyName) t.push(s.technologyName);
-             
-             // Smart Keyword Matching for Packages
              const pName = s.packageName || "";
              const pType = s.packageType || "";
              
@@ -64,7 +53,6 @@ const QuestionsPage = () => {
              return t;
            });
            
-           // Ensure we only show approved questions that match the user's unlocked technologies
            const filtered = allQs.filter(q => 
              q.status === "APPROVED" && 
              (allowedTechs.includes(q.technologyName) || 
@@ -82,7 +70,7 @@ const QuestionsPage = () => {
       }
     };
     fetchData();
-  }, [user?.role]);
+  }, [user]);
 
   const techs = ["All", ...new Set(questions.map(q => q.technologyName))];
 
@@ -93,7 +81,7 @@ const QuestionsPage = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex min-h-screen bg-gray-50 font-sans overflow-hidden py-10">
       <Sidebar activeItem="Questions" />
       
       <main className="flex-1 p-8 overflow-y-auto w-full">
@@ -108,7 +96,7 @@ const QuestionsPage = () => {
             </div>
 
             <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-black/5 shadow-sm w-full md:w-96">
-              <Search size={18} className="text-gray-400" />
+              <HiMagnifyingGlass size={18} className="text-gray-400" />
               <input 
                 type="text" 
                 placeholder="Search concepts, questions..."
@@ -139,7 +127,7 @@ const QuestionsPage = () => {
           {/* Content */}
           {loading ? (
              <div className="py-40 text-center">
-                <div className="animate-spin text-blue-500 flex justify-center mb-4"><RefreshCw size={40} /></div>
+                <div className="animate-spin text-blue-500 flex justify-center mb-4"><HiArrowPath size={40} /></div>
                 <p className="text-gray-400 font-serif italic">Syncing your personalized library...</p>
              </div>
           ) : filteredQuestions.length > 0 ? (
@@ -161,11 +149,11 @@ const QuestionsPage = () => {
                    <div className="flex items-center justify-between pt-6 border-t border-black/5">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
-                          <Zap size={14} fill="currentColor" />
+                          <HiBolt size={14} fill="currentColor" />
                         </div>
                         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mastery Sync Available</span>
                       </div>
-                      <div className="text-blue-600 transform group-hover:translate-x-1 transition-transform"><ChevronRight size={20} /></div>
+                      <div className="text-blue-600 transform group-hover:translate-x-1 transition-transform"><HiChevronRight size={20} /></div>
                    </div>
                  </Link>
                ))}
@@ -173,7 +161,7 @@ const QuestionsPage = () => {
           ) : (
             <div className="py-40 text-center bg-white rounded-[60px] border border-black/5 shadow-inner">
                <div className="w-20 h-20 bg-gray-50 text-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                 <BookOpen size={40} />
+                 <HiBookOpen size={40} />
                </div>
                <h3 className="text-xl font-serif text-[#0A1628] mb-2">No questions found</h3>
                <p className="text-sm text-gray-400 italic max-w-sm mx-auto mb-8">

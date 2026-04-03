@@ -1,12 +1,32 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { LogOut } from "lucide-react";
+// ✅ UPGRADED: Switched to elite Heroicons 2 (React Icons)
+import { 
+  HiArrowRightOnRectangle, 
+  HiBars3, 
+  HiXMark,
+  HiHome,
+  HiPencilSquare,
+  HiClipboardDocumentList,
+  HiChatBubbleLeftEllipsis,
+  HiUser,
+  HiClock,
+  HiKey,
+  HiInboxStack,
+  HiUsers,
+  HiArchiveBox,
+  HiChartBar,
+  HiMagnifyingGlass,
+  HiBookmark,
+  HiCreditCard
+} from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../api/axiosInstance";
 
 export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [livePendingCount, setLivePendingCount] = useState(initialCount);
+  const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -35,39 +55,39 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
   };
 
   const employeeNav = [
-    { label: "Dashboard", icon: "🏠", path: "/portal/dashboard" },
-    { label: "Submit Question", icon: "✏️", path: "/portal/submit" },
-    { label: "My Submissions", icon: "📋", path: "/portal/submissions" },
-    { label: "My Answers", icon: "💬", path: "/portal/answers" },
-    { label: "Profile", icon: "👤", path: "/portal/profile" },
+    { label: "Dashboard", icon: <HiHome size={22} />, path: "/portal/dashboard" },
+    { label: "Submit Question", icon: <HiPencilSquare size={22} />, path: "/portal/submit" },
+    { label: "My Submissions", icon: <HiClipboardDocumentList size={22} />, path: "/portal/submissions" },
+    { label: "My Answers", icon: <HiChatBubbleLeftEllipsis size={22} />, path: "/portal/answers" },
+    { label: "Profile", icon: <HiUser size={22} />, path: "/portal/profile" },
   ];
   const tutorNav = [
-    { label: "Dashboard", icon: "🏠", path: "/portal/dashboard" },
-    { label: "Pending Review", icon: "⏳", path: "/portal/review", badge: livePendingCount },
-    { label: "Submit Question", icon: "✏️", path: "/portal/submit" },
-    { label: "My Submissions", icon: "📋", path: "/portal/submissions" },
-    { label: "Access Requests", icon: "🔑", path: "/portal/access" },
-    { label: "All Questions", icon: "📚", path: "/portal/questions" },
-    { label: "Profile", icon: "👤", path: "/portal/profile" },
+    { label: "Dashboard", icon: <HiHome size={22} />, path: "/portal/dashboard" },
+    { label: "Pending Review", icon: <HiClock size={22} />, path: "/portal/review", badge: livePendingCount },
+    { label: "Submit Question", icon: <HiPencilSquare size={22} />, path: "/portal/submit" },
+    { label: "My Submissions", icon: <HiClipboardDocumentList size={22} />, path: "/portal/submissions" },
+    { label: "Access Requests", icon: <HiKey size={22} />, path: "/portal/access" },
+    { label: "All Questions", icon: <HiInboxStack size={22} />, path: "/portal/questions" },
+    { label: "Profile", icon: <HiUser size={22} />, path: "/portal/profile" },
   ];
   const adminNav = [
-    { label: "Dashboard", icon: "🏠", path: "/portal/dashboard" },
-    { label: "Users", icon: "👥", path: "/portal/admin" },
-    { label: "Pending Review", icon: "⏳", path: "/portal/review", badge: livePendingCount },
-    { label: "Submit Question", icon: "✏️", path: "/portal/submit" },
-    { label: "My Submissions", icon: "📋", path: "/portal/submissions" },
-    { label: "Access Requests", icon: "🔑", path: "/portal/access" },
-    { label: "Packages", icon: "📦", path: "/portal/packages" },
-    { label: "Audit Log", icon: "📊", path: "/portal/audit" },
-    { label: "Profile", icon: "👤", path: "/portal/profile" },
+    { label: "Dashboard", icon: <HiHome size={22} />, path: "/portal/dashboard" },
+    { label: "Users", icon: <HiUsers size={22} />, path: "/portal/admin" },
+    { label: "Pending Review", icon: <HiClock size={22} />, path: "/portal/review", badge: livePendingCount },
+    { label: "Submit Question", icon: <HiPencilSquare size={22} />, path: "/portal/submit" },
+    { label: "My Submissions", icon: <HiClipboardDocumentList size={22} />, path: "/portal/submissions" },
+    { label: "Access Requests", icon: <HiKey size={22} />, path: "/portal/access" },
+    { label: "Packages", icon: <HiArchiveBox size={22} />, path: "/portal/packages" },
+    { label: "Audit Log", icon: <HiChartBar size={22} />, path: "/portal/audit" },
+    { label: "Profile", icon: <HiUser size={22} />, path: "/portal/profile" },
   ];
 
   const subscriberNav = [
-    { label: "Dashboard", icon: "🏠", path: "/dashboard" },
-    { label: "Questions", icon: "📚", path: "/dashboard/questions" },
-    { label: "Bookmarks", icon: "🔖", path: "/dashboard/bookmarks" },
-    { label: "Subscription", icon: "💳", path: "/dashboard/subscription" },
-    { label: "Profile", icon: "👤", path: "/dashboard/profile" },
+    { label: "Dashboard", icon: <HiHome size={22} />, path: "/dashboard" },
+    { label: "Questions", icon: <HiMagnifyingGlass size={22} />, path: "/dashboard/questions" },
+    { label: "Bookmarks", icon: <HiBookmark size={22} />, path: "/dashboard/bookmarks" },
+    { label: "Subscription", icon: <HiCreditCard size={22} />, path: "/dashboard/subscription" },
+    { label: "Profile", icon: <HiUser size={22} />, path: "/dashboard/profile" },
   ];
 
   const navItems = role === "ADMIN" ? adminNav : role === "TUTOR" ? tutorNav : role === "SUBSCRIBER" ? subscriberNav : employeeNav;
@@ -100,7 +120,7 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
           </div>
           <div className={`whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
             <div className="text-white text-sm font-bold tracking-tight leading-tight">
-              Aja Internship Portal
+              Aja Interview Vault
             </div>
             <div className="text-white/40 text-xs font-medium tracking-wide mt-0.5 leading-tight">
               Internal Portal
@@ -140,7 +160,7 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
                 <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-6 bg-white rounded-r-md shadow-[0_0_8px_rgba(255,255,255,0.8)]" />
               )}
               <div className={`flex items-center ${isHovered ? 'gap-3.5' : ''}`}>
-                <span className={`text-xl shrink-0 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>{item.icon}</span>
+                <span className={`shrink-0 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>{item.icon}</span>
                 <span className={`text-sm whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
                   {item.label}
                 </span>
@@ -180,10 +200,12 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
             title={!isHovered ? "Logout" : ""}
             className={`text-white/40 hover:text-white transition-colors shrink-0 p-2.5 rounded-xl hover:bg-red-500 hover:shadow-md ${!isHovered && 'hidden'}`}
           >
-            <LogOut size={16} strokeWidth={2.5} />
+            <HiArrowRightOnRectangle className="w-5 h-5" />
           </button>
         </div>
       </div>
     </aside>
   );
 };
+
+export default PortalSidebar;

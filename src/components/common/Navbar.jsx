@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { Menu, X } from "lucide-react";
+// ✅ UPGRADED: Using elite Heroicons 2
+import { HiBars3, HiXMark } from "react-icons/hi2";
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -42,7 +43,7 @@ const Navbar = () => {
           </div>
           <div className="hidden sm:block">
             <div className="text-sm font-bold text-[#0D0D0D] leading-tight">
-              Aja Internship Portal
+              Aja Interview Vault
             </div>
             <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-tight">
               Aja Consulting Services LLP
@@ -104,42 +105,63 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu Toggle */}
-        <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
-          {menuOpen ? <X size={22} /> : <Menu size={22} />}
+        <button className="md:hidden p-2 rounded-xl bg-gray-50 border border-black/5" onClick={() => setMenuOpen(!menuOpen)}>
+          {menuOpen ? <HiXMark size={22} className="text-[#0D0D0D]" /> : <HiBars3 size={22} className="text-[#0D0D0D]" />}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-black/5 px-6 py-4 flex flex-col gap-4">
+        <div className="md:hidden absolute top-20 left-0 right-0 bg-white border-b border-black/5 px-6 py-4 flex flex-col gap-4 shadow-xl shadow-black/5 animate-in slide-in-from-top-2 duration-300">
           <Link
             to="/"
-            className="text-sm text-gray-600"
+            className="text-sm font-bold text-gray-500 hover:text-[#2563EB] py-2"
             onClick={() => setMenuOpen(false)}
           >
             Home
           </Link>
           <Link
             to="/packages"
-            className="text-sm text-gray-600"
+            className="text-sm font-bold text-gray-500 hover:text-[#2563EB] py-2"
             onClick={() => setMenuOpen(false)}
           >
             Packages
           </Link>
-          <Link
-            to="/login"
-            className="text-sm text-gray-600"
-            onClick={() => setMenuOpen(false)}
-          >
-            Log in
-          </Link>
-          <Link
-            to="/register"
-            className="text-sm font-medium text-[#2563EB]"
-            onClick={() => setMenuOpen(false)}
-          >
-            Get Started
-          </Link>
+          <div className="h-px bg-black/5 my-2" />
+          {isAuthenticated ? (
+            <>
+              <Link
+                to={getDashboardLink()}
+                className="text-sm font-bold text-[#0D0D0D] py-2"
+                onClick={() => setMenuOpen(false)}
+              >
+                My Portal
+              </Link>
+              <button
+                onClick={() => { handleLogout(); setMenuOpen(false); }}
+                className="text-sm font-bold text-red-500 py-2 text-left"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/login"
+                className="text-sm font-bold text-gray-500 hover:text-[#0D0D0D] py-2"
+                onClick={() => setMenuOpen(false)}
+              >
+                Log in
+              </Link>
+              <Link
+                to="/register"
+                className="text-sm font-bold bg-[#0D0D0D] text-white px-6 py-3 rounded-xl text-center shadow-lg shadow-black/10 active:scale-95 transition-all"
+                onClick={() => setMenuOpen(false)}
+              >
+                Get Started
+              </Link>
+            </>
+          )}
         </div>
       )}
     </nav>

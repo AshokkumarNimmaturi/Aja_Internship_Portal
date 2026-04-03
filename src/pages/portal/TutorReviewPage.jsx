@@ -3,17 +3,18 @@ import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
+// ✅ UPGRADED: Using elite Heroicons 2
 import { 
-  RefreshCw, 
-  CheckCircle, 
-  XCircle, 
-  Star, 
-  Edit3, 
-  MessageSquare,
-  Briefcase,
-  Search,
-  Filter
-} from "lucide-react";
+  HiArrowPath, 
+  HiCheckCircle, 
+  HiXCircle, 
+  HiStar, 
+  HiPencilSquare, 
+  HiChatBubbleLeftEllipsis,
+  HiBriefcase,
+  HiMagnifyingGlass,
+  HiAdjustmentsHorizontal
+} from "react-icons/hi2";
 
 const TechBadge = ({ tech }) => (
   <span className="text-[10px] font-bold px-2 py-1 bg-gray-100 rounded border border-black/5 text-gray-600 uppercase italic tracking-widest">
@@ -92,7 +93,7 @@ const TutorReviewPage = () => {
   });
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden py-10">
       <PortalSidebar user={user} role="TUTOR" activeItem="Review Queue" />
 
       <main className="flex-1 p-8 overflow-y-auto">
@@ -102,34 +103,34 @@ const TutorReviewPage = () => {
               <h1 className="text-3xl font-serif text-[#0A1628] mb-1">Curation Phase</h1>
               <p className="text-xs text-gray-400 font-light uppercase tracking-widest">Expert Verification & Mastery Benchmarking</p>
             </div>
-            <button onClick={fetchQuestions} className="flex items-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-widest text-[#0A1628] border border-black/10 rounded-xl hover:bg-white transition-all">
-              <RefreshCw size={14} className={loadingQ ? "animate-spin" : ""} /> Sync Queue
+            <button onClick={fetchQuestions} className="flex items-center gap-2 px-5 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#0A1628] border border-black/10 rounded-xl hover:bg-white transition-all shadow-sm">
+              <HiArrowPath size={14} className={loadingQ ? "animate-spin" : ""} /> Sync Queue
             </button>
           </div>
 
           {/* Search & Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-8">
              <div className="flex-1 relative">
-                <Search size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <HiMagnifyingGlass size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300" />
                 <input 
                   type="text" 
                   placeholder="Search by title or client..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-12 pr-4 py-3 bg-white border border-black/5 rounded-2xl text-sm focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all shadow-sm"
+                  className="w-full pl-12 pr-4 py-4 bg-white border border-black/5 rounded-[20px] text-sm focus:ring-8 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all shadow-sm font-medium"
                 />
              </div>
-             <div className="flex gap-2 items-center">
-                <Filter size={14} className="text-gray-400 mr-2" />
+             <div className="flex gap-2 items-center bg-white px-4 py-2 rounded-[20px] border border-black/5 shadow-sm">
+                <HiAdjustmentsHorizontal size={18} className="text-gray-400" />
                 <div className="flex gap-1 overflow-x-auto pb-1 max-w-xs scrollbar-hide">
                   {techFilters.map((tech) => (
                     <button
                       key={tech}
                       onClick={() => setActiveFilter(tech)}
-                      className={`px-3 py-1.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
+                      className={`px-4 py-2 rounded-xl text-[9px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
                         activeFilter === tech
-                          ? "bg-[#0A1628] text-white shadow-md shadow-blue-900/20"
-                          : "bg-white border border-black/5 text-gray-400 hover:bg-gray-100"
+                          ? "bg-[#0A1628] text-white shadow-lg shadow-blue-900/20"
+                          : "text-gray-400 hover:text-[#0A1628] hover:bg-gray-50"
                         }`}
                     >
                       {tech}
@@ -142,7 +143,7 @@ const TutorReviewPage = () => {
           {/* List */}
           {loadingQ ? (
             <div className="flex flex-col items-center justify-center py-24 bg-white border border-black/5 rounded-[40px] text-center shadow-sm">
-              <RefreshCw className="animate-spin text-blue-100 mb-4" size={32} />
+              <HiArrowPath className="animate-spin text-blue-100 mb-4" size={32} />
               <p className="text-gray-400 text-sm italic font-serif">Awaiting quality submissions...</p>
             </div>
           ) : filtered.length > 0 ? (
@@ -155,8 +156,8 @@ const TutorReviewPage = () => {
                     <div className="flex-1">
                       <h3 className="font-bold text-[#0A1628] text-xl leading-tight mb-3 group-hover:text-blue-700 transition-colors">{q.title}</h3>
                       <div className="flex flex-wrap items-center gap-3">
-                         <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-600 rounded-lg border border-blue-100 text-[10px] font-bold uppercase tracking-widest italic">
-                            <Briefcase size={12} /> {q.clientName || "General Intake"}
+                         <div className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 text-[9px] font-bold uppercase tracking-widest italic leading-none">
+                            <HiBriefcase size={12} /> {q.clientName || "General Intake"}
                          </div>
                          <TechBadge tech={q.technologyName || "General"} />
                          <DifficultyBadge difficulty={q.difficulty} />
@@ -167,12 +168,12 @@ const TutorReviewPage = () => {
 
                   {/* Context Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-                    <div className="bg-gray-50 rounded-2xl p-5 border border-black/5">
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-1.5">Submission Content</span>
+                    <div className="bg-gray-50 rounded-2xl p-6 border border-black/5 shadow-inner">
+                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest block mb-2 opacity-70">Submission Content</span>
                       <p className="text-sm text-gray-600 leading-relaxed italic">"{q.content}"</p>
                     </div>
-                    <div className="bg-blue-50/20 rounded-2xl p-5 border border-blue-100/50">
-                      <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest block mb-1.5">Proposed Explanation</span>
+                    <div className="bg-blue-50/30 rounded-2xl p-6 border border-blue-100/50 shadow-inner">
+                      <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest block mb-2 opacity-70">Proposed Explanation</span>
                       <p className="text-sm text-blue-700/70 leading-relaxed font-light italic">
                         {q.initialAnswer ? `"${q.initialAnswer}"` : "No explanation provided."}
                       </p>
@@ -180,27 +181,30 @@ const TutorReviewPage = () => {
                   </div>
 
                   {/* Mastering Tool */}
-                  <div className="bg-white border-2 border-dashed border-blue-100 rounded-3xl p-6 mb-6 shadow-inner">
-                    <div className="flex items-center gap-2 mb-3 text-blue-600 font-bold">
-                       <Edit3 size={16} />
-                       <span className="text-xs uppercase tracking-widest">Verified Master Answer (Syncs to Storefront)</span>
+                  <div className="bg-white border-2 border-dashed border-blue-100 rounded-3xl p-6 mb-6 shadow-sm">
+                    <div className="flex items-center gap-2 mb-4 text-blue-600 font-bold">
+                       <HiPencilSquare size={18} />
+                       <span className="text-[10px] uppercase tracking-widest font-black">Verified Master Answer (Syncs to Storefront)</span>
                     </div>
                     <textarea
                       placeholder="Craft the official, high-quality answer for subscribers..."
                       value={correctedAnswers[q.id] || ""}
                       onChange={(e) => setCorrectedAnswers({ ...correctedAnswers, [q.id]: e.target.value })}
-                      className="w-full px-5 py-4 bg-gray-50/30 border border-black/5 rounded-2xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-8 focus:ring-blue-50/50 transition-all resize-none font-sans leading-relaxed"
+                      className="w-full px-5 py-4 bg-gray-50/50 border border-black/5 rounded-2xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-blue-400 focus:ring-8 focus:ring-blue-50/30 transition-all resize-none leading-relaxed font-medium"
                       rows={5}
                     />
                   </div>
 
                   {/* Feedback */}
                   <div className="mb-8">
-                     <span className="text-[9px] font-bold text-gray-300 uppercase tracking-widest ml-2 block mb-1">Internal Feedback (Visible to Submitter)</span>
+                     <div className="flex items-center gap-2 mb-2 ml-2">
+                        <HiChatBubbleLeftEllipsis size={14} className="text-gray-300" />
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Internal Feedback (Visible to Submitter)</span>
+                     </div>
                      <input 
                        value={comments[q.id] || ""}
                        onChange={(e) => setComments({ ...comments, [q.id]: e.target.value })}
-                       className="w-full px-5 py-3 border border-black/5 rounded-2xl text-sm italic text-gray-500 placeholder-gray-200 outline-none focus:border-blue-200 focus:bg-gray-50/50 transition-all"
+                       className="w-full px-5 py-3.5 border border-black/5 rounded-2xl text-sm italic text-gray-500 placeholder-gray-200 outline-none focus:border-blue-200 focus:bg-gray-50/50 transition-all shadow-inner"
                        placeholder="Explain rejection or offer feedback..."
                      />
                   </div>
@@ -210,16 +214,16 @@ const TutorReviewPage = () => {
                      <button 
                        onClick={() => handleAction(q.id, 'REJECTED')}
                        disabled={!!processing}
-                       className="flex-1 py-4 px-6 rounded-2xl bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all border border-red-100 flex items-center justify-center gap-2"
+                       className="flex-1 py-4.5 px-6 rounded-2xl bg-red-50 text-red-600 text-[10px] font-bold uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all border border-red-100 flex items-center justify-center gap-2 active:scale-95 shadow-sm"
                      >
-                       <XCircle size={16} /> {processing === q.id + "REJECTED" ? 'REJECTING...' : 'DISCARD'}
+                       <HiXCircle size={18} /> {processing === q.id + "REJECTED" ? 'REJECTING...' : 'DISCARD'}
                      </button>
                      <button 
                        onClick={() => handleAction(q.id, 'APPROVED')}
                        disabled={!!processing}
-                       className="flex-[2] py-4 px-6 rounded-2xl bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-blue-900/10 flex items-center justify-center gap-2"
+                       className="flex-[2] py-4.5 px-6 rounded-2xl bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl shadow-blue-900/10 flex items-center justify-center gap-2 active:scale-95"
                      >
-                       <CheckCircle size={16} /> {processing === q.id + "APPROVED" ? 'SYNCING...' : 'APPROVE & PUBLISH'}
+                       <HiCheckCircle size={18} /> {processing === q.id + "APPROVED" ? 'SYNCING...' : 'APPROVE & PUBLISH'}
                      </button>
                   </div>
                 </div>
@@ -227,8 +231,8 @@ const TutorReviewPage = () => {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-32 bg-white border border-black/5 rounded-[50px] text-center shadow-inner">
-               <div className="text-6xl mb-6">🥂</div>
-               <h3 className="text-xl font-serif text-[#0A1628] mb-2">Queue Mastery Achieved</h3>
+               <div className="text-6xl mb-6 grayscale hover:grayscale-0 transition-all cursor-default">🥂</div>
+               <h3 className="text-xl font-serif text-[#0A1628] mb-2 font-bold">Queue Mastery Achieved</h3>
                <p className="text-gray-400 text-sm italic font-light max-w-xs">{searchQuery ? `No matches for "${searchQuery}" in ${activeFilter} category.` : "Every single question has been curated. Take a well-deserved break."}</p>
             </div>
           )}

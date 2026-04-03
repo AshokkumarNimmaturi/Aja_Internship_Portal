@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext"; // ✅ ADDED
+import { useAuth } from "../../context/AuthContext";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
-import { Star, Lock, ChevronRight } from "lucide-react";
+// ✅ UPGRADED: Using elite Heroicons 2
+import { HiStar, HiLockClosed, HiChevronRight } from "react-icons/hi2";
 import axiosInstance from "../../api/axiosInstance";
 
 const tutors = [
@@ -50,7 +51,7 @@ const techBadgeStyle = {
 const StarRating = ({ count }) => (
   <div className="flex gap-0.5">
     {[1, 2, 3, 4, 5].map((s) => (
-      <Star
+      <HiStar
         key={s}
         size={12}
         className={
@@ -95,14 +96,6 @@ const LandingPage = () => {
   const [packages, setPackages] = useState([]);
   const [sampleQuestions, setSampleQuestions] = useState([]);
   const { isAuthenticated, user } = useAuth();
-
-  const getDashboardLink = () => {
-    if (user?.role === "SUBSCRIBER") return "/dashboard";
-    if (user?.role === "ADMIN") return "/portal/admin";
-    if (user?.role === "TUTOR") return "/portal/review";
-    if (user?.role === "EMPLOYEE") return "/portal/dashboard";
-    return "/dashboard";
-  };
 
   useEffect(() => {
     setTimeout(() => setVisible(true), 100);
@@ -155,7 +148,7 @@ const LandingPage = () => {
               <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center border border-black/5 shadow-sm">
                 <img src="/logo.png" alt="Aja Logo" className="w-7 h-auto" />
               </div>
-              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#0D0D0D]">AJA INTERNSHIP PORTAL</h2>
+              <h2 className="text-xs font-bold uppercase tracking-[0.2em] text-[#0D0D0D]">AJA INTERVIEW VAULT</h2>
             </div>
 
             {/* Rocket Badge */}
@@ -183,7 +176,7 @@ const LandingPage = () => {
               to="/register"
               className="px-8 py-4 bg-[#2563EB] text-white text-sm font-bold rounded-xl hover:bg-blue-700 shadow-xl shadow-blue-500/20 transition-all flex items-center gap-2"
             >
-              Get Started <ChevronRight size={18} />
+              Get Started <HiChevronRight size={18} />
             </Link>
             <button
               onClick={() => document.getElementById('features').scrollIntoView({ behavior: 'smooth' })}
@@ -242,7 +235,7 @@ const LandingPage = () => {
                 {feat.desc}
               </p>
               <Link to={feat.link} className="flex items-center gap-2 text-sm font-bold text-[#2563EB] group-hover:gap-3 transition-all">
-                Learn More <ChevronRight size={16} />
+                Learn More <HiChevronRight size={16} />
               </Link>
             </div>
           ))}
@@ -299,7 +292,7 @@ const LandingPage = () => {
                       : "bg-gray-50 text-gray-700 hover:bg-[#0D0D0D] hover:text-white"
                     }`}
                 >
-                  Get Access <ChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                  Get Access <HiChevronRight size={14} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
               </div>
             )) : (
@@ -355,7 +348,7 @@ const LandingPage = () => {
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 px-10 py-5 bg-[#0D0D0D] text-white text-sm font-bold rounded-2xl hover:bg-gray-800 shadow-2xl shadow-black/10 transition-all duration-300 group"
             >
-              Join Internship (Main Website) <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              Join Internship (Main Website) <HiChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
             </a>
           </div>
           <div className="relative flex justify-center">
@@ -398,7 +391,7 @@ const LandingPage = () => {
           </h2>
           <p className="text-gray-400 font-medium mb-10 max-w-md mx-auto relative z-10 leading-relaxed">
             Join thousands of professionals who have accelerated their <br />
-            careers with the Aja Internship Portal.
+            careers with the Aja Interview Vault.
           </p>
           <div className="flex items-center justify-center gap-4 relative z-10">
             <Link

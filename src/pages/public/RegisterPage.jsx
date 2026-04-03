@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, CheckCircle, Info } from "lucide-react";
+import { HiEye, HiEyeSlash, HiCheckCircle, HiInformationCircle } from "react-icons/hi2";
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
 
@@ -131,7 +131,7 @@ const RegisterPage = () => {
           <div className="h-8 w-px bg-white/20 mx-1" />
           <div>
             <div className="text-white text-sm font-bold tracking-tight">
-              Aja Internship Portal
+              Aja Interview Vault
             </div>
             <div className="text-blue-200/60 text-[10px] font-bold uppercase tracking-widest">
               Aja Consulting Services LLP
@@ -156,7 +156,7 @@ const RegisterPage = () => {
             ].map((item, i) => (
               <div key={i} className="flex gap-4 group">
                 <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
-                  <CheckCircle size={18} className="text-blue-400" />
+                  <HiCheckCircle size={18} className="text-blue-400" />
                 </div>
                 <div>
                   <div className="text-white font-semibold text-sm">{item.t}</div>
@@ -244,7 +244,7 @@ const RegisterPage = () => {
                     className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-4 text-gray-400">
-                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showPassword ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                   </button>
                 </div>
               </div>
@@ -260,7 +260,7 @@ const RegisterPage = () => {
                     className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
                   />
                   <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-4 text-gray-400">
-                    {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
+                    {showConfirm ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                   </button>
                 </div>
               </div>

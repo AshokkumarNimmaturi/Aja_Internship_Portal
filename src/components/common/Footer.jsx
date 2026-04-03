@@ -7,10 +7,10 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">
             <Link to="/" className="flex items-center gap-3 mb-6">
-              <img src="/logo.png" alt="Aja Internship Portal" className="h-12 w-auto brightness-0 invert" />
+              <img src="/logo.png" alt="Aja Interview Vault" className="h-12 w-auto brightness-0 invert" />
               <div>
                 <div className="text-white text-lg font-bold leading-tight">
-                  Aja Internship Portal
+                  Aja Interview Vault
                 </div>
                 <div className="text-[10px] text-blue-400 font-bold uppercase tracking-widest leading-tight">
                   Aja Consulting Services LLP
