@@ -46,7 +46,7 @@ const RegisterPage = () => {
     e.preventDefault();
 
     // 🔥 REQUIRED VALIDATION
-    if (!formData.fullName || !formData.email || !formData.password) {
+    if (!formData.fullName || !formData.email || !formData.phone || !formData.password) {
       toast.error("Please fill all required fields");
       return;
     }
@@ -75,8 +75,8 @@ const RegisterPage = () => {
       return;
     }
 
-    // 🔥 PHONE VALIDATION
-    if (formData.phone && !/^[0-9]{10}$/.test(formData.phone)) {
+    // 🔥 PHONE VALIDATION (Now Required)
+    if (!/^[0-9]{10}$/.test(formData.phone)) {
       toast.error("Enter valid 10-digit phone number");
       return;
     }
@@ -220,10 +220,11 @@ const RegisterPage = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Phone (Optional)</label>
+              <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Phone Number</label>
               <input
                 type="tel"
                 name="phone"
+                required
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="10-digit number"

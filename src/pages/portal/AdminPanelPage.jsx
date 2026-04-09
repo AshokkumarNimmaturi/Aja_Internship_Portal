@@ -16,7 +16,8 @@ import {
   HiUserPlus,
   HiShieldCheck,
   HiBriefcase,
-  HiMagnifyingGlass
+  HiMagnifyingGlass,
+  HiPencilSquare
 } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
@@ -41,14 +42,17 @@ const AdminPanelPage = () => {
   const [processing, setProcessing] = useState(null);
   
   // Default support number for general header button
-  const ADMIN_SUPPORT_NUMBER = "+919573030386";
+  const ADMIN_SUPPORT_NUMBER = "+917780131390";
 
   // Forms Visibility
   const [showUserForm, setShowUserForm] = useState(false);
   const [showPackageForm, setShowPackageForm] = useState(false);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [selectedUserForPhone, setSelectedUserForPhone] = useState(null);
+  const [newPhoneNumber, setNewPhoneNumber] = useState("");
 
   // Form Data
-  const [userForm, setUserForm] = useState({ fullName: "", email: "", password: "", role: "EMPLOYEE" });
+  const [userForm, setUserForm] = useState({ fullName: "", email: "", phone: "", password: "", role: "EMPLOYEE" });
   const [packageForm, setPackageForm] = useState({
     name: "",
     description: "",
@@ -147,10 +151,37 @@ const AdminPanelPage = () => {
       await axiosInstance.post("/admin/users", userForm);
       toast.success("User created successfully");
       setShowUserForm(false);
-      setUserForm({ fullName: "", email: "", password: "", role: "EMPLOYEE" });
+      setUserForm({ fullName: "", email: "", phone: "", password: "", role: "EMPLOYEE" });
       fetchData();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to create user");
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const handleOpenPhoneModal = (u) => {
+    setSelectedUserForPhone(u);
+    setNewPhoneNumber(u.phone || "");
+    setShowPhoneModal(true);
+  };
+
+  const handleUpdatePhone = async (e) => {
+    e.preventDefault();
+    if (!/^[0-9]{10,15}$/.test(newPhoneNumber)) {
+      toast.error("Enter valid phone number");
+      return;
+    }
+    setProcessing("phone");
+    try {
+      await axiosInstance.put(`/admin/users/${selectedUserForPhone.id}`, {
+        phone: newPhoneNumber
+      });
+      toast.success("Phone updated successfully");
+      setShowPhoneModal(false);
+      fetchData();
+    } catch (err) {
+      toast.error("Update failed");
     } finally {
       setProcessing(null);
     }
@@ -213,12 +244,6 @@ const AdminPanelPage = () => {
               <button onClick={fetchData} className="flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border border-black/10 rounded-2xl bg-white hover:bg-gray-50 transition-all shadow-sm active:scale-95">
                 <HiArrowPath size={16} className={loading ? "animate-spin" : ""} /> Sync Data
               </button>
-              
-              <VoiceCallButton 
-                className="px-5 py-2.5 min-w-[200px]" 
-                toNumber={ADMIN_SUPPORT_NUMBER} 
-                label="Admin Support" 
-              />
             </div>
           </div>
 
@@ -281,7 +306,16 @@ const AdminPanelPage = () => {
                               ) : (
                                 <span className="text-[10px] text-gray-300 italic">No Phone</span>
                               )}
-                              <span className="text-[11px] font-bold font-mono text-gray-500">{u.phone || "—"}</span>
+                              <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-bold font-mono text-gray-500">{u.phone || "—"}</span>
+                                <button 
+                                  onClick={() => handleOpenPhoneModal(u)}
+                                  className="p-1.5 hover:bg-gray-200 rounded-lg text-gray-400 hover:text-blue-600 transition-all"
+                                  title="Edit Phone"
+                                >
+                                  <HiPencilSquare size={14} />
+                                </button>
+                              </div>
                            </div>
                         </td>
                         <td className="px-8 py-6 text-right">
@@ -438,6 +472,10 @@ const AdminPanelPage = () => {
                     <input required type="email" value={userForm.email} onChange={e => setUserForm({...userForm, email: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:ring-8 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all font-bold" placeholder="agent@aja.com" />
                   </div>
                   <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Agent Phone</label>
+                    <input required type="tel" value={userForm.phone} onChange={e => setUserForm({...userForm, phone: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:ring-8 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all font-bold" placeholder="10-digit number" />
+                  </div>
+                  <div className="space-y-2">
                     <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Initial Cipher</label>
                     <input required type="password" value={userForm.password} onChange={e => setUserForm({...userForm, password: e.target.value})} className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:ring-8 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all font-bold" placeholder="••••••••" />
                   </div>
@@ -505,6 +543,32 @@ const AdminPanelPage = () => {
                   </div>
                   <button className="col-span-2 bg-[#0A1628] text-white py-5 rounded-[30px] font-black uppercase tracking-[0.2em] text-[11px] mt-10 hover:bg-emerald-600 transition-all shadow-2xl shadow-blue-900/40 active:scale-95">
                     PUBLISH ELITE INTEL TO GLOBAL STOREFRONT
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {showPhoneModal && (
+            <div className="fixed inset-0 bg-[#0A1628]/80 backdrop-blur-xl z-[100] flex items-center justify-center p-6 animate-in fade-in duration-300">
+              <div className="bg-white rounded-[50px] w-full max-w-sm p-10 shadow-2xl border border-white/10 relative overflow-hidden animate-in zoom-in-95 duration-500">
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-xl font-serif text-[#0A1628] font-black tracking-tight">Update Phone</h2>
+                  <button onClick={() => setShowPhoneModal(false)} className="w-8 h-8 flex items-center justify-center bg-gray-100 hover:bg-red-500 hover:text-white rounded-full transition-all"><HiXCircle size={20} /></button>
+                </div>
+                <form onSubmit={handleUpdatePhone} className="space-y-6">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 ml-2 block">Contact Number</label>
+                    <input 
+                      required 
+                      value={newPhoneNumber} 
+                      onChange={e => setNewPhoneNumber(e.target.value)} 
+                      className="w-full px-6 py-4 rounded-[20px] bg-gray-50 border border-black/5 focus:border-blue-400 outline-none transition-all font-bold" 
+                      placeholder="e.g. 7780131390" 
+                    />
+                  </div>
+                  <button disabled={processing === 'phone'} className="w-full bg-[#0A1628] text-white py-4 rounded-[20px] font-black uppercase tracking-[0.2em] text-[10px] hover:bg-blue-600 transition-all shadow-xl active:scale-95">
+                    {processing === 'phone' ? 'SAVING...' : 'SAVE CONTACT NUMBER'}
                   </button>
                 </form>
               </div>

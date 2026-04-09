@@ -166,8 +166,16 @@ const DashboardPage = () => {
                       </div>
                       <Link to="/dashboard/subscription" className="block w-full py-5 bg-white/10 backdrop-blur-xl text-white border border-white/20 rounded-2xl text-center text-xs font-black uppercase tracking-[0.2em] hover:bg-white/20 transition-all active:scale-[0.98]">Manage Access</Link>
                       
-                      {/* Premium Technical Support */}
-                      <VoiceCallButton />
+                      <div className="mt-6 pt-6 border-t border-white/10 relative z-10">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-[10px] font-black uppercase tracking-widest text-blue-200">Priority Support</span>
+                          <span className="px-3 py-1 bg-blue-500/20 rounded-full text-[8px] font-black text-white border border-white/10 uppercase tracking-widest">Direct Line</span>
+                        </div>
+                        <VoiceCallButton 
+                          toNumber="+917780131390" 
+                          label="Admin Support" 
+                          className="w-full py-4.5 bg-gradient-to-r from-blue-600 to-indigo-600 !text-white !border-none rounded-2xl shadow-xl shadow-blue-500/20 active:scale-95 transition-all text-[10px] font-black tracking-widest uppercase flex items-center justify-center gap-3"
+                        />                      </div>
                     </div>
                   )}
                </div>

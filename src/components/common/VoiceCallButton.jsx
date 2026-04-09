@@ -5,7 +5,7 @@ import axiosInstance from '../../api/axiosInstance';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const VoiceCallButton = ({ toNumber = "+919573030386", className = "", label = "Technical Support", compact = false }) => { 
+const VoiceCallButton = ({ toNumber = "+917780131390", className = "", label = "Technical Support", compact = false }) => { 
   const { user } = useAuth();
   const [device, setDevice] = useState(null);
   const [callStatus, setCallStatus] = useState('idle'); // idle, connecting, on-call
