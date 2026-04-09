@@ -22,6 +22,7 @@ import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
+import VoiceCallButton from "../../components/common/VoiceCallButton";
 
 const AdminPanelPage = () => {
   const { user } = useAuth();
@@ -38,6 +39,9 @@ const AdminPanelPage = () => {
   const [stats, setStats] = useState({ users: 0, questions: 0, pending: 0, support: 0 });
   const [supportRequests, setSupportRequests] = useState([]);
   const [processing, setProcessing] = useState(null);
+  
+  // Default support number for general header button
+  const ADMIN_SUPPORT_NUMBER = "+919573030386";
 
   // Forms Visibility
   const [showUserForm, setShowUserForm] = useState(false);
@@ -104,7 +108,7 @@ const AdminPanelPage = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [user?.role]);
 
   const fetchAuditData = useCallback(async () => {
     try {
@@ -124,11 +128,9 @@ const AdminPanelPage = () => {
   const handleToggleUser = async (userId, currentStatus) => {
     try {
       if (currentStatus) {
-        // If user is currently enabled (true), deactivate them (DELETE)
         await axiosInstance.delete(`/admin/users/${userId}`);
         toast.success("User deactivated successfully");
       } else {
-        // If user is currently disabled (false), enable them (PUT /activate)
         await axiosInstance.put(`/admin/users/${userId}/activate`);
         toast.success("User access restored successfully");
       }
@@ -211,6 +213,12 @@ const AdminPanelPage = () => {
               <button onClick={fetchData} className="flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border border-black/10 rounded-2xl bg-white hover:bg-gray-50 transition-all shadow-sm active:scale-95">
                 <HiArrowPath size={16} className={loading ? "animate-spin" : ""} /> Sync Data
               </button>
+              
+              <VoiceCallButton 
+                className="px-5 py-2.5 min-w-[200px]" 
+                toNumber={ADMIN_SUPPORT_NUMBER} 
+                label="Admin Support" 
+              />
             </div>
           </div>
 
@@ -244,7 +252,7 @@ const AdminPanelPage = () => {
              <div className="bg-white rounded-[40px] border border-black/8 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <table className="w-full text-left font-sans">
                   <thead className="bg-gray-50/50 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-black/5">
-                    <tr><th className="px-8 py-5">Full Member Profile</th><th className="px-8 py-5">Security Clearances</th><th className="px-8 py-5">Status Pulse</th><th className="px-8 py-5 text-right">Access Manager</th></tr>
+                    <tr><th className="px-8 py-5">Full Member Profile</th><th className="px-8 py-5">Security Clearances</th><th className="px-8 py-5">Status Pulse</th><th className="px-8 py-5 text-center">Contact</th><th className="px-8 py-5 text-right">Access Manager</th></tr>
                   </thead>
                   <tbody className="divide-y divide-black/5 text-sm">
                     {Array.isArray(users) && users.map(u => (
@@ -261,6 +269,20 @@ const AdminPanelPage = () => {
                              <span className={`w-2.5 h-2.5 rounded-full ${u.enabled ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.4)]' : 'bg-red-400'}`} />
                              <span className="text-[11px] font-black uppercase tracking-widest opacity-70">{u.enabled ? 'Verified Active' : 'Access Restricted'}</span>
                           </div>
+                        </td>
+                        <td className="px-8 py-6">
+                           <div className="flex items-center gap-4">
+                              {u.phone ? (
+                                <VoiceCallButton 
+                                  toNumber={u.phone} 
+                                  label={u.fullName}
+                                  compact={true}
+                                />
+                              ) : (
+                                <span className="text-[10px] text-gray-300 italic">No Phone</span>
+                              )}
+                              <span className="text-[11px] font-bold font-mono text-gray-500">{u.phone || "—"}</span>
+                           </div>
                         </td>
                         <td className="px-8 py-6 text-right">
                            {user?.id !== u.id && (
@@ -285,31 +307,31 @@ const AdminPanelPage = () => {
           {activeView === "Packages" && (
              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in zoom-in-95 duration-500">
                 {Array.isArray(packages) && packages.map(pkg => (
-                  <div key={pkg.id} className="bg-white p-9 rounded-[50px] border border-black/8 shadow-sm hover:shadow-2xl hover:border-blue-300 transition-all group relative overflow-hidden">
-                     <div className="absolute -top-10 -right-10 opacity-5 group-hover:scale-125 transition-transform duration-700">
-                        <HiArchiveBox size={140} className="text-blue-600" />
-                     </div>
-                     <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mb-8 border border-blue-100 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-inner relative z-10"><HiArchiveBox size={32} /></div>
-                     <h3 className="font-bold text-2xl text-[#0A1628] mb-2 font-serif relative z-10">{pkg.name}</h3>
-                     <p className="text-sm text-gray-400 mb-8 font-light italic leading-loose line-clamp-3 relative z-10">"{pkg.description || "Premium intel packet for professional interview mastery."}"</p>
-                     
-                     <div className="space-y-4 mb-8 relative z-10 bg-gray-50/50 p-6 rounded-3xl border border-black/5 shadow-inner">
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-gray-400">
-                          <span>Standard Tier</span>
-                          <span className="text-blue-600 text-base">₹{pkg.standardPrice || 0}</span>
-                        </div>
-                        <div className="h-px bg-black/5" />
-                        <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-600">
-                          <span>Mastery Bundle</span>
-                          <span className="text-xl font-serif font-black underline decoration-emerald-200 underline-offset-8">₹{pkg.bundlePrice || 0}</span>
-                        </div>
-                     </div>
+                   <div key={pkg.id} className="bg-white p-9 rounded-[50px] border border-black/8 shadow-sm hover:shadow-2xl hover:border-blue-300 transition-all group relative overflow-hidden">
+                      <div className="absolute -top-10 -right-10 opacity-5 group-hover:scale-125 transition-transform duration-700">
+                         <HiArchiveBox size={140} className="text-blue-600" />
+                      </div>
+                      <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mb-8 border border-blue-100 group-hover:scale-110 group-hover:rotate-6 transition-all shadow-inner relative z-10"><HiArchiveBox size={32} /></div>
+                      <h3 className="font-bold text-2xl text-[#0A1628] mb-2 font-serif relative z-10">{pkg.name}</h3>
+                      <p className="text-sm text-gray-400 mb-8 font-light italic leading-loose line-clamp-3 relative z-10">"{pkg.description || "Premium intel packet for professional interview mastery."}"</p>
+                      
+                      <div className="space-y-4 mb-8 relative z-10 bg-gray-50/50 p-6 rounded-3xl border border-black/5 shadow-inner">
+                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-gray-400">
+                           <span>Standard Tier</span>
+                           <span className="text-blue-600 text-base">₹{pkg.standardPrice || 0}</span>
+                         </div>
+                         <div className="h-px bg-black/5" />
+                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-emerald-600">
+                           <span>Mastery Bundle</span>
+                           <span className="text-xl font-serif font-black underline decoration-emerald-200 underline-offset-8">₹{pkg.bundlePrice || 0}</span>
+                         </div>
+                      </div>
 
-                     <div className="flex justify-between items-center pt-6 border-t border-black/5 relative z-10">
-                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">Base Point: ₹{pkg.basicPrice || 0}</span>
-                        <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-emerald-100 shadow-sm">Sync Active</span>
-                     </div>
-                  </div>
+                      <div className="flex justify-between items-center pt-6 border-t border-black/5 relative z-10">
+                         <span className="text-[10px] font-black uppercase tracking-widest text-gray-300">Base Point: ₹{pkg.basicPrice || 0}</span>
+                         <span className="px-4 py-1.5 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-[0.2em] rounded-full border border-emerald-100 shadow-sm">Sync Active</span>
+                      </div>
+                   </div>
                 ))}
              </div>
           )}

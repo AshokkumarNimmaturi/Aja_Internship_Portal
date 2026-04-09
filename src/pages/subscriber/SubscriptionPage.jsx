@@ -3,6 +3,7 @@ import axiosInstance from "../../api/axiosInstance";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 import { Sidebar } from "../../components/subscriber/Sidebar";
+import VoiceCallButton from "../../components/common/VoiceCallButton";
 
 const SubscriptionPage = () => {
   const { user } = useAuth();
@@ -117,6 +118,12 @@ const SubscriptionPage = () => {
                     )}
                     <span className="font-semibold text-gray-700">{leftDays} days remaining</span>
                   </div>
+                  
+                  {isActive && (
+                    <div className="mt-6 border-t border-black/5 pt-6">
+                      <VoiceCallButton />
+                    </div>
+                  )}
                 </div>
               </div>
             );

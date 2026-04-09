@@ -19,6 +19,7 @@ import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
 import axiosInstance from "../../api/axiosInstance";
 import TechBadge from "../../components/common/TechBadge";
+import VoiceCallButton from "../../components/common/VoiceCallButton";
 
 const DashboardPage = () => {
   const { user } = useAuth();
@@ -164,6 +165,9 @@ const DashboardPage = () => {
                          </div>
                       </div>
                       <Link to="/dashboard/subscription" className="block w-full py-5 bg-white/10 backdrop-blur-xl text-white border border-white/20 rounded-2xl text-center text-xs font-black uppercase tracking-[0.2em] hover:bg-white/20 transition-all active:scale-[0.98]">Manage Access</Link>
+                      
+                      {/* Premium Technical Support */}
+                      <VoiceCallButton />
                     </div>
                   )}
                </div>

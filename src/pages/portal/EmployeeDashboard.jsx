@@ -15,6 +15,7 @@ import { useAuth } from "../../context/AuthContext";
 import TechBadge from "../../components/common/TechBadge";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import axiosInstance from "../../api/axiosInstance";
+import VoiceCallButton from "../../components/common/VoiceCallButton";
 
 export const StatusBadge = ({ status }) => {
   const styles = {
@@ -204,6 +205,12 @@ const EmployeeDashboard = () => {
                         "Accurate technology tagging optimizes global discoverability."
                      </li>
                   </ul>
+                  
+                  {/* Internal Technical Support */}
+                  <div className="mt-10 pt-8 border-t border-black/5">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Internal Support Line</p>
+                    <VoiceCallButton />
+                  </div>
                </div>
             </div>
           </div>
