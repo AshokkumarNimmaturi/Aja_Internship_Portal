@@ -172,7 +172,7 @@ const DashboardPage = () => {
                           <span className="px-3 py-1 bg-blue-500/20 rounded-full text-[8px] font-black text-white border border-white/10 uppercase tracking-widest">Direct Line</span>
                         </div>
                         <VoiceCallButton 
-                          toNumber="+917780131390" 
+                          toNumber="support" 
                           label="Admin Support" 
                           className="w-full py-4.5 bg-gradient-to-r from-blue-600 to-indigo-600 !text-white !border-none rounded-2xl shadow-xl shadow-blue-500/20 active:scale-95 transition-all text-[10px] font-black tracking-widest uppercase flex items-center justify-center gap-3"
                         />                      </div>

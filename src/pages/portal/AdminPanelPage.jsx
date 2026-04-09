@@ -40,6 +40,8 @@ const AdminPanelPage = () => {
   const [stats, setStats] = useState({ users: 0, questions: 0, pending: 0, support: 0 });
   const [supportRequests, setSupportRequests] = useState([]);
   const [processing, setProcessing] = useState(null);
+  const [isAvailable, setIsAvailable] = useState(user?.available || false);
+  const [isInCall, setIsInCall] = useState(user?.inCall || false);
   
   // Default support number for general header button
   const ADMIN_SUPPORT_NUMBER = "+917780131390";
@@ -129,6 +131,19 @@ const AdminPanelPage = () => {
   }, [fetchData, fetchAuditData, activeView, user?.role]);
 
   // ✅ USER ACTIONS
+  const handleToggleAvailability = async () => {
+    setProcessing("availability");
+    try {
+      const res = await axiosInstance.post("/auth/toggle-availability");
+      setIsAvailable(res.data.available);
+      toast.success(res.data.available ? "You are now ONLINE for support" : "You are now OFFLINE");
+    } catch (err) {
+      toast.error("Failed to update status");
+    } finally {
+      setProcessing(null);
+    }
+  };
+
   const handleToggleUser = async (userId, currentStatus) => {
     try {
       if (currentStatus) {
@@ -244,6 +259,62 @@ const AdminPanelPage = () => {
               <button onClick={fetchData} className="flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border border-black/10 rounded-2xl bg-white hover:bg-gray-50 transition-all shadow-sm active:scale-95">
                 <HiArrowPath size={16} className={loading ? "animate-spin" : ""} /> Sync Data
               </button>
+            </div>
+          </div>
+
+          {/* Agent Control Pulse */}
+          <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
+            <div className="bg-[#0A1628] rounded-[40px] p-8 border border-white/5 shadow-2xl relative overflow-hidden group">
+              {/* Background Glows */}
+              <div className={`absolute -right-20 -top-20 w-64 h-64 blur-[100px] rounded-full transition-all duration-1000 ${isAvailable ? 'bg-green-500/20' : 'bg-red-500/10'}`} />
+              <div className={`absolute -left-20 -bottom-20 w-48 h-48 blur-[80px] rounded-full transition-all duration-1000 ${isAvailable ? 'bg-blue-500/10' : 'bg-gray-500/10'}`} />
+
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
+                <div className="flex items-center gap-6">
+                  <div className={`w-20 h-20 rounded-[30px] flex items-center justify-center border-2 transition-all duration-500 ${
+                    isAvailable ? 'bg-green-500/10 border-green-500/50 shadow-[0_0_30px_rgba(34,197,94,0.2)]' : 'bg-gray-800 border-white/10'
+                  }`}>
+                    {isInCall ? (
+                      <div className="relative">
+                        <HiBolt size={32} className="text-amber-400 animate-pulse" />
+                      </div>
+                    ) : isAvailable ? (
+                      <HiShieldCheck size={32} className="text-green-500 animate-in zoom-in" />
+                    ) : (
+                      <HiXCircle size={32} className="text-gray-500" />
+                    )}
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h2 className="text-2xl font-serif text-white font-bold tracking-tight">Support Node: {user?.fullName}</h2>
+                      {isAvailable && (
+                        <span className="flex h-3 w-3 relative">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
+                      {isInCall ? '🔴 SYSTEM ENGAGED: CURRENTLY IN CALL' : isAvailable ? '🟢 ONLINE: READY FOR INCOMING SUPPORT' : '⚪️ OFFLINE: CALLS REDIRECTED TO QUEUE'}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-6">
+                  <div className="h-12 w-px bg-white/10 hidden md:block" />
+                  <button 
+                    onClick={handleToggleAvailability}
+                    disabled={processing === 'availability'}
+                    className={`px-10 py-5 rounded-[25px] font-black uppercase tracking-[0.2em] text-[11px] transition-all duration-500 active:scale-95 shadow-2xl ${
+                      isAvailable 
+                      ? 'bg-red-500/10 border border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' 
+                      : 'bg-green-500 text-white hover:bg-green-600 shadow-green-500/20'
+                    }`}
+                  >
+                    {processing === 'availability' ? 'SYNCING...' : isAvailable ? 'GO OFFLINE' : 'GO ONLINE'}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
 
