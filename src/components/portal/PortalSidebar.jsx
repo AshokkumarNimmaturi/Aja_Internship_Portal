@@ -18,13 +18,19 @@ import {
   HiChartBar,
   HiMagnifyingGlass,
   HiBookmark,
-  HiCreditCard
+  HiCreditCard,
+  HiPhone,
+  HiPhoneXMark,
+  HiChatBubbleLeftRight
 } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import axiosInstance from "../../api/axiosInstance";
 
 export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [isHovered, setIsHovered] = useState(() => {
+    // ✅ ELITE UX: Persist hover state to prevent sidebar "blink" during navigation
+    return sessionStorage.getItem("sidebar_hovered") === "true";
+  });
   const [livePendingCount, setLivePendingCount] = useState(initialCount);
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
@@ -69,16 +75,18 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
     { label: "Submit Question", icon: <HiPencilSquare size={22} />, path: "/portal/submit" },
     { label: "My Submissions", icon: <HiClipboardDocumentList size={22} />, path: "/portal/submissions" },
     { label: "Access Requests", icon: <HiKey size={22} />, path: "/portal/access" },
+    { label: "Support Logs", icon: <HiPhone size={22} />, path: "/portal/support-logs" },
     { label: "Profile", icon: <HiUser size={22} />, path: "/portal/profile" },
   ];
   const adminNav = [
     { label: "Dashboard", icon: <HiHome size={22} />, path: "/portal/dashboard" },
     { label: "Global Intel", icon: <HiInboxStack size={22} />, path: "/portal/questions" }, // ✅ NEW: Intelligence Directory for Admin
     { label: "Users", icon: <HiUsers size={22} />, path: "/portal/admin" },
-    { label: "Pending Review", icon: <HiClock size={22} />, path: "/portal/review", badge: livePendingCount },
+    { label: "Pending Review", icon: <HiClock size={22} />, path: "/portal/admin/review", badge: livePendingCount },
     { label: "Submit Question", icon: <HiPencilSquare size={22} />, path: "/portal/submit" },
     { label: "My Submissions", icon: <HiClipboardDocumentList size={22} />, path: "/portal/submissions" },
     { label: "Access Requests", icon: <HiKey size={22} />, path: "/portal/access" },
+    { label: "Support Logs", icon: <HiPhone size={22} />, path: "/portal/support-logs" },
     { label: "Packages", icon: <HiArchiveBox size={22} />, path: "/portal/packages" },
     { label: "Audit Log", icon: <HiChartBar size={22} />, path: "/portal/audit" },
     { label: "Profile", icon: <HiUser size={22} />, path: "/portal/profile" },
@@ -111,9 +119,16 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
   return (
     <>
     <aside 
+      id="portal-sidebar"
       className={`bg-[#0A1628] h-screen fixed left-0 top-0 flex flex-col transition-all duration-300 ease-in-out z-50 shadow-xl ${isHovered ? 'w-64' : 'w-[84px]'}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => {
+        setIsHovered(true);
+        sessionStorage.setItem("sidebar_hovered", "true");
+      }}
+      onMouseLeave={() => {
+        setIsHovered(false);
+        sessionStorage.setItem("sidebar_hovered", "false");
+      }}
     >
       {/* Logo */}
       <div className="p-5 border-b border-white/10 h-28 flex flex-col justify-center shrink-0 overflow-hidden relative">

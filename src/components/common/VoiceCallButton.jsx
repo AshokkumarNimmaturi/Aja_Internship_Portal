@@ -5,7 +5,7 @@ import axiosInstance from '../../api/axiosInstance';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
-const VoiceCallButton = ({ toNumber = "+917780131390", className = "", label = "Technical Support", compact = false }) => { 
+const VoiceCallButton = ({ toNumber = "support", className = "", label = "Technical Support", compact = false }) => { 
   const { user } = useAuth();
   const [device, setDevice] = useState(null);
   const [callStatus, setCallStatus] = useState('idle'); // idle, connecting, on-call
@@ -49,6 +49,32 @@ const VoiceCallButton = ({ toNumber = "+917780131390", className = "", label = "
       return;
     }
 
+    // ✅ ONLY CHECK AVAILABILITY FOR SUBSCRIBERS CALLING IN
+    if (toNumber === "support") {
+      try {
+        const availRes = await axiosInstance.get('/voice/availability');
+        const { status } = availRes.data;
+
+        if (status === 'OFFLINE') {
+          toast.error('Technical support is currently offline. Please try again during business hours.', {
+              duration: 5000,
+              icon: '🌙'
+          });
+          setLoading(false);
+          return;
+        }
+        
+        if (status === 'BUSY') {
+          toast('All specialists are busy. You are being placed in our priority queue.', {
+              duration: 4000,
+              icon: '⏳'
+          });
+        }
+      } catch (err) {
+        console.warn("Availability check bypassed due to connection error.");
+      }
+    }
+
     let currentDevice = device;
     if (!currentDevice) {
       currentDevice = await initDevice();
@@ -62,15 +88,30 @@ const VoiceCallButton = ({ toNumber = "+917780131390", className = "", label = "
         
         callRef.current = call;
 
-        call.on('accept', () => setCallStatus('on-call'));
+        call.on('accept', () => {
+          setCallStatus('on-call');
+          // ✅ BROADCAST TO GLOBAL UI IMMEDIATELY
+          updateUser({ inCall: true, activeCallNumber: toNumber });
+          toast.success(`Connected to ${label === 'Technical Support' ? toNumber : label}`, { icon: '📞' });
+        });
+
         call.on('disconnect', () => {
           setCallStatus('idle');
+          // ✅ CLEAR GLOBAL UI IMMEDIATELY
+          updateUser({ inCall: false, activeCallNumber: null });
           callRef.current = null;
         });
-        call.on('reject', () => setCallStatus('idle'));
+
+        call.on('reject', () => {
+          setCallStatus('idle');
+          updateUser({ inCall: false, activeCallNumber: null });
+        });
       } catch (error) {
         console.error('Call failed:', error);
         setCallStatus('idle');
+        updateUser({ inCall: false, activeCallNumber: null });
+      } finally {
+        setLoading(false);
       }
     }
   };

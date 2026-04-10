@@ -5,7 +5,6 @@ import {
   HiUsers, 
   HiClipboardDocumentList, 
   HiArchiveBox, 
-  HiKey, 
   HiClock, 
   HiArrowPath,
   HiChatBubbleLeftEllipsis,
@@ -15,33 +14,70 @@ import {
   HiPlusCircle,
   HiUserPlus,
   HiShieldCheck,
+  HiPencilSquare,
+  HiPhoneArrowUpRight,
+  HiPhoneXMark,
+  HiArrowRightOnRectangle,
   HiBriefcase,
   HiMagnifyingGlass,
-  HiPencilSquare
+  HiAdjustmentsHorizontal,
+  HiPhone
 } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import axiosInstance from "../../api/axiosInstance";
 import toast from "react-hot-toast";
 import VoiceCallButton from "../../components/common/VoiceCallButton";
+import SupportTelemetryTable from "../../components/portal/SupportTelemetryTable";
+
+const TechBadge = ({ tech }) => (
+  <span className="text-[10px] font-bold px-2 py-1 bg-gray-100 rounded border border-black/5 text-gray-600 uppercase italic tracking-widest">
+    {tech}
+  </span>
+);
+
+const DifficultyBadge = ({ difficulty }) => {
+  const styles = {
+    EASY: "bg-green-50 text-green-700 border-green-200",
+    MEDIUM: "bg-amber-50 text-amber-700 border-amber-200",
+    HARD: "bg-red-50 text-red-700 border-red-200",
+  };
+  return (
+    <span className={`px-2.5 py-1 rounded-md text-[10px] uppercase tracking-wider font-bold border ${styles[difficulty] || "bg-gray-100"}`}>
+      {difficulty}
+    </span>
+  );
+};
 
 const AdminPanelPage = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const location = useLocation();
   const [activeView, setActiveView] = useState("Users");
   
   // States
   const [users, setUsers] = useState([]);
-  const [pendingQuestions, setPendingQuestions] = useState([]);
-  const [allQuestions, setAllQuestions] = useState([]);
   const [packages, setPackages] = useState([]);
+  const [allQuestions, setAllQuestions] = useState([]);
+  const [supportRequests, setSupportRequests] = useState([]);
+  const [supportCalls, setSupportCalls] = useState([]); // ✅ NEW: Call Logs
   const [auditLogs, setAuditLogs] = useState([]);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({ users: 0, questions: 0, pending: 0, support: 0 });
-  const [supportRequests, setSupportRequests] = useState([]);
   const [processing, setProcessing] = useState(null);
-  const [isAvailable, setIsAvailable] = useState(user?.available || false);
+
+  // Review Queue States
+  const [pendingQuestions, setPendingQuestions] = useState([]);
+  const [loadingQ, setLoadingQ] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("All");
+  const [techFilters, setTechFilters] = useState(["All"]);
+  const [correctedAnswers, setCorrectedAnswers] = useState({});
+  const [comments, setComments] = useState({});
+
+  // Agent Status States
+  const [status, setStatus] = useState(user?.status || "OFFLINE");
   const [isInCall, setIsInCall] = useState(user?.inCall || false);
+  const [callStatusFilter, setCallStatusFilter] = useState("ALL"); // ALL or MISSED
   
   // Default support number for general header button
   const ADMIN_SUPPORT_NUMBER = "+917780131390";
@@ -72,41 +108,50 @@ const AdminPanelPage = () => {
     const role = user?.role;
     
     if (path.endsWith("/admin") && role === 'ADMIN') setActiveView("Users");
-    else if (path.endsWith("/questions")) setActiveView("Questions");
-    else if (path.endsWith("/review")) setActiveView("Review Queue");
-    else if (path.endsWith("/access")) setActiveView("Access Requests");
-    else if (path.endsWith("/packages")) setActiveView("Packages");
-    else if (path.endsWith("/audit") && role === 'ADMIN') setActiveView("Audit Log");
-    else setActiveView("Access Requests"); // Safe default for Tutors
+    else if (path.includes("/questions")) setActiveView("Questions");
+    else if (path.includes("/review")) setActiveView("Review Queue");
+    else if (path.includes("/access")) setActiveView("Access Requests");
+    else if (path.includes("/support-logs")) setActiveView("Support Logs");
+    else if (path.includes("/packages")) setActiveView("Packages");
+    else if (path.includes("/audit") && role === 'ADMIN') setActiveView("Audit Log");
+    else {
+      // Intelligent fallback
+      if (role === 'ADMIN') setActiveView("Users");
+      else setActiveView("Access Requests");
+    }
   }, [location, user?.role]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       const isAdmin = user?.role === 'ADMIN';
-      
       const fetches = [
-        isAdmin ? axiosInstance.get("/admin/users") : Promise.resolve({ data: { content: [] } }),
+        isAdmin ? axiosInstance.get("/admin/users") : Promise.resolve({ data: [] }),
         axiosInstance.get("/questions"),
         axiosInstance.get("/packages"),
-        axiosInstance.get("/support").catch(() => ({ data: [] }))
+        axiosInstance.get("/support").catch(() => ({ data: [] })),
+        axiosInstance.get("/admin/support-calls").catch(() => ({ data: [] })),
+        axiosInstance.get("/questions/pending").catch(() => ({ data: [] })) // ✅ FETCH PENDING
       ];
 
-      const [uRes, qRes, pRes, sRes] = await Promise.all(fetches);
+      const [uRes, qRes, pRes, sRes, callsRes, pendingRes] = await Promise.all(fetches);
       
-      const userData = uRes.data?.content || uRes.data || [];
-      const questionData = qRes.data.content || qRes.data;
-      
-      setUsers(userData);
-      setAllQuestions(questionData);
+      setUsers(uRes.data?.content || uRes.data || []);
+      setAllQuestions(qRes.data.content || qRes.data);
       setPackages(pRes.data?.content || pRes.data || []);
       setSupportRequests(sRes.data?.content || sRes.data || []);
-      setPendingQuestions(questionData.filter(q => q.status === "PENDING"));
+      setSupportCalls(callsRes.data || []);
       
+      const pendingList = Array.isArray(pendingRes.data) ? pendingRes.data : (pendingRes.data.content || []);
+      setPendingQuestions(pendingList);
+      
+      const techs = ["All", ...new Set(pendingList.map(q => q.technologyName || "General"))];
+      setTechFilters(techs);
+
       setStats({
-        users: userData.length,
-        questions: questionData.length,
-        pending: questionData.filter(q => q.status === "PENDING").length,
+        users: (uRes.data?.content || uRes.data || []).length,
+        questions: (qRes.data.content || qRes.data).length,
+        pending: pendingList.length,
         support: sRes.data.filter(r => r.status === 'PENDING').length
       });
     } catch (err) {
@@ -127,18 +172,51 @@ const AdminPanelPage = () => {
 
   useEffect(() => {
     fetchData();
-    if (activeView === "Audit Log" && user?.role === 'ADMIN') fetchAuditData();
-  }, [fetchData, fetchAuditData, activeView, user?.role]);
+    if (activeView === "Audit Log" && user?.role === 'ADMIN') {
+      fetchAuditData();
+    }
+    // ✅ ULTRA-RESPONSIVE POLLING (5 Seconds)
+    const interval = setInterval(() => {
+        axiosInstance.get("/auth/me").then(res => {
+            if (!user?.inCall) {
+                if (res.data.inCall !== isInCall) {
+                    setIsInCall(res.data.inCall);
+                }
+                setStatus(res.data.status);
+            }
+        }).catch(() => console.warn("Sync heart-beat suspended..."));
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [fetchData, fetchAuditData, activeView, user?.role, updateUser, isInCall]);
 
-  // ✅ USER ACTIONS
-  const handleToggleAvailability = async () => {
-    setProcessing("availability");
+  // ✅ STATUS ACTIONS
+  const handleReviewAction = async (id, decision) => {
+    setProcessing(id + decision);
     try {
-      const res = await axiosInstance.post("/auth/toggle-availability");
-      setIsAvailable(res.data.available);
-      toast.success(res.data.available ? "You are now ONLINE for support" : "You are now OFFLINE");
+      await axiosInstance.put(`/questions/${id}/review`, {
+        decision: decision,
+        rejectionReason: comments[id] || "",
+        correctedAnswer: correctedAnswers[id] || ""
+      });
+      toast.success(`Question ${decision.toLowerCase()} successfully!`);
+      setPendingQuestions(prev => prev.filter(q => q.id !== id));
+      fetchData(); // Refresh all stats
     } catch (err) {
-      toast.error("Failed to update status");
+      toast.error(err.response?.data?.message || "Review action failed.");
+    } finally {
+      setProcessing(null);
+    }
+  };
+
+  const handleUpdateStatus = async (newStatus) => {
+    setProcessing("status");
+    try {
+      const res = await axiosInstance.post(`/auth/support-status?status=${newStatus}`);
+      setStatus(res.data.status);
+      updateUser({ status: res.data.status });
+      toast.success(`Broadcasting status: ${newStatus}`);
+    } catch (err) {
+      toast.error("Status update failed");
     } finally {
       setProcessing(null);
     }
@@ -238,83 +316,85 @@ const AdminPanelPage = () => {
       
       <main className="flex-1 p-8 py-10 overflow-y-auto">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-10">
+          {/* 1. Header & Agent Pulse */}
+          <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
             <div>
               <h1 className="text-3xl font-serif text-[#0A1628] mb-1 font-bold">{activeView}</h1>
-              <p className="text-[10px] text-gray-400 font-black tracking-[0.2em] uppercase font-sans">Administrative Command Terminal</p>
+              <p className="text-[10px] text-gray-400 font-black tracking-[0.2em] uppercase">Control Terminal</p>
             </div>
-            
-            <div className="flex gap-4">
-              {activeView === "Users" && user?.role === 'ADMIN' && (
-                <button onClick={() => setShowUserForm(true)} className="flex items-center gap-2 px-7 py-3.5 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-900 transition-all shadow-2xl shadow-blue-900/10 active:scale-95">
-                  <HiUserPlus size={20} /> Register Team Member
-                </button>
-              )}
-              {activeView === "Packages" && user?.role === 'ADMIN' && (
-                <button onClick={() => setShowPackageForm(true)} className="flex items-center gap-2 px-7 py-3.5 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-900 transition-all shadow-2xl shadow-blue-900/10 active:scale-95">
-                  <HiPlusCircle size={20} /> Create New Product
-                </button>
-              )}
-              <button onClick={fetchData} className="flex items-center gap-2 px-5 py-2.5 text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 border border-black/10 rounded-2xl bg-white hover:bg-gray-50 transition-all shadow-sm active:scale-95">
-                <HiArrowPath size={16} className={loading ? "animate-spin" : ""} /> Sync Data
-              </button>
-            </div>
-          </div>
 
-          {/* Agent Control Pulse */}
-          <div className="mb-10 animate-in fade-in slide-in-from-top-4 duration-700">
-            <div className="bg-[#0A1628] rounded-[40px] p-8 border border-white/5 shadow-2xl relative overflow-hidden group">
-              {/* Background Glows */}
-              <div className={`absolute -right-20 -top-20 w-64 h-64 blur-[100px] rounded-full transition-all duration-1000 ${isAvailable ? 'bg-green-500/20' : 'bg-red-500/10'}`} />
-              <div className={`absolute -left-20 -bottom-20 w-48 h-48 blur-[80px] rounded-full transition-all duration-1000 ${isAvailable ? 'bg-blue-500/10' : 'bg-gray-500/10'}`} />
-
-              <div className="flex flex-col md:flex-row items-center justify-between gap-8 relative z-10">
-                <div className="flex items-center gap-6">
-                  <div className={`w-20 h-20 rounded-[30px] flex items-center justify-center border-2 transition-all duration-500 ${
-                    isAvailable ? 'bg-green-500/10 border-green-500/50 shadow-[0_0_30px_rgba(34,197,94,0.2)]' : 'bg-gray-800 border-white/10'
-                  }`}>
-                    {isInCall ? (
-                      <div className="relative">
-                        <HiBolt size={32} className="text-amber-400 animate-pulse" />
+             {/* ✅ GLOBAL LIVE MISSION BANNER */}
+             {isInCall && (
+               <div className="mb-8 p-6 bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 rounded-[35px] shadow-2xl shadow-blue-500/20 border border-white/20 animate-in slide-in-from-top-4 duration-500 relative overflow-hidden group">
+                  <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+                  <div className="flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-6">
+                      <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-md border border-white/30 animate-pulse">
+                        <HiBolt className="text-white" size={24} />
                       </div>
-                    ) : isAvailable ? (
-                      <HiShieldCheck size={32} className="text-green-500 animate-in zoom-in" />
-                    ) : (
-                      <HiXCircle size={32} className="text-gray-500" />
-                    )}
+                      <div>
+                        <div className="text-[10px] font-black text-blue-100 uppercase tracking-[0.3em] mb-1">Telemetry Active</div>
+                        <h2 className="text-xl font-serif text-white font-bold tracking-tight">Live Support Mission in Progress</h2>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 px-6 py-2.5 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20">
+                      <span className="w-2 h-2 bg-red-400 rounded-full animate-ping" />
+                      <span className="text-[10px] font-black text-white uppercase tracking-widest">Ongoing Transmission</span>
+                    </div>
+                  </div>
+               </div>
+             )}
+
+            {/* ✅ AGENT STATUS DASHBOARD */}
+            <div className="bg-[#0A1628] p-5 rounded-[30px] border border-white/5 shadow-2xl flex items-center gap-8 relative overflow-hidden group">
+               {/* Pulse Effect */}
+               {isInCall && <div className="absolute inset-0 bg-red-500/10 animate-pulse pointer-events-none" />}
+               
+               <div className="flex items-center gap-4">
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all duration-500 ${
+                    isInCall ? 'bg-red-500/20 border-red-500/50' : status === 'AVAILABLE' ? 'bg-green-500/20 border-green-500/50' : 'bg-gray-800 border-white/10'
+                  }`}>
+                    {isInCall ? <HiBolt className="text-red-500 animate-bounce" size={24} /> : status === 'AVAILABLE' ? <HiShieldCheck className="text-green-500" size={24} /> : <HiXCircle className="text-gray-500" size={24} />}
                   </div>
                   <div>
-                    <div className="flex items-center gap-3 mb-1">
-                      <h2 className="text-2xl font-serif text-white font-bold tracking-tight">Support Node: {user?.fullName}</h2>
-                      {isAvailable && (
-                        <span className="flex h-3 w-3 relative">
-                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                          <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
-                        </span>
-                      )}
-                    </div>
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">
-                      {isInCall ? '🔴 SYSTEM ENGAGED: CURRENTLY IN CALL' : isAvailable ? '🟢 ONLINE: READY FOR INCOMING SUPPORT' : '⚪️ OFFLINE: CALLS REDIRECTED TO QUEUE'}
+                    <h4 className="text-white text-sm font-bold truncate max-w-[120px]">{user?.fullName}</h4>
+                    <p className={`text-[8px] font-black uppercase tracking-widest ${isInCall ? 'text-red-400' : 'text-gray-400'}`}>
+                        {isInCall ? '🔴 LIVE ON CALL' : status}
                     </p>
                   </div>
-                </div>
+               </div>
 
-                <div className="flex items-center gap-6">
-                  <div className="h-12 w-px bg-white/10 hidden md:block" />
+               <div className="flex bg-gray-900/50 p-1.5 rounded-2xl border border-white/5 relative z-10">
                   <button 
-                    onClick={handleToggleAvailability}
-                    disabled={processing === 'availability'}
-                    className={`px-10 py-5 rounded-[25px] font-black uppercase tracking-[0.2em] text-[11px] transition-all duration-500 active:scale-95 shadow-2xl ${
-                      isAvailable 
-                      ? 'bg-red-500/10 border border-red-500/50 text-red-500 hover:bg-red-500 hover:text-white' 
-                      : 'bg-green-500 text-white hover:bg-green-600 shadow-green-500/20'
-                    }`}
+                    onClick={() => handleUpdateStatus('AVAILABLE')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black tracking-widest transition-all ${status === 'AVAILABLE' ? 'bg-green-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
                   >
-                    {processing === 'availability' ? 'SYNCING...' : isAvailable ? 'GO OFFLINE' : 'GO ONLINE'}
+                    <HiShieldCheck size={14} /> READY
                   </button>
-                </div>
-              </div>
+                  <button 
+                    onClick={() => handleUpdateStatus('BREAK')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black tracking-widest transition-all ${status === 'BREAK' ? 'bg-amber-500 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    <HiClock size={14} /> BREAK
+                  </button>
+                  <button 
+                    onClick={() => handleUpdateStatus('OFFLINE')}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[9px] font-black tracking-widest transition-all ${status === 'OFFLINE' ? 'bg-gray-700 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                  >
+                    <HiArrowRightOnRectangle size={14} /> EXIT
+                  </button>
+               </div>
+            </div>
+
+            <div className="flex gap-4">
+              {activeView === "Users" && user?.role === 'ADMIN' && (
+                <button onClick={() => setShowUserForm(true)} className="flex items-center gap-2 px-7 py-3.5 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-900 transition-all shadow-2xl active:scale-95">
+                  <HiUserPlus size={20} /> New Agent
+                </button>
+              )}
+              <button onClick={fetchData} className="p-3.5 bg-white border border-black/10 text-gray-400 rounded-2xl hover:bg-gray-50 transition-all active:scale-95">
+                <HiArrowPath size={20} className={loading ? "animate-spin" : ""} />
+              </button>
             </div>
           </div>
 
@@ -378,14 +458,20 @@ const AdminPanelPage = () => {
                                 <span className="text-[10px] text-gray-300 italic">No Phone</span>
                               )}
                               <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-bold font-mono text-gray-500">{u.phone || "—"}</span>
-                                <button 
-                                  onClick={() => handleOpenPhoneModal(u)}
-                                  className="p-1.5 hover:bg-gray-200 rounded-lg text-gray-400 hover:text-blue-600 transition-all"
-                                  title="Edit Phone"
-                                >
-                                  <HiPencilSquare size={14} />
-                                </button>
+                                 {u.inCall ? (
+                                   <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[9px] font-black tracking-widest border border-blue-100 animate-pulse">
+                                     <HiPhoneArrowUpRight size={12} /> ON CALL
+                                   </span>
+                                 ) : (
+                                   <span className="text-[11px] font-bold font-mono text-gray-500">{u.phone || "—"}</span>
+                                 )}
+                                 <button 
+                                   onClick={() => handleOpenPhoneModal(u)}
+                                   className="p-1.5 hover:bg-gray-200 rounded-lg text-gray-400 hover:text-blue-600 transition-all"
+                                   title="Edit Phone"
+                                 >
+                                   <HiPencilSquare size={14} />
+                                 </button>
                               </div>
                            </div>
                         </td>
@@ -495,31 +581,249 @@ const AdminPanelPage = () => {
 
           {/* VIEW: Access Tickets */}
           {activeView === "Access Requests" && (
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-500 py-10">
-                {Array.isArray(supportRequests) && supportRequests.length > 0 ? supportRequests.map(req => (
-                  <div key={req.id} className="bg-white p-9 rounded-[50px] border border-black/8 shadow-sm hover:shadow-2xl hover:border-blue-300 transition-all group relative overflow-hidden">
-                    <div className="absolute -top-6 -right-6 opacity-5 group-hover:scale-125 transition-transform duration-700">
-                        <HiChatBubbleLeftEllipsis size={100} className="text-purple-600" />
+             <div className="space-y-12 py-10">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                    {Array.isArray(supportRequests) && supportRequests.length > 0 ? supportRequests.map(req => (
+                    <div key={req.id} className="bg-white p-9 rounded-[50px] border border-black/8 shadow-sm hover:shadow-2xl hover:border-blue-300 transition-all group relative overflow-hidden">
+                        <div className="absolute -top-6 -right-6 opacity-5 group-hover:scale-125 transition-transform duration-700">
+                            <HiChatBubbleLeftEllipsis size={100} className="text-purple-600" />
+                        </div>
+                        <div className="flex justify-between items-start mb-6 relative z-10">
+                        <div className="flex items-center gap-4">
+                            <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-3xl flex items-center justify-center border border-purple-100 shadow-inner group-hover:rotate-12 transition-transform"><HiChatBubbleLeftEllipsis size={28} /></div>
+                            <div>
+                                <h4 className="font-bold text-[#0A1628] text-xl mb-1 font-serif">{req.subject}</h4>
+                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-mono">{req.userEmail}</span>
+                            </div>
+                        </div>
+                        <span className={`text-[9px] font-black px-4 py-2 rounded-xl uppercase tracking-widest border-2 shadow-sm ${req.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{req.status}</span>
+                        </div>
+                        <div className="bg-gray-50/50 p-6 rounded-[32px] border border-black/5 text-sm text-gray-600 italic mb-8 font-light leading-relaxed shadow-inner">"{req.message}"</div>
+                        {req.status === 'PENDING' && (
+                        <button onClick={() => handleSupportStatus(req.id, 'RESOLVED')} className="w-full py-4.5 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-emerald-600 transition-all shadow-xl shadow-blue-900/10 active:scale-95 flex items-center justify-center gap-3 relative z-10">
+                            <HiCheckCircle size={20} /> Terminate Ticket & Resolve
+                        </button>
+                        )}
                     </div>
-                    <div className="flex justify-between items-start mb-6 relative z-10">
-                       <div className="flex items-center gap-4">
-                          <div className="w-14 h-14 bg-purple-50 text-purple-600 rounded-3xl flex items-center justify-center border border-purple-100 shadow-inner group-hover:rotate-12 transition-transform"><HiChatBubbleLeftEllipsis size={28} /></div>
-                          <div>
-                            <h4 className="font-bold text-[#0A1628] text-xl mb-1 font-serif">{req.subject}</h4>
-                            <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-mono">{req.userEmail}</span>
-                          </div>
-                       </div>
-                       <span className={`text-[9px] font-black px-4 py-2 rounded-xl uppercase tracking-widest border-2 shadow-sm ${req.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>{req.status}</span>
+                    )) : <div className="col-span-2 py-32 bg-white rounded-[50px] border-2 border-dashed border-black/5 text-center text-gray-300 italic font-serif text-xl">Command deck clear. No active tickets.</div>}
+                </div>
+
+                {/* ✅ RECENT CALL LOGS SECTION */}
+                <div className="animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+                    <div className="flex items-center justify-between mb-8 px-4">
+                        <h3 className="text-2xl font-serif text-[#0A1628] font-bold">Recent Support Activity</h3>
+                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Voice Telemetry Logs</span>
                     </div>
-                    <div className="bg-gray-50/50 p-6 rounded-[32px] border border-black/5 text-sm text-gray-600 italic mb-8 font-light leading-relaxed shadow-inner">"{req.message}"</div>
-                    {req.status === 'PENDING' && (
-                       <button onClick={() => handleSupportStatus(req.id, 'RESOLVED')} className="w-full py-4.5 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-emerald-600 transition-all shadow-xl shadow-blue-900/10 active:scale-95 flex items-center justify-center gap-3 relative z-10">
-                          <HiCheckCircle size={20} /> Terminate Ticket & Resolve
-                       </button>
-                    )}
+                    <div className="bg-white rounded-[40px] border border-black/8 overflow-hidden shadow-sm">
+                        <table className="w-full text-left font-sans">
+                           <thead className="bg-gray-50/50 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 border-b border-black/5">
+                              <tr>
+                                 <th className="px-8 py-5">Time Intel</th>
+                                 <th className="px-8 py-5">Subscriber Number</th>
+                                 <th className="px-8 py-5">Assigned Agent</th>
+                                 <th className="px-8 py-5">Status</th>
+                                 <th className="px-8 py-5 text-right">Duration</th>
+                              </tr>
+                           </thead>
+                           <tbody className="divide-y divide-black/5">
+                              {supportCalls.length > 0 ? supportCalls.map(call => (
+                                 <tr key={call.id} className="hover:bg-gray-50/50 transition-all">
+                                    <td className="px-8 py-6 text-gray-400 text-[10px] font-black font-mono tracking-tighter italic">
+                                        {new Date(call.timestamp).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                                    </td>
+                                    <td className="px-8 py-6 font-black text-[#0A1628] tracking-widest text-[11px]">{call.callerNumber}</td>
+                                    <td className="px-8 py-6 text-[10px] font-bold text-gray-500 uppercase tracking-widest">{call.agentName || "Queue/Untracked"}</td>
+                                    <td className="px-8 py-6">
+                                        <div className="flex items-center gap-2">
+                                            {call.status === 'COMPLETED' ? (
+                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-green-50 text-green-600 rounded-full text-[9px] font-black tracking-widest border border-green-100"><HiCheckCircle size={14} /> COMPLETED</span>
+                                            ) : call.status === 'ANSWERED' ? (
+                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[9px] font-black tracking-widest border border-blue-100 animate-pulse"><HiPhoneArrowUpRight size={14} /> LIVE NOW</span>
+                                            ) : call.status === 'MISSED' ? (
+                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 rounded-full text-[9px] font-black tracking-widest border border-red-100"><HiPhoneXMark size={14} /> UNRESOLVED</span>
+                                            ) : (
+                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black tracking-widest border border-amber-100 uppercase">IN_QUEUE</span>
+                                            )}
+                                        </div>
+                                    </td>
+                                    <td className="px-8 py-6 text-right text-gray-400 font-mono text-xs">{call.duration ? `${call.duration}s` : '—'}</td>
+                                 </tr>
+                              )) : (
+                                 <tr><td colSpan="5" className="px-8 py-20 text-center text-gray-300 italic font-serif">Awaiting call telemetry...</td></tr>
+                              )}
+                           </tbody>
+                        </table>
+                    </div>
+                </div>
+              </div>
+           )}
+           {/* VIEW: Support Logs (Voice Telemetry) */}
+          {activeView === "Support Logs" && (
+             <div className="space-y-8 py-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+                {/* Header & Filter */}
+                <div className="flex flex-col md:flex-row items-center justify-between mb-10 px-4 gap-6">
+                  <div className="flex items-center gap-5">
+                    <div className="w-16 h-16 bg-[#0A1628] text-white rounded-[24px] flex items-center justify-center shadow-2xl shadow-blue-900/20">
+                      <HiPhone size={32} />
+                    </div>
+                    <div>
+                      <h3 className="text-3xl font-serif text-[#0A1628] font-black tracking-tight italic">Voice Telemetry</h3>
+                      <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] mt-1">Real-time support auditing system</p>
+                    </div>
                   </div>
-                )) : <div className="col-span-2 py-32 bg-white rounded-[50px] border-2 border-dashed border-black/5 text-center text-gray-300 italic font-serif text-xl">Command deck clear. No active tickets.</div>}
+                  
+                  <div className="flex bg-white p-1.5 rounded-[22px] border border-black/5 shadow-sm">
+                    <button 
+                      onClick={() => setCallStatusFilter("ALL")}
+                      className={`px-8 py-3 rounded-[16px] text-[10px] font-black uppercase tracking-widest transition-all ${callStatusFilter === 'ALL' ? 'bg-[#0A1628] text-white shadow-lg' : 'text-gray-400 hover:text-gray-600'}`}
+                    >
+                      Mission Logs
+                    </button>
+                    <button 
+                      onClick={() => setCallStatusFilter("MISSED")}
+                      className={`px-8 py-3 rounded-[16px] text-[10px] font-black uppercase tracking-widest transition-all ${callStatusFilter === 'MISSED' ? 'bg-red-500 text-white shadow-lg' : 'text-gray-400 hover:text-red-500'}`}
+                    >
+                      Missed Pulse
+                    </button>
+                  </div>
+                </div>
+
+                <SupportTelemetryTable 
+                  supportCalls={supportCalls} 
+                  callStatusFilter={callStatusFilter} 
+                  user={user} 
+                />
              </div>
+          )}
+
+          {/* VIEW: Review Queue (Admin Integrated) */}
+          {activeView === "Review Queue" && (
+            <div className="space-y-8 py-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+               {/* Search & Filters */}
+               <div className="flex flex-col md:flex-row gap-4 mb-8">
+                <div className="relative flex-1">
+                  <HiMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                  <input
+                    type="text"
+                    placeholder="Search pending intelligence packets..."
+                    className="w-full pl-12 pr-4 py-4 bg-white border border-black/8 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+                <div className="flex gap-4">
+                  <div className="relative">
+                    <HiAdjustmentsHorizontal className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                    <select
+                      className="pl-12 pr-10 py-4 bg-white border border-black/8 rounded-2xl text-xs font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none shadow-sm cursor-pointer"
+                      value={activeFilter}
+                      onChange={(e) => setActiveFilter(e.target.value)}
+                    >
+                      {techFilters.map(tech => (
+                        <option key={tech} value={tech}>{tech}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-6">
+                {(pendingQuestions || [])
+                  .filter(q => (activeFilter === "All" || q.technologyName === activeFilter))
+                  .filter(q => (q.title?.toLowerCase().includes(searchQuery.toLowerCase()) || q.answer?.toLowerCase().includes(searchQuery.toLowerCase())))
+                  .length > 0 ? (
+                  pendingQuestions
+                    .filter(q => (activeFilter === "All" || q.technologyName === activeFilter))
+                    .filter(q => (q.title?.toLowerCase().includes(searchQuery.toLowerCase()) || q.answer?.toLowerCase().includes(searchQuery.toLowerCase())))
+                    .map((q) => (
+                      <div key={q.id} className="bg-white rounded-[40px] border border-black/8 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
+                        <div className="px-8 py-6 bg-gray-50/50 border-b border-black/5 flex justify-between items-center">
+                          <div className="flex items-center gap-4">
+                            <TechBadge tech={q.technologyName} />
+                            <DifficultyBadge difficulty={q.difficulty} />
+                          </div>
+                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-mono italic">ID: {q.id}</span>
+                        </div>
+
+                        <div className="p-8">
+                          <h3 className="text-xl font-bold text-[#0A1628] mb-4 font-serif leading-tight">{q.title}</h3>
+                          
+                          <div className="space-y-6">
+                            {/* Context Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="bg-gray-50 p-6 rounded-[32px] border border-black/5 shadow-inner">
+                                <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Submission Content</h4>
+                                <p className="text-sm text-gray-600 leading-relaxed italic">"{q.content}"</p>
+                              </div>
+                              <div className="bg-blue-50/30 p-6 rounded-[32px] border border-blue-100/50 shadow-inner">
+                                <h4 className="text-[9px] font-black uppercase tracking-widest text-blue-600 mb-2">Proposed Explanation</h4>
+                                <p className="text-sm text-gray-600 leading-relaxed font-medium italic">"{q.initialAnswer || "No explanation provided."}"</p>
+                              </div>
+                            </div>
+
+                            {/* Corrected Answer Input */}
+                            <div>
+                              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Verified Master Answer (Syncs to Storefront)</h4>
+                              <textarea
+                                className="w-full p-6 bg-white border border-black/8 rounded-[32px] text-sm font-medium focus:outline-none focus:ring-8 focus:ring-blue-50/30 transition-all shadow-inner leading-relaxed"
+                                placeholder="Craft the official, high-quality answer for subscribers..."
+                                rows={4}
+                                value={correctedAnswers[q.id] || ""}
+                                onChange={(e) => setCorrectedAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
+                              />
+                            </div>
+
+                            {/* Rejection Comments */}
+                            <div>
+                              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Rejection Feedback</h4>
+                              <input
+                                type="text"
+                                className="w-full px-6 py-4 bg-white border border-black/8 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-red-50/10 transition-all shadow-inner"
+                                placeholder="Internal feedback if deferring this packet..."
+                                value={comments[q.id] || ""}
+                                onChange={(e) => setComments(prev => ({ ...prev, [q.id]: e.target.value }))}
+                              />
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-4 pt-4">
+                              <button
+                                onClick={() => handleReviewAction(q.id, 'APPROVED')}
+                                disabled={processing === (q.id + 'APPROVED')}
+                                className="flex-1 py-4.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-900/10 active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+                              >
+                                {processing === (q.id + 'APPROVED') ? (
+                                  <HiArrowPath className="animate-spin" size={18} />
+                                ) : (
+                                  <HiCheckCircle size={18} />
+                                )}
+                                Approve
+                              </button>
+                              <button
+                                onClick={() => handleReviewAction(q.id, 'REJECTED')}
+                                disabled={processing === (q.id + 'REJECTED')}
+                                className="flex-1 py-4.5 bg-white text-red-600 border border-red-100 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-red-50 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
+                              >
+                                {processing === (q.id + 'REJECTED') ? (
+                                  <HiArrowPath className="animate-spin" size={18} />
+                                ) : (
+                                  <HiXCircle size={18} />
+                                )}
+                                Reject
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                ) : (
+                  <div className="py-32 bg-white rounded-[50px] border-2 border-dashed border-black/5 text-center">
+                    <HiBriefcase size={64} className="mx-auto text-gray-100 mb-6" />
+                    <p className="text-gray-300 italic font-serif text-xl">Review queue synchronized. All intelligence packets verified.</p>
+                  </div>
+                )}
+              </div>
+            </div>
           )}
 
           {/* MODALS: (Kept consistent with elite UI) */}
@@ -646,6 +950,20 @@ const AdminPanelPage = () => {
             </div>
           )}
         </div>
+
+        {/* ✅ ULTIMATE RED DOT: YOUR ON CALL INDICATOR (TOP RIGHT) */}
+        {isInCall && (
+          <div key={isInCall} className="fixed top-12 right-12 z-[99999] flex items-center gap-4 bg-red-600 text-white px-6 py-4 rounded-[30px] shadow-[0_20px_50px_rgba(220,38,38,0.5)] border-4 border-white animate-pulse">
+             <div className="relative">
+                <span className="absolute inset-0 bg-white rounded-full animate-ping opacity-75" />
+                <span className="relative block w-4 h-4 bg-white rounded-full shadow-lg" />
+             </div>
+             <div className="flex flex-col">
+                <span className="text-[11px] font-black uppercase tracking-[0.2em] leading-none mb-1">Telemetry Active</span>
+                <span className="text-[14px] font-serif italic font-black">You are On Call Now</span>
+             </div>
+          </div>
+        )}
       </main>
     </div>
   );

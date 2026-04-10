@@ -287,6 +287,17 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/portal/support-logs"
+              element={
+                <ProtectedRoute>
+                  <RoleRoute allowedRoles={["ADMIN", "TUTOR"]}>
+                    <AdminPanelPage />
+                  </RoleRoute>
+                </ProtectedRoute>
+              }
+            />
           </Routes>
         </BrowserRouter>
       </AuthProvider>

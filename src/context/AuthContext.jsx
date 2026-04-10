@@ -36,6 +36,14 @@ export const AuthProvider = ({ children }) => {
 
   const hasAnyRole = (roles) => roles.includes(user?.role);
 
+  const updateUser = (updates) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -43,6 +51,7 @@ export const AuthProvider = ({ children }) => {
         token,
         login,
         logout,
+        updateUser,
         isAuthenticated,
         hasRole,
         hasAnyRole,
