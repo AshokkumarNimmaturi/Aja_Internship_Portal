@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
 const VoiceCallButton = ({ toNumber = "support", className = "", label = "Technical Support", compact = false }) => { 
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const [device, setDevice] = useState(null);
   const [callStatus, setCallStatus] = useState('idle'); // idle, connecting, on-call
   const [loading, setLoading] = useState(false);

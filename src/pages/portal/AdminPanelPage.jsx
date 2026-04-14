@@ -311,7 +311,7 @@ const AdminPanelPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden">
       <PortalSidebar user={user} role={user?.role || "TUTOR"} activeItem={activeView} />
       
       <main className="flex-1 p-8 py-10 overflow-y-auto">
@@ -640,7 +640,7 @@ const AdminPanelPage = () => {
                                             ) : call.status === 'ANSWERED' ? (
                                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[9px] font-black tracking-widest border border-blue-100 animate-pulse"><HiPhoneArrowUpRight size={14} /> LIVE NOW</span>
                                             ) : call.status === 'MISSED' ? (
-                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 rounded-full text-[9px] font-black tracking-widest border border-red-100"><HiPhoneXMark size={14} /> UNRESOLVED</span>
+                                                <span className="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 rounded-full text-[9px] font-black tracking-widest border border-red-100"><HiPhoneXMark size={14} /> MISSED CALL</span>
                                             ) : (
                                                 <span className="flex items-center gap-1.5 px-3 py-1 bg-amber-50 text-amber-600 rounded-full text-[9px] font-black tracking-widest border border-amber-100 uppercase">IN_QUEUE</span>
                                             )}

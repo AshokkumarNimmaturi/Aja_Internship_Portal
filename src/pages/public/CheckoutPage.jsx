@@ -187,7 +187,7 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans">
       <Navbar />
 
       <div className="pt-28 pb-16 px-6 max-w-5xl mx-auto">
@@ -199,15 +199,15 @@ const CheckoutPage = () => {
           <HiArrowLeft size={15} /> Back to package
         </Link>
 
-        <h1 className="font-serif text-3xl text-[#0A1628] mb-8">
+        <h1 className="font-serif text-4xl font-bold text-[#0A1628] mb-8 tracking-tighter">
           Complete Your Order
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in-up">
           {/* LEFT — Order Summary */}
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-8">
             {/* Package Card */}
-            <div className="bg-white rounded-2xl border border-black/8 p-6">
+            <div className="figma-card rounded-3xl p-8">
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
                 Order Summary
               </h2>
@@ -278,7 +278,7 @@ const CheckoutPage = () => {
             </div>
 
             {/* What's Included */}
-            <div className="bg-white rounded-2xl border border-black/8 p-6">
+            <div className="figma-card rounded-3xl p-8">
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
                 What's Included
               </h2>
@@ -296,7 +296,7 @@ const CheckoutPage = () => {
           </div>
 
           {/* RIGHT — Payment */}
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-8 animation-delay-200">
             {/* Not logged in warning */}
             {!isAuthenticated && (
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
@@ -331,8 +331,9 @@ const CheckoutPage = () => {
             )}
 
             {/* Payment Card */}
-            <div className="bg-white rounded-2xl border border-black/8 p-6">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-6">
+            <div className="figma-card rounded-3xl p-8 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 apple-transition pointer-events-none" />
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-6 relative z-10">
                 Payment
               </h2>
 
@@ -351,7 +352,7 @@ const CheckoutPage = () => {
               <button
                 onClick={handlePayment}
                 disabled={loading}
-                className="w-full py-4 bg-[#F97316] text-white text-sm font-semibold rounded-xl hover:bg-[#EA6C0B] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-4.5 figma-button rounded-2xl text-sm font-bold uppercase tracking-widest disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 relative z-10"
               >
                 {loading ? (
                   <>
@@ -421,7 +422,7 @@ const CheckoutPage = () => {
             </div>
 
             {/* Security Note */}
-            <div className="bg-white rounded-2xl border border-black/8 p-5">
+            <div className="figma-card rounded-3xl p-6">
               <div className="flex items-start gap-3">
                 <HiShieldCheck
                   size={18}

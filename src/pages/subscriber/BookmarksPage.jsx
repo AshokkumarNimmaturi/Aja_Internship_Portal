@@ -42,20 +42,20 @@ const BookmarksPage = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden">
       <Sidebar />
 
       {/* Main */}
       <main className="flex-1 p-8 py-10 overflow-y-auto">
-        <div className="mb-8">
-          <h1 className="font-serif text-3xl text-[#0A1628] mb-1">Bookmarks</h1>
-          <p className="text-sm text-gray-400 font-light">
-            Questions you saved for later revision
+        <div className="mb-8 animate-fade-in-up">
+          <h1 className="font-serif text-3xl text-[#0A1628] mb-1 font-bold">Bookmarks</h1>
+          <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">
+            Curated Knowledge Vault
           </p>
         </div>
 
         {/* Search */}
-        <div className="relative max-w-md mb-6">
+        <div className="relative max-w-md mb-8 animate-fade-in-up animation-delay-100">
           <HiMagnifyingGlass
             size={15}
             className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
@@ -70,11 +70,12 @@ const BookmarksPage = () => {
         </div>
 
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            {filtered.map((q) => (
-              <div
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in-up animation-delay-200">
+            {filtered.map((q, idx) => (
+               <div
                 key={q.id}
-                className="bg-white border border-black/8 rounded-2xl p-5 hover:border-blue-100 hover:-translate-y-1 hover:shadow-lg transition-all"
+                style={{ animationDelay: `${idx * 100}ms` }}
+                className="glass-panel rounded-3xl p-6 hover:border-blue-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(59,130,246,0.12)] transition-all duration-300 group animate-fade-in-up"
               >
                 <div className="flex items-start justify-between mb-3">
                   <TechBadge tech={q.technology} />
@@ -89,7 +90,7 @@ const BookmarksPage = () => {
                   </button>
                 </div>
                 <Link to={`/dashboard/questions/${q.id}`}>
-                  <h3 className="text-sm font-semibold text-[#0A1628] leading-snug mb-4 line-clamp-2 hover:text-[#2563EB] transition-colors">
+                  <h3 className="text-sm font-bold text-[#0A1628] leading-snug mb-5 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-indigo-600 transition-all duration-300">
                     {q.title}
                   </h3>
                 </Link>
@@ -104,19 +105,19 @@ const BookmarksPage = () => {
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-24 text-center">
-            <div className="w-16 h-16 bg-gray-50 rounded-2xl flex items-center justify-center mb-4">
-              <HiBookmark size={28} className="text-gray-200" />
+          <div className="flex flex-col items-center justify-center py-24 text-center glass-panel rounded-[40px] border-dashed border-black/8 animate-fade-in-up animation-delay-200">
+            <div className="w-20 h-20 bg-blue-50/50 rounded-3xl flex items-center justify-center mb-6 shadow-inner animate-float-slow">
+              <HiBookmark size={36} className="text-blue-300" />
             </div>
-            <h3 className="text-lg font-semibold text-[#0A1628] mb-2">
-              No bookmarks yet
+            <h3 className="text-xl font-serif font-bold text-[#0A1628] mb-2">
+              Empty Vault
             </h3>
-            <p className="text-sm text-gray-400 mb-6">
-              Save questions while browsing to find them quickly later
+            <p className="text-[11px] text-gray-400 mb-8 font-bold uppercase tracking-widest">
+              Save questions to build your priority list
             </p>
             <Link
               to="/dashboard"
-              className="px-5 py-2.5 bg-[#0A1628] text-white text-sm rounded-xl hover:bg-[#0F2340] transition-all"
+              className="px-8 py-3 bg-gradient-to-r from-[#0A1628] to-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
             >
               Browse Questions
             </Link>

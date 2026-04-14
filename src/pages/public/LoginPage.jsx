@@ -86,10 +86,11 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex font-sans bg-gray-50">
       {/* LEFT PANEL: Branding & Visuals */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0A1628] via-[#112236] to-[#2563EB] flex-col justify-between p-16 relative overflow-hidden">
+      <div className="hidden lg:flex lg:w-1/2 mesh-bg flex-col justify-between p-16 relative overflow-hidden">
+        <div className="animated-grid-bg" />
         {/* Abstract Background Decoration */}
-        <div className="absolute top-[-100px] right-[-100px] w-80 h-80 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="absolute top-[-100px] right-[-100px] w-80 h-80 bg-white/5 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-float animation-delay-200" />
 
         <Link to="/" className="flex items-center gap-4 relative z-10">
           <img src="/logo.png" alt="Aja" className="h-10 w-auto brightness-0 invert" />
@@ -138,8 +139,8 @@ const LoginPage = () => {
       </div>
 
       {/* RIGHT PANEL: Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16">
-        <div className="w-full max-w-md bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 border border-gray-100">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 animate-fade-in-up">
+        <div className="w-full max-w-md figma-card p-10 rounded-[2.5rem]">
           <div className="mb-10">
             <h1 className="text-3xl font-bold text-[#0A1628] tracking-tight mb-2">
               Welcome Back
@@ -152,7 +153,7 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* EMAIL */}
             <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Email Address</label>
+              <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Email Address</label>
               <input
                 type="email"
                 name="email"
@@ -160,15 +161,15 @@ const LoginPage = () => {
                 onChange={handleChange}
                 placeholder="name@company.com"
                 required
-                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+                className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
               />
             </div>
 
             {/* PASSWORD */}
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider">Password</label>
-                <Link to="/forgot-password" size={18} className="text-blue-600 text-xs font-bold hover:underline">
+                <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Password</label>
+                <Link to="/forgot-password" size={18} className="text-blue-600 text-[10px] tracking-widest uppercase font-bold hover:underline">
                   Forgot?
                 </Link>
               </div>
@@ -180,7 +181,7 @@ const LoginPage = () => {
                   onChange={handleChange}
                   placeholder="••••••••"
                   required
-                  className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+                  className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
                 />
                 <button
                   type="button"
@@ -196,14 +197,17 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-4 py-4 bg-[#0A1628] text-white font-bold rounded-2xl hover:bg-blue-700 hover:scale-[1.02] active:scale-100 shadow-xl shadow-blue-900/10 transition-all disabled:opacity-60 disabled:scale-100"
+              className="w-full mt-4 py-4 figma-button rounded-2xl flex justify-center items-center relative overflow-hidden group tracking-wider font-bold"
             >
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
+              <span className="relative z-10">
               {loading ? (
                  <div className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>Signing in...</span>
                  </div>
               ) : "Sign In to Portal"}
+              </span>
             </button>
 
             <div className="mt-6 text-center">

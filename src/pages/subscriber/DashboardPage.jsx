@@ -57,7 +57,7 @@ const DashboardPage = () => {
   }, [user]);
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden">
       <Sidebar activeItem="Dashboard" />
       
       <main className="flex-1 p-8 overflow-y-auto">
@@ -73,10 +73,10 @@ const DashboardPage = () => {
             </div>
             
             <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right duration-700">
-               <div className="bg-white border border-black/5 rounded-2xl px-5 py-3 flex items-center gap-4 shadow-sm hover:shadow-md transition-all">
-                  <div className="p-2.5 bg-amber-50 text-amber-500 rounded-xl shadow-inner"><HiBolt size={20} /></div>
+               <div className="figma-card rounded-2xl px-5 py-3 flex items-center gap-4">
+                  <div className="p-2.5 bg-amber-50 text-amber-500 rounded-xl shadow-inner"><HiBolt size={20} className="animate-pulse" /></div>
                   <div>
-                    <div className="text-sm font-black text-[#0A1628] leading-tight">{stats.currentStreak} Day Streak!</div>
+                    <div className="text-sm font-black text-[#0A1628] leading-tight flex items-center gap-2">{stats.currentStreak} Day Streak! <span className="flex w-2 h-2 rounded-full bg-emerald-400 animate-pulse-ring"></span></div>
                     <div className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Consistency is key</div>
                   </div>
                </div>
@@ -85,8 +85,8 @@ const DashboardPage = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
-              <div className="bg-white rounded-[40px] border border-black/5 p-10 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 opacity-20" />
+              <div className="figma-card rounded-[40px] p-10 relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-30" />
                 <div className="flex items-center justify-between mb-10">
                   <h2 className="text-2xl font-serif text-[#0A1628]">Recently Viewed Intel</h2>
                   <Link to="/dashboard/questions" className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors flex items-center gap-2 group/link">
@@ -103,11 +103,11 @@ const DashboardPage = () => {
                   ) : recentQuestions.length > 0 ? (
                     recentQuestions.map((q, idx) => (
                       <Link key={q.id} to={`/dashboard/questions/${q.id}`} 
-                        className="flex items-center justify-between p-6 rounded-[32px] border border-black/5 hover:border-blue-100 hover:bg-blue-50/20 transition-all group/item animate-in fade-in slide-in-from-bottom-4 duration-500"
-                        style={{ animationDelay: `${idx * 100}ms` }}
+                        className="flex items-center justify-between p-6 rounded-[32px] figma-card group/item animate-fade-in-up hover:border-blue-200"
+                        style={{ animationDelay: `${idx * 150}ms`, opacity: 0 }}
                       >
                          <div className="flex items-center gap-5">
-                            <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-300 group-hover/item:scale-110 group-hover/item:bg-blue-50 group-hover/item:text-blue-500 transition-all shadow-inner">
+                            <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-300 group-hover/item:scale-[1.05] group-hover/item:bg-gradient-to-br group-hover/item:from-blue-50 group-hover/item:to-blue-100 group-hover/item:text-blue-500 apple-transition shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] group-hover/item:shadow-[0_4px_12px_rgba(59,130,246,0.1)]">
                               <HiStar size={22} />
                             </div>
                             <div>
@@ -122,22 +122,22 @@ const DashboardPage = () => {
                       </Link>
                     ))
                   ) : (
-                     <div className="py-24 text-center bg-gray-50/50 rounded-[40px] border border-dashed border-black/10">
+                     <div className="py-24 text-center figma-card rounded-[40px] border-dashed">
                        <div className="text-4xl mb-4 grayscale opacity-30">📚</div>
                        <p className="text-sm text-gray-400 font-serif italic mb-4">You haven't studied any questions yet.</p>
-                       <Link to="/dashboard/questions" className="inline-flex px-8 py-3 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:bg-blue-900 transition-all shadow-xl shadow-blue-900/10 active:scale-95">Begin Mastery</Link>
+                       <Link to="/dashboard/questions" className="inline-flex px-8 py-3 figma-button rounded-2xl text-[10px] uppercase tracking-widest font-black">Begin Mastery</Link>
                     </div>
                   )}
                 </div>
               </div>
             </div>
 
-            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-               <div className={`rounded-[40px] p-10 border shadow-2xl relative overflow-hidden group ${subscription ? 'bg-gradient-to-br from-[#0A1628] to-[#1E3A5F] text-white border-transparent' : 'bg-white border-black/5'}`}>
-                  {subscription && <HiStar size={180} className="absolute -bottom-10 -right-10 text-white/5 rotate-12 group-hover:scale-110 transition-transform duration-1000" />}
+            <div className="space-y-8 animate-fade-in-up animation-delay-200" style={{ opacity: 0 }}>
+               <div className={`rounded-[40px] p-10 border shadow-2xl relative overflow-hidden group ${subscription ? 'bg-gradient-to-br from-[#0A1628] via-[#112236] to-[#1E3A5F] text-white border-white/10' : 'figma-card'}`}>
+                  {subscription && <HiStar size={180} className="absolute -bottom-10 -right-10 text-white/5 rotate-12 group-hover:scale-110 apple-transition duration-1000 animate-float-slow" />}
                   
-                  <div className="flex items-center gap-4 mb-8 relative z-10">
-                    <div className={`p-4 rounded-2xl shadow-xl ${subscription ? 'bg-blue-500/20 text-blue-300 border border-white/10' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
+                  <div className="flex items-center gap-4 mb-8 relative z-10 animate-fade-in-up animation-delay-300">
+                    <div className={`p-4 rounded-2xl shadow-xl ${subscription ? 'bg-blue-500/20 text-blue-300 border border-white/10 glass-dark' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
                       <HiAcademicCap size={30} />
                     </div>
                     <div>
@@ -151,7 +151,7 @@ const DashboardPage = () => {
                   {!subscription ? (
                     <div className="relative z-10">
                       <p className="text-sm text-gray-500 mb-10 leading-relaxed italic font-light">Join the top 1% of candidates with curated mock interviews and deep behavioral analytics.</p>
-                      <Link to="/portal/packages" className="block w-full py-5 bg-[#0A1628] text-white rounded-2xl text-center text-xs font-black uppercase tracking-widest hover:bg-blue-900 transition-all shadow-2xl shadow-blue-900/20 active:scale-[0.98]">Get Access Now</Link>
+                      <Link to="/portal/packages" className="block w-full py-5 figma-button rounded-2xl text-center text-[10px] font-black uppercase tracking-widest">Get Access Now</Link>
                     </div>
                   ) : (
                     <div className="relative z-10">
@@ -164,7 +164,7 @@ const DashboardPage = () => {
                             <div className="h-full bg-blue-400 rounded-full shadow-[0_0_15px_rgba(96,165,250,0.5)]" style={{ width: '65%' }} />
                          </div>
                       </div>
-                      <Link to="/dashboard/subscription" className="block w-full py-5 bg-white/10 backdrop-blur-xl text-white border border-white/20 rounded-2xl text-center text-xs font-black uppercase tracking-[0.2em] hover:bg-white/20 transition-all active:scale-[0.98]">Manage Access</Link>
+                      <Link to="/dashboard/subscription" className="block w-full py-5 bg-white/10 backdrop-blur-xl text-white border border-white/20 rounded-2xl text-center text-xs font-black uppercase tracking-[0.2em] hover:bg-white/20 hover:scale-[1.02] shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 active:scale-[0.98]">Manage Access</Link>
                       
                       <div className="mt-6 pt-6 border-t border-white/10 relative z-10">
                         <div className="flex items-center justify-between mb-4">
@@ -174,7 +174,7 @@ const DashboardPage = () => {
                         <VoiceCallButton 
                           toNumber="support" 
                           label="Admin Support" 
-                          className="w-full py-4.5 bg-gradient-to-r from-blue-600 to-indigo-600 !text-white !border-none rounded-2xl shadow-xl shadow-blue-500/20 active:scale-95 transition-all text-[10px] font-black tracking-widest uppercase flex items-center justify-center gap-3"
+                          className="w-full py-4.5 bg-white text-blue-600 rounded-2xl shadow-[inset_0_1px_1px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.1)] active:scale-95 apple-transition text-[10px] font-black tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-gray-50"
                         />                      </div>
                     </div>
                   )}

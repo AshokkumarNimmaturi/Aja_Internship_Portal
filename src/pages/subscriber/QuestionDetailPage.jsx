@@ -12,6 +12,7 @@ const QuestionDetailPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const [question, setQuestion] = useState(null);
+  const [answers, setAnswers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -22,12 +23,14 @@ const QuestionDetailPage = () => {
       // ✅ ELITE SYNC: Record visit for Recently Viewed dashboard
       axiosInstance.post(`/questions/${id}/visit`).catch(() => {});
 
-      const [qRes, bRes] = await Promise.all([
+      const [qRes, bRes, aRes] = await Promise.all([
         axiosInstance.get(`/questions/${id}`),
-        axiosInstance.get("/bookmarks").catch(() => ({ data: [] }))
+        axiosInstance.get("/bookmarks").catch(() => ({ data: [] })),
+        axiosInstance.get(`/answers/${id}`).catch(() => ({ data: [] }))
       ]);
       
       setQuestion(qRes.data);
+      setAnswers(aRes.data);
       const isBookmarked = Array.isArray(bRes.data) && bRes.data.some(b => b.id === parseInt(id));
       setBookmarked(isBookmarked);
     } catch (e) { 
@@ -142,12 +145,16 @@ const QuestionDetailPage = () => {
                     <HiCheckBadge size={28} />
                  </div>
                  <div>
-                   <h2 className="text-2xl font-black text-white tracking-tight">Master Official Answer</h2>
-                   <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em]">Curation Verified by Aja Tutors</p>
+                   <h2 className="text-2xl font-black text-white tracking-tight">
+                      {question.officialAnswer ? "Master Official Answer" : "Initial Submission Answer"}
+                   </h2>
+                   <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em]">
+                      {question.officialAnswer ? "Curation Verified by Aja Tutors" : "Initial context provided by submitter"}
+                   </p>
                  </div>
               </div>
               <div className="flex items-center gap-2 px-5 py-2.5 bg-blue-600/20 text-blue-300 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20 shadow-lg">
-                 <HiBolt size={14} className="animate-pulse" /> Final Protocol
+                 <HiBolt size={14} className="animate-pulse" /> {question.officialAnswer ? "Final Protocol" : "Draft Protocol"}
               </div>
            </div>
 
@@ -155,10 +162,7 @@ const QuestionDetailPage = () => {
              {question.officialAnswer ? (
                 `"${question.officialAnswer}"`
              ) : (
-                <div className="flex flex-col items-center justify-center py-20 text-center opacity-40">
-                   <HiArrowPath className="animate-spin mb-4" size={32} />
-                   <p className="text-sm font-black uppercase tracking-widest">Protocol Generation in Progress...</p>
-                </div>
+                `"${question.initialAnswer || "No detailed explanation was provided with this submission."}"`
              )}
            </div>
            
@@ -172,6 +176,41 @@ const QuestionDetailPage = () => {
                  <HiArrowLeft size={18} className="group-hover/back:-translate-x-1 transition-transform" /> Back to Base
               </Link>
            </div>
+
+         {/* Expert Answers Section */}
+         <div className="mt-12 mb-12">
+            <h2 className="text-xl font-bold text-[#0A1628] mb-6 flex items-center gap-2 font-serif">
+               Community Intelligence ({answers.length})
+            </h2>
+
+            <div className="flex flex-col gap-6">
+              {answers.length > 0 ? answers.map((answer) => (
+                <div key={answer.id} className="bg-white border rounded-[32px] p-7 shadow-sm relative overflow-hidden group border-black/5 hover:shadow-md transition-shadow">
+                  <div className="flex items-start justify-between mb-5">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] text-gray-400 flex items-center justify-center font-black text-sm uppercase tracking-widest border border-black/5">
+                        {answer.authorName?.charAt(0) || "A"}
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-[#0A1628] mb-0.5">{answer.authorName || "Anonymous Contributor"}</div>
+                        <div className="text-[9px] font-black uppercase tracking-[0.1em] text-gray-300">
+                           Expert Submission
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-600 leading-relaxed font-light font-sans pl-2 border-l-2 border-blue-500/20">
+                    {answer.content}
+                  </p>
+                </div>
+              )) : (
+                 <div className="py-16 text-center text-gray-400 text-sm italic font-light border border-dashed border-black/5 rounded-[40px] bg-white/50">
+                    No community intel has been submitted for this packet yet.
+                 </div>
+              )}
+            </div>
+         </div>
+         
         </div>
       </main>
     </div>

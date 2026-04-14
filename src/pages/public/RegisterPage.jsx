@@ -75,9 +75,9 @@ const RegisterPage = () => {
       return;
     }
 
-    // 🔥 PHONE VALIDATION (Now Required)
-    if (!/^[0-9]{10}$/.test(formData.phone)) {
-      toast.error("Enter valid 10-digit phone number");
+    // 🔥 PHONE VALIDATION (Matches Backend: Indian Numbers 6-9)
+    if (!/^[6-9][0-9]{9}$/.test(formData.phone)) {
+      toast.error("Enter valid 10-digit Indian mobile number (start with 6-9)");
       return;
     }
 
@@ -106,11 +106,13 @@ const RegisterPage = () => {
       console.log("REGISTER ERROR:", error.response?.data); // 🔥 DEBUG
 
       if (error.response?.status === 409) {
-        toast.error("Email already exists");
+        // Handle specifically if it's email vs phone conflict if backend provides details
+        const errorMsg = error.response?.data?.message || error.response?.data;
+        toast.error(typeof errorMsg === 'string' ? errorMsg : "Email or Phone already exists");
       } else {
         toast.error(
           error.response?.data?.message ||
-            error.response?.data ||
+            (typeof error.response?.data === 'string' ? error.response?.data : null) ||
             "Registration failed",
         );
       }
@@ -120,11 +122,12 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex font-sans bg-gray-50">
+    <div className="min-h-screen flex font-sans bg-[#F8FAFC]">
       {/* LEFT PANEL: Branding & Visuals */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-[#0A1628] via-[#112236] to-[#2563EB] flex-col justify-between p-16 relative overflow-hidden">
-        <div className="absolute top-[-100px] right-[-100px] w-80 h-80 bg-white/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-blue-500/10 rounded-full blur-3xl" />
+      <div className="hidden lg:flex lg:w-1/2 mesh-bg flex-col justify-between p-16 relative overflow-hidden">
+        <div className="animated-grid-bg" />
+        <div className="absolute top-[-100px] right-[-100px] w-80 h-80 bg-white/5 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-float animation-delay-200" />
 
         <Link to="/" className="flex items-center gap-4 relative z-10">
           <img src="/logo.png" alt="Aja" className="h-10 w-auto brightness-0 invert" />
@@ -173,8 +176,8 @@ const RegisterPage = () => {
       </div>
 
       {/* RIGHT PANEL: Register Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16">
-        <div className="w-full max-w-md bg-white p-10 rounded-[2.5rem] shadow-2xl shadow-blue-900/5 border border-gray-100">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 animate-fade-in-up">
+        <div className="w-full max-w-md figma-card p-10 rounded-[2.5rem]">
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-[#0A1628] tracking-tight mb-2">
               Create Account
@@ -196,31 +199,31 @@ const RegisterPage = () => {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Full Name</label>
+              <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Full Name</label>
               <input
                 type="text"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
                 placeholder="John Doe"
-                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+                className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Email Address</label>
+              <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Email Address</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="name@company.com"
-                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+                className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Phone Number</label>
+              <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Phone Number</label>
               <input
                 type="tel"
                 name="phone"
@@ -228,13 +231,13 @@ const RegisterPage = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="10-digit number"
-                className="w-full px-5 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+                className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Password</label>
+                <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -242,7 +245,7 @@ const RegisterPage = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+                    className="w-full px-4 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
                   />
                   <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-4 text-gray-400">
                     {showPassword ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
@@ -250,7 +253,7 @@ const RegisterPage = () => {
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-xs font-bold text-[#0A1628] uppercase tracking-wider ml-1">Confirm</label>
+                <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Confirm</label>
                 <div className="relative">
                   <input
                     type={showConfirm ? "text" : "password"}
@@ -258,7 +261,7 @@ const RegisterPage = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full px-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm"
+                    className="w-full px-4 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
                   />
                   <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-4 text-gray-400">
                     {showConfirm ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
@@ -283,14 +286,17 @@ const RegisterPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-4 bg-[#0A1628] text-white font-bold rounded-2xl hover:bg-blue-700 hover:scale-[1.02] active:scale-100 shadow-xl shadow-blue-900/10 transition-all disabled:opacity-60 disabled:scale-100"
+              className="w-full mt-2 py-4 figma-button rounded-2xl flex justify-center items-center relative overflow-hidden group tracking-wider font-bold"
             >
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
+              <span className="relative z-10">
               {loading ? (
                  <div className="flex items-center justify-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     <span>Creating...</span>
                  </div>
               ) : "Create Professional Account"}
+              </span>
             </button>
 
             <p className="text-sm text-center text-gray-500 mt-2">

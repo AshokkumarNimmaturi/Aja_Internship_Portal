@@ -39,7 +39,7 @@ const SupportTelemetryTable = ({ supportCalls, callStatusFilter, user }) => {
                                 </span>
                             ) : call.status === 'MISSED' ? (
                                 <span className="flex items-center gap-2 px-4 py-1.5 bg-red-50 text-red-600 rounded-full text-[10px] font-black tracking-widest border border-red-100 flex-shrink-0">
-                                    <HiPhoneXMark size={15} /> UNRESOLVED
+                                    <HiPhoneXMark size={15} /> MISSED CALL
                                 </span>
                             ) : (
                                 <span className="flex items-center gap-2 px-4 py-1.5 bg-amber-50 text-amber-600 rounded-full text-[10px] font-black tracking-widest border border-amber-100 uppercase flex-shrink-0 animate-pulse">
