@@ -73,7 +73,9 @@ const CheckoutPage = () => {
   const tierDays = Number(searchParams.get("tier")) || 30;
   const [loading, setLoading] = useState(false);
   const [pageLoading, setPageLoading] = useState(true);
-  const [pkg, setPkg] = useState(null);
+   const [pkg, setPkg] = useState(null);
+  const [vpa, setVpa] = useState("");
+  
   
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
@@ -171,10 +173,13 @@ const CheckoutPage = () => {
           }
         },
         prefill: {
-          name: user?.name || "",
+          name: user?.fullName || "",
           email: user?.email || "",
+          contact: user?.phone || "",
+          method: vpa ? "upi" : undefined,
         },
-        theme: { color: "#0A1628" },
+        vpa: vpa || undefined,
+        theme: { color: "#3399cc" },
       };
 
       const razorpay = new window.Razorpay(options);
@@ -348,11 +353,35 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
+              {/* UPI ID Input (Optional) */}
+              <div className="mb-6 group/input">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 transition-colors group-focus-within/input:text-[#2563EB]">
+                  Enter UPI ID (Optional)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={vpa}
+                    onChange={(e) => setVpa(e.target.value)}
+                    placeholder="e.g. username@okaxis"
+                    className="w-full px-4 py-3.5 bg-gray-50 border border-gray-100 rounded-xl text-sm focus:bg-white focus:border-[#2563EB] focus:ring-4 focus:ring-blue-500/5 transition-all outline-none placeholder:text-gray-300"
+                  />
+                  {vpa && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-[#2563EB] bg-blue-50 px-2 py-1 rounded-md animate-fade-in">
+                      DIRECT PAY ENABLED
+                    </div>
+                  )}
+                </div>
+                <p className="mt-2 text-[10px] text-gray-400 leading-relaxed uppercase tracking-widest">
+                  Leave empty to get a <span className="text-[#0A1628] font-bold">QR Code</span> instead
+                </p>
+              </div>
+
               {/* Razorpay Button */}
               <button
                 onClick={handlePayment}
                 disabled={loading}
-                className="w-full py-4.5 figma-button rounded-2xl text-sm font-bold uppercase tracking-widest disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 relative z-10"
+                className="w-full py-4 razorpay-official-button text-sm font-bold uppercase tracking-widest disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 relative z-10"
               >
                 {loading ? (
                   <>

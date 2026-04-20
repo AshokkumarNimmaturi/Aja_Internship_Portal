@@ -187,6 +187,27 @@ h1, h2, h3, h4, .font-outfit {
     background-size: 200% 200%;
     animation: gradientMove 15s ease infinite alternate;
   }
+
+  /* Official Razorpay Branded Button */
+  .razorpay-official-button {
+    background: #3399cc;
+    color: white;
+    border-radius: 4px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+
+  .razorpay-official-button:hover {
+    background: #2b82ad;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+  }
+
+  .razorpay-official-button:active {
+    background: #246e92;
+    transform: translateY(0px);
+  }
 }
 
 @keyframes gradientMove {
