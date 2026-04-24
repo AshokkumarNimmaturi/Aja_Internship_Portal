@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { HiMagnifyingGlass, HiAdjustmentsHorizontal, HiChevronRight, HiBookOpen, HiStar, HiBolt, HiArrowPath } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchMySubscription } from "../../api/paymentApi";
+import { fetchQuestions } from "../../api/questionApi";
 import TechBadge from "../../components/common/TechBadge";
 
 const QuestionsPage = () => {
@@ -20,8 +21,8 @@ const QuestionsPage = () => {
       setLoading(true);
       try {
         const [subRes, qRes] = await Promise.all([
-          axiosInstance.get("/subscriptions/my").catch(() => ({ data: [] })),
-          axiosInstance.get("/questions")
+          fetchMySubscription().catch(() => ({ data: [] })),
+          fetchQuestions()
         ]);
 
         const activeSubs = Array.isArray(subRes.data) ? subRes.data : [];

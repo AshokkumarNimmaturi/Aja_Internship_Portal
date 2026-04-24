@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import axiosInstance from "../../api/axiosInstance";
+import { resetPassword } from "../../api/authApi";
 import toast from "react-hot-toast";
 
 const rules = [
@@ -52,7 +52,7 @@ const ResetPasswordPage = () => {
 
     setLoading(true);
     try {
-      await axiosInstance.post("/auth/reset-password", {
+      await resetPassword({
         token,
         newPassword: password,
         confirmPassword: confirm,

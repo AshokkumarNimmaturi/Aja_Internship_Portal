@@ -21,7 +21,13 @@ import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import TechBadge from "../../components/common/TechBadge";
 import DifficultyBadge from "../../components/common/DifficultyBadge";
-import axiosInstance from "../../api/axiosInstance";
+import { 
+  fetchQuestionById, 
+  getQuestionAnswers, 
+  updateQuestion, 
+  setOfficialAnswer, 
+  submitAnswer 
+} from "../../api/questionApi";
 import toast from "react-hot-toast";
 
 const PortalQuestionDetailPage = () => {
@@ -50,7 +56,7 @@ const PortalQuestionDetailPage = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const qRes = await axiosInstance.get(`/questions/${id}`);
+      const qRes = await fetchQuestionById(id);
       setQuestion(qRes.data);
       setEditForm({
         title: qRes.data.title,
@@ -59,7 +65,7 @@ const PortalQuestionDetailPage = () => {
         tags: qRes.data.tags || ""
       });
 
-      const aRes = await axiosInstance.get(`/answers/${id}`);
+      const aRes = await getQuestionAnswers(id);
       setAnswers(aRes.data);
     } catch (error) {
       console.error("Failed to fetch details:", error);
@@ -76,7 +82,7 @@ const PortalQuestionDetailPage = () => {
   const handleUpdateQuestion = async (e) => {
     e.preventDefault();
     try {
-      await axiosInstance.put(`/questions/${id}`, editForm);
+      await updateQuestion(id, editForm);
       toast.success("Question updated successfully! 🦾");
       setIsEditing(false);
       fetchData();
@@ -91,9 +97,7 @@ const PortalQuestionDetailPage = () => {
 
     setSubmittingAnswer(true);
     try {
-      await axiosInstance.post(`/answers/${id}`, {
-        content: newAnswerContent
-      });
+      await submitAnswer(id, { content: newAnswerContent });
       toast.success("Better answer added! 🏆");
       setNewAnswerContent("");
       setShowAddAnswer(false);
@@ -337,7 +341,7 @@ const PortalQuestionDetailPage = () => {
                          <button 
                            onClick={async () => {
                              try {
-                               await axiosInstance.put(`/questions/${id}/official-answer`, { officialAnswer: answer.content });
+                               await setOfficialAnswer(id, { officialAnswer: answer.content });
                                toast.success("Response promoted to Master Answer! 🛡️");
                                fetchData();
                              } catch(err) {

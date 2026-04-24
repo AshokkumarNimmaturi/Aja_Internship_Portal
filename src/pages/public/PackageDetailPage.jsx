@@ -10,7 +10,7 @@ import {
   HiShieldCheck,
   HiBolt
 } from "react-icons/hi2";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchPackageById } from "../../api/packageApi";
 import toast from "react-hot-toast";
 
 const PackageDetailPage = () => {
@@ -24,7 +24,7 @@ const PackageDetailPage = () => {
 
   const fetchPackage = async () => {
     try {
-      const res = await axiosInstance.get(`/packages/${id}`);
+      const res = await fetchPackageById(id);
       setPkg(res.data);
     } catch (error) {
       toast.error("Package not found");

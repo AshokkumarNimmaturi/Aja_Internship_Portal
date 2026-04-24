@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HiEye, HiEyeSlash, HiCheckCircle, HiInformationCircle } from "react-icons/hi2";
-import axiosInstance from "../../api/axiosInstance";
+import { registerUser } from "../../api/authApi";
 import toast from "react-hot-toast";
 
 const getPasswordStrength = (password) => {
@@ -84,7 +84,7 @@ const RegisterPage = () => {
     setLoading(true);
 
     try {
-      await axiosInstance.post("/auth/register", {
+      await registerUser({
         fullName: formData.fullName,
         email: formData.email,
         phone: formData.phone || null, // ✅ IMPORTANT FIX

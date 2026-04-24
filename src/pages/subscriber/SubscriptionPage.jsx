@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchMySubscription } from "../../api/paymentApi";
 import { useAuth } from "../../context/AuthContext";
 import toast from "react-hot-toast";
 import { Sidebar } from "../../components/subscriber/Sidebar";
@@ -12,7 +12,7 @@ const SubscriptionPage = () => {
 
   const fetchSubscription = async () => {
     try {
-      const res = await axiosInstance.get("/subscriptions/my");
+      const res = await fetchMySubscription();
       if (Array.isArray(res.data)) {
         setSubscriptions(res.data);
       } else if (res.data && res.data.endDate) {

@@ -3,7 +3,13 @@ import { Link, useParams } from "react-router-dom";
 import { HiArrowLeft, HiBookmark, HiBriefcase, HiCheckBadge, HiStar, HiArrowPath, HiBolt } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
-import axiosInstance from "../../api/axiosInstance";
+import { 
+  fetchQuestionById, 
+  recordQuestionVisit, 
+  getBookmarks, 
+  getQuestionAnswers, 
+  toggleBookmarkApi 
+} from "../../api/questionApi";
 import TechBadge from "../../components/common/TechBadge";
 import DifficultyBadge from "../../components/common/DifficultyBadge";
 import toast from "react-hot-toast";
@@ -21,12 +27,12 @@ const QuestionDetailPage = () => {
     setLoading(true);
     try {
       // ✅ ELITE SYNC: Record visit for Recently Viewed dashboard
-      axiosInstance.post(`/questions/${id}/visit`).catch(() => {});
+      recordQuestionVisit(id).catch(() => {});
 
       const [qRes, bRes, aRes] = await Promise.all([
-        axiosInstance.get(`/questions/${id}`),
-        axiosInstance.get("/bookmarks").catch(() => ({ data: [] })),
-        axiosInstance.get(`/answers/${id}`).catch(() => ({ data: [] }))
+        fetchQuestionById(id),
+        getBookmarks().catch(() => ({ data: [] })),
+        getQuestionAnswers(id).catch(() => ({ data: [] }))
       ]);
       
       setQuestion(qRes.data);
@@ -46,7 +52,7 @@ const QuestionDetailPage = () => {
     if (isSyncing) return;
     setIsSyncing(true);
     try {
-      await axiosInstance.post(`/bookmarks/${id}`);
+      await toggleBookmarkApi(id);
       setBookmarked(!bookmarked);
       toast.success(bookmarked ? "Removed from bookmarks" : "Saved to your vault! 🦾");
     } catch (e) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { HiPhone, HiPhoneXMark, HiArrowPath } from 'react-icons/hi2';
 import { Device } from '@twilio/voice-sdk';
-import axiosInstance from '../../api/axiosInstance';
+import { getVoiceToken, checkAvailability } from '../../api/voiceApi';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -15,7 +15,7 @@ const VoiceCallButton = ({ toNumber = "support", className = "", label = "Techni
   const initDevice = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`/voice/token?identity=${encodeURIComponent(user.email)}`);
+      const response = await getVoiceToken(user.email);
       const token = response.data;
 
       const newDevice = new Device(token, {
@@ -52,7 +52,7 @@ const VoiceCallButton = ({ toNumber = "support", className = "", label = "Techni
     // ✅ ONLY CHECK AVAILABILITY FOR SUBSCRIBERS CALLING IN
     if (toNumber === "support") {
       try {
-        const availRes = await axiosInstance.get('/voice/availability');
+        const availRes = await checkAvailability();
         const { status } = availRes.data;
 
         if (status === 'OFFLINE') {

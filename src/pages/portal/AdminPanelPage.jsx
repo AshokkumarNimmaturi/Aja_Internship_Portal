@@ -25,7 +25,20 @@ import {
 } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchMe } from "../../api/authApi";
+import { 
+  fetchUsersAdmin, 
+  deleteUserAdmin, 
+  activateUserAdmin, 
+  createUserAdmin, 
+  updateUserAdmin, 
+  fetchAuditLogs, 
+  fetchSupportCalls, 
+  updateSupportStatusApi 
+} from "../../api/adminApi";
+import { fetchQuestions, fetchPendingQuestions, reviewQuestion } from "../../api/questionApi";
+import { fetchPackages, createPackage } from "../../api/packageApi";
+import { fetchSupportTickets, updateSupportTicketStatus } from "../../api/supportApi";
 import toast from "react-hot-toast";
 import VoiceCallButton from "../../components/common/VoiceCallButton";
 import SupportTelemetryTable from "../../components/portal/SupportTelemetryTable";
@@ -126,12 +139,12 @@ const AdminPanelPage = () => {
     try {
       const isAdmin = user?.role === 'ADMIN';
       const fetches = [
-        isAdmin ? axiosInstance.get("/admin/users") : Promise.resolve({ data: [] }),
-        axiosInstance.get("/questions"),
-        axiosInstance.get("/packages"),
-        axiosInstance.get("/support").catch(() => ({ data: [] })),
-        axiosInstance.get("/admin/support-calls").catch(() => ({ data: [] })),
-        axiosInstance.get("/questions/pending").catch(() => ({ data: [] })) // ✅ FETCH PENDING
+        isAdmin ? fetchUsersAdmin() : Promise.resolve({ data: [] }),
+        fetchQuestions(),
+        fetchPackages(),
+        fetchSupportTickets().catch(() => ({ data: [] })),
+        fetchSupportCalls().catch(() => ({ data: [] })),
+        fetchPendingQuestions().catch(() => ({ data: [] }))
       ];
 
       const [uRes, qRes, pRes, sRes, callsRes, pendingRes] = await Promise.all(fetches);
@@ -163,7 +176,7 @@ const AdminPanelPage = () => {
 
   const fetchAuditData = useCallback(async () => {
     try {
-      const res = await axiosInstance.get("/admin/audit-log");
+      const res = await fetchAuditLogs();
       setAuditLogs(res.data.content || res.data);
     } catch (err) {
       console.warn("Audit logs service not ready yet");
@@ -177,7 +190,7 @@ const AdminPanelPage = () => {
     }
     // ✅ ULTRA-RESPONSIVE POLLING (5 Seconds)
     const interval = setInterval(() => {
-        axiosInstance.get("/auth/me").then(res => {
+        fetchMe().then(res => {
             if (!user?.inCall) {
                 if (res.data.inCall !== isInCall) {
                     setIsInCall(res.data.inCall);
@@ -193,7 +206,7 @@ const AdminPanelPage = () => {
   const handleReviewAction = async (id, decision) => {
     setProcessing(id + decision);
     try {
-      await axiosInstance.put(`/questions/${id}/review`, {
+      await reviewQuestion(id, {
         decision: decision,
         rejectionReason: comments[id] || "",
         correctedAnswer: correctedAnswers[id] || ""
@@ -211,7 +224,7 @@ const AdminPanelPage = () => {
   const handleUpdateStatus = async (newStatus) => {
     setProcessing("status");
     try {
-      const res = await axiosInstance.post(`/auth/support-status?status=${newStatus}`);
+      const res = await updateSupportStatusApi(newStatus);
       setStatus(res.data.status);
       updateUser({ status: res.data.status });
       toast.success(`Broadcasting status: ${newStatus}`);
@@ -225,10 +238,10 @@ const AdminPanelPage = () => {
   const handleToggleUser = async (userId, currentStatus) => {
     try {
       if (currentStatus) {
-        await axiosInstance.delete(`/admin/users/${userId}`);
+        await deleteUserAdmin(userId);
         toast.success("User deactivated successfully");
       } else {
-        await axiosInstance.put(`/admin/users/${userId}/activate`);
+        await activateUserAdmin(userId);
         toast.success("User access restored successfully");
       }
       fetchData();
@@ -241,7 +254,7 @@ const AdminPanelPage = () => {
     e.preventDefault();
     setProcessing("user");
     try {
-      await axiosInstance.post("/admin/users", userForm);
+      await createUserAdmin(userForm);
       toast.success("User created successfully");
       setShowUserForm(false);
       setUserForm({ fullName: "", email: "", phone: "", password: "", role: "EMPLOYEE" });
@@ -267,7 +280,7 @@ const AdminPanelPage = () => {
     }
     setProcessing("phone");
     try {
-      await axiosInstance.put(`/admin/users/${selectedUserForPhone.id}`, {
+      await updateUserAdmin(selectedUserForPhone.id, {
         phone: newPhoneNumber
       });
       toast.success("Phone updated successfully");
@@ -285,7 +298,7 @@ const AdminPanelPage = () => {
     e.preventDefault();
     setProcessing("package");
     try {
-      await axiosInstance.post("/packages", packageForm);
+      await createPackage(packageForm);
       toast.success("Package created successfully");
       setShowPackageForm(false);
       setPackageForm({
@@ -302,7 +315,7 @@ const AdminPanelPage = () => {
 
   const handleSupportStatus = async (id, status) => {
     try {
-        await axiosInstance.put(`/support/${id}/status?status=${status}`);
+        await updateSupportTicketStatus(id, status);
         toast.success("Status updated");
         fetchData();
     } catch (err) {

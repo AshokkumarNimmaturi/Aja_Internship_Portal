@@ -12,7 +12,7 @@ import {
 } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchMyAnswers } from "../../api/questionApi";
 
 const MyAnswersPage = () => {
   const { user } = useAuth();
@@ -23,7 +23,7 @@ const MyAnswersPage = () => {
     const fetchAnswers = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get("/answers/my");
+        const res = await fetchMyAnswers();
         setAnswers(res.data);
       } catch (error) {
         console.error("Error fetching answers:", error);

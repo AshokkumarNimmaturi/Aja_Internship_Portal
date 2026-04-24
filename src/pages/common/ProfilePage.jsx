@@ -16,7 +16,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchMe, updateProfile, changePassword } from "../../api/authApi";
 import toast from "react-hot-toast";
 
 const INTEREST_OPTIONS = [
@@ -50,7 +50,7 @@ const ProfilePage = ({ isPortal = false }) => {
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-        const res = await axiosInstance.get("/auth/me");
+        const res = await fetchMe();
         const data = res.data;
         setProfile({ fullName: data.fullName || data.name || "", email: data.email || "" });
         setInterests(data.interests || []);
@@ -66,7 +66,7 @@ const ProfilePage = ({ isPortal = false }) => {
     e.preventDefault();
     setSavingProfile(true);
     try {
-      await axiosInstance.put("/auth/profile", { fullName: profile.fullName });
+      await updateProfile({ fullName: profile.fullName });
       toast.success("Profile updated successfully!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update profile");
@@ -77,7 +77,7 @@ const ProfilePage = ({ isPortal = false }) => {
 
   const handleSaveInterests = async () => {
     try {
-      await axiosInstance.put("/auth/profile", { interests });
+      await updateProfile({ interests });
       toast.success("Interests saved!");
     } catch (err) {
       toast.error("Failed to save interests");
@@ -110,7 +110,7 @@ const ProfilePage = ({ isPortal = false }) => {
     }
     setChangingPw(true);
     try {
-      await axiosInstance.post("/auth/change-password", {
+      await changePassword({
         currentPassword: passwords.current,
         newPassword: passwords.newPass,
         confirmPassword: passwords.confirm,

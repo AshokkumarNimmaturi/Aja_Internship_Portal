@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { HiEye, HiEyeSlash, HiCheckCircle } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "../../api/axiosInstance";
+import { loginUser } from "../../api/authApi";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
@@ -32,7 +32,7 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const res = await axiosInstance.post("/auth/login", {
+      const res = await loginUser({
         email: formData.email,
         password: formData.password,
       });

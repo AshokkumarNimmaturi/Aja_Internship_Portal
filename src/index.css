@@ -18,13 +18,18 @@ body {
   letter-spacing: -0.01em;
 }
 
-h1, h2, h3, h4, .font-outfit {
+h1,
+h2,
+h3,
+h4,
+.font-outfit {
   font-family: 'Outfit', sans-serif;
   letter-spacing: -0.03em;
 }
 
 .font-serif {
-  font-family: 'Outfit', sans-serif; /* Replacing old serif with premium modern sans */
+  font-family: 'Outfit', sans-serif;
+  /* Replacing old serif with premium modern sans */
 }
 
 /* Antigravity Style Utilities */
@@ -39,49 +44,105 @@ h1, h2, h3, h4, .font-outfit {
 /* 🚀 PREMIUM ANIMATIONS 🚀 */
 
 @keyframes slide-up {
-  0% { transform: translateY(100%); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 @keyframes float {
-  0% { transform: translateY(0px) scale(1); }
-  50% { transform: translateY(-15px) scale(1.02); }
-  100% { transform: translateY(0px) scale(1); }
+  0% {
+    transform: translateY(0px) scale(1);
+  }
+
+  50% {
+    transform: translateY(-15px) scale(1.02);
+  }
+
+  100% {
+    transform: translateY(0px) scale(1);
+  }
 }
 
 @keyframes float-slow {
-  0% { transform: translateY(0px) rotate(0deg) scale(1); }
-  33% { transform: translateY(-20px) rotate(2deg) scale(1.05); }
-  66% { transform: translateY(10px) rotate(-2deg) scale(0.95); }
-  100% { transform: translateY(0px) rotate(0deg) scale(1); }
+  0% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
+
+  33% {
+    transform: translateY(-20px) rotate(2deg) scale(1.05);
+  }
+
+  66% {
+    transform: translateY(10px) rotate(-2deg) scale(0.95);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg) scale(1);
+  }
 }
 
 @keyframes fade-in-up {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes scale-in {
-  0% { opacity: 0; transform: scale(0.95); }
-  100% { opacity: 1; transform: scale(1); }
+  0% {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @keyframes shimmer {
-  0% { background-position: -1000px 0; }
-  100% { background-position: 1000px 0; }
+  0% {
+    background-position: -1000px 0;
+  }
+
+  100% {
+    background-position: 1000px 0;
+  }
 }
 
 @keyframes pulse-ring {
-  0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
-  70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
-  100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+  0% {
+    transform: scale(0.8);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
+  }
+
+  100% {
+    transform: scale(0.8);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
 }
 
 @layer utilities {
   .animate-slide-up {
     animation: slide-up 0.5s ease-out forwards;
   }
-  
+
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
@@ -89,7 +150,7 @@ h1, h2, h3, h4, .font-outfit {
   .animate-float-slow {
     animation: float-slow 12s ease-in-out infinite;
   }
-  
+
   .animate-fade-in-up {
     animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
@@ -97,13 +158,13 @@ h1, h2, h3, h4, .font-outfit {
   .animate-scale-in {
     animation: scale-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   }
-  
+
   .animate-pulse-ring {
     animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
   }
 
   .glass-panel {
-    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0,0,0,0.04)];
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_30px_rgb(0, 0, 0, 0.04)];
   }
 
   .glass-dark {
@@ -113,17 +174,32 @@ h1, h2, h3, h4, .font-outfit {
   .text-gradient {
     @apply text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-emerald-400;
   }
-  
-  .animation-delay-100 { animation-delay: 100ms; }
-  .animation-delay-200 { animation-delay: 200ms; }
-  .animation-delay-300 { animation-delay: 300ms; }
-  .animation-delay-400 { animation-delay: 400ms; }
-  .animation-delay-500 { animation-delay: 500ms; }
+
+  .animation-delay-100 {
+    animation-delay: 100ms;
+  }
+
+  .animation-delay-200 {
+    animation-delay: 200ms;
+  }
+
+  .animation-delay-300 {
+    animation-delay: 300ms;
+  }
+
+  .animation-delay-400 {
+    animation-delay: 400ms;
+  }
+
+  .animation-delay-500 {
+    animation-delay: 500ms;
+  }
 }
 
 /* 🚀 FIGMA-GRADE ULTRA PREMIUM CLASSES 🚀 */
 
 @layer components {
+
   /* Apple Easing Custom Curve */
   .apple-transition {
     transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1) !important;
@@ -133,7 +209,7 @@ h1, h2, h3, h4, .font-outfit {
   .figma-card {
     background-color: #ffffff;
     border: 1px solid rgba(0, 0, 0, 0.04);
-    box-shadow: 
+    box-shadow:
       0 1px 2px rgba(0, 0, 0, 0.02),
       0 4px 12px rgba(0, 0, 0, 0.03),
       0 20px 40px rgba(0, 0, 0, 0.04),
@@ -142,7 +218,7 @@ h1, h2, h3, h4, .font-outfit {
   }
 
   .figma-card:hover {
-    box-shadow: 
+    box-shadow:
       0 1px 2px rgba(0, 0, 0, 0.02),
       0 8px 24px rgba(59, 130, 246, 0.08),
       0 30px 60px rgba(59, 130, 246, 0.06),
@@ -154,7 +230,7 @@ h1, h2, h3, h4, .font-outfit {
   /* Tactile Buttons with lighting */
   .figma-button {
     background: linear-gradient(180deg, #18181A 0%, #0A0A0B 100%);
-    box-shadow: 
+    box-shadow:
       inset 0 1px 1px rgba(255, 255, 255, 0.2),
       0 2px 4px rgba(0, 0, 0, 0.4);
     color: white;
@@ -164,14 +240,14 @@ h1, h2, h3, h4, .font-outfit {
 
   .figma-button:hover {
     background: linear-gradient(180deg, #27272A 0%, #18181A 100%);
-    box-shadow: 
+    box-shadow:
       inset 0 1px 1px rgba(255, 255, 255, 0.3),
       0 4px 12px rgba(0, 0, 0, 0.5);
     transform: translateY(-1px);
   }
 
   .figma-button:active {
-    box-shadow: 
+    box-shadow:
       inset 0 2px 4px rgba(0, 0, 0, 0.5),
       0 0px 0px rgba(0, 0, 0, 0);
     transform: translateY(1px) scale(0.98);
@@ -180,9 +256,9 @@ h1, h2, h3, h4, .font-outfit {
   /* Abstract Mesh Gradient Backgrounds */
   .mesh-bg {
     background-color: #0A1628;
-    background-image: 
-      radial-gradient(at 0% 0%, hsla(225, 90%, 25%, 0.5) 0, transparent 50%), 
-      radial-gradient(at 50% 0%, hsla(250, 90%, 30%, 0.4) 0, transparent 50%), 
+    background-image:
+      radial-gradient(at 0% 0%, hsla(225, 90%, 25%, 0.5) 0, transparent 50%),
+      radial-gradient(at 50% 0%, hsla(250, 90%, 30%, 0.4) 0, transparent 50%),
       radial-gradient(at 100% 0%, hsla(210, 90%, 35%, 0.5) 0, transparent 50%);
     background-size: 200% 200%;
     animation: gradientMove 15s ease infinite alternate;
@@ -195,12 +271,12 @@ h1, h2, h3, h4, .font-outfit {
     border-radius: 4px;
     font-weight: 600;
     transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
 
   .razorpay-official-button:hover {
     background: #2b82ad;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
   }
 
@@ -211,18 +287,24 @@ h1, h2, h3, h4, .font-outfit {
 }
 
 @keyframes gradientMove {
-  0% { background-position: 0% 0%; }
-  100% { background-position: 100% 100%; }
+  0% {
+    background-position: 0% 0%;
+  }
+
+  100% {
+    background-position: 100% 100%;
+  }
 }
 
 /* 🌐 CLEAN ANIMATED TECH GRID 🌐 */
 .animated-grid-bg {
   position: absolute;
-  inset: -100%; /* Make bigger to allow panning */
+  inset: -100%;
+  /* Make bigger to allow panning */
   pointer-events: none;
   z-index: 1;
   background-size: 40px 40px;
-  background-image: 
+  background-image:
     linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   mask-image: radial-gradient(circle at center, black 10%, transparent 70%);
@@ -231,6 +313,11 @@ h1, h2, h3, h4, .font-outfit {
 }
 
 @keyframes panGrid {
-  0% { transform: translateX(0) translateY(0); }
-  100% { transform: translateX(40px) translateY(40px); }
+  0% {
+    transform: translateX(0) translateY(0);
+  }
+
+  100% {
+    transform: translateX(40px) translateY(40px);
+  }
 }

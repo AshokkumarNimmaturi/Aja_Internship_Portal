@@ -14,7 +14,7 @@ import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import TechBadge from "../../components/common/TechBadge";
 import { StatusBadge } from "./EmployeeDashboard";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchMyQuestions } from "../../api/questionApi";
 
 const MySubmissionsPage = () => {
   const { user } = useAuth();
@@ -27,7 +27,7 @@ const MySubmissionsPage = () => {
     const fetchSubmissions = async () => {
       setLoading(true);
       try {
-        const res = await axiosInstance.get("/questions/my");
+        const res = await fetchMyQuestions();
         setSubmissions(res.data);
       } catch (error) {
         console.error("Error fetching submissions:", error);

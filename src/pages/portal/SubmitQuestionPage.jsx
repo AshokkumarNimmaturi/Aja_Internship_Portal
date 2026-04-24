@@ -15,7 +15,9 @@ import {
 } from "react-icons/hi2";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchTechnologies, createTechnology } from "../../api/techApi";
+import { fetchPackages } from "../../api/packageApi";
+import { submitQuestion } from "../../api/questionApi";
 import toast from "react-hot-toast";
 
 const SubmitQuestionPage = () => {
@@ -39,8 +41,8 @@ const SubmitQuestionPage = () => {
     const fetchData = async () => {
       try {
         const [techRes, pkgRes] = await Promise.all([
-          axiosInstance.get("/technologies"),
-          axiosInstance.get("/packages"),
+          fetchTechnologies(),
+          fetchPackages(),
         ]);
         setTechList(techRes.data);
         setPackages(pkgRes.data);
@@ -66,7 +68,7 @@ const SubmitQuestionPage = () => {
     try {
       let techId = formData.technologyId;
       if (techId === "NEW") {
-        const newTechRes = await axiosInstance.post("/technologies", { 
+        const newTechRes = await createTechnology({ 
           name: formData.newTechName,
           description: "Added by user during submission"
         });
@@ -84,7 +86,7 @@ const SubmitQuestionPage = () => {
         tags: formData.tags
       };
 
-      await axiosInstance.post("/questions", payload);
+      await submitQuestion(payload);
       toast.success("Intelligence submitted for review! 🦾");
       
       setFormData({

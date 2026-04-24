@@ -8,7 +8,8 @@ import {
 import Navbar from "../../components/common/Navbar";
 import { HiCheck, HiShieldCheck, HiArrowLeft, HiTag } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchPackageById } from "../../api/packageApi";
+import { createOrder, verifyPayment } from "../../api/paymentApi";
 import toast from "react-hot-toast";
 
 const tierFeatures = {
@@ -83,7 +84,7 @@ const CheckoutPage = () => {
   useEffect(() => {
     const fetchPackage = async () => {
       try {
-        const res = await axiosInstance.get(`/packages/${id}`);
+        const res = await fetchPackageById(id);
         setPkg(res.data);
       } catch (error) {
         toast.error("Package not found");
@@ -143,7 +144,7 @@ const CheckoutPage = () => {
     setLoading(true);
     try {
       // Step 1 — Create order on backend
-      const orderResponse = await axiosInstance.post("/payment/create-order", {
+      const orderResponse = await createOrder({
         packageId: Number(id),
         tier: tier.label.toUpperCase(),
       });
@@ -161,7 +162,7 @@ const CheckoutPage = () => {
         handler: async (response) => {
           try {
             // Step 3 — Verify payment on backend
-            await axiosInstance.post("/payment/verify", {
+            await verifyPayment({
               razorpayOrderId: response.razorpay_order_id,
               razorpayPaymentId: response.razorpay_payment_id,
               razorpaySignature: response.razorpay_signature,

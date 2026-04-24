@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import axiosInstance from "../../api/axiosInstance";
+import { forgotPassword } from "../../api/authApi";
 import toast from "react-hot-toast";
 
 const ForgotPasswordPage = () => {
@@ -12,9 +12,7 @@ const ForgotPasswordPage = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      await axiosInstance.post("/auth/forgot-password", {
-        email: email,
-      });
+      await forgotPassword(email);
 
       setSent(true);
       toast.success("Reset link sent!");

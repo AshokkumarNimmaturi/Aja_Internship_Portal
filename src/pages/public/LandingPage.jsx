@@ -5,7 +5,8 @@ import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
 // ✅ UPGRADED: Using elite Heroicons 2
 import { HiStar, HiLockClosed, HiChevronRight } from "react-icons/hi2";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchPackages } from "../../api/packageApi";
+import { fetchQuestions } from "../../api/questionApi";
 
 const tutors = [
   {
@@ -103,8 +104,8 @@ const LandingPage = () => {
     const fetchData = async () => {
       try {
         const [pkgRes, quesRes] = await Promise.all([
-          axiosInstance.get("/packages"),
-          axiosInstance.get("/questions?limit=3")
+          fetchPackages(),
+          fetchQuestions({ limit: 3 })
         ]);
 
         const pkgData = pkgRes.data.content || pkgRes.data;

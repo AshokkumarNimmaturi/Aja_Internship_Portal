@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { HiCheckCircle, HiShieldCheck } from "react-icons/hi2"; // ✅ ADDED
-import axiosInstance from "../../api/axiosInstance";
+import { fetchPackages } from "../../api/packageApi";
 import toast from "react-hot-toast";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
@@ -15,7 +15,7 @@ const PackagesPage = () => {
 
   const fetchPackages = async () => {
     try {
-      const res = await axiosInstance.get("/packages");
+      const res = await fetchPackages();
       // ✅ Handle Spring Boot "Page" objects vs "List" arrays
       const data = res.data.content || res.data;
       setPackages(Array.isArray(data) ? data : []);

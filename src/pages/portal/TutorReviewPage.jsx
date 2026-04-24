@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
 import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchPendingQuestions, reviewQuestion } from "../../api/questionApi";
 import toast from "react-hot-toast";
 // ✅ UPGRADED: Using elite Heroicons 2
 import { 
@@ -51,7 +51,7 @@ const TutorReviewPage = () => {
   const fetchQuestions = useCallback(async () => {
     setLoadingQ(true);
     try {
-      const res = await axiosInstance.get("/questions/pending");
+      const res = await fetchPendingQuestions();
       const list = Array.isArray(res.data) ? res.data : (res.data.content || []);
       setQuestions(list);
       
@@ -71,7 +71,7 @@ const TutorReviewPage = () => {
   const handleAction = async (id, decision) => {
     setProcessing(id + decision);
     try {
-      await axiosInstance.put(`/questions/${id}/review`, {
+      await reviewQuestion(id, {
         decision: decision,
         rejectionReason: comments[id] || "",
         correctedAnswer: correctedAnswers[id] || ""

@@ -10,9 +10,12 @@ const axiosInstance = axios.create({
 // ✅ REQUEST INTERCEPTOR
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token"); // ✅ ONLY localStorage
+    const token = localStorage.getItem("token");
 
-    if (token) {
+    // Don't send token for login/register
+    const isAuthRoute = config.url.startsWith("/auth/login") || config.url.startsWith("/auth/register");
+
+    if (token && !isAuthRoute) {
       config.headers.Authorization = `Bearer ${token}`;
     }
 
@@ -30,12 +33,19 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error("[API RESPONSE ERROR]:", error.response?.status, error.message);
-    if (error.response?.status === 401) {
-      // 🔥 clear all auth data
+
+    // 🔥 Guard: Handle both 401 (Unauthorized) and 403 (Forbidden)
+    if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      window.location.href = "/login";
+      // Only redirect if on a protected route (portal or subscriber)
+      const path = window.location.pathname;
+      const isProtectedRoute = path.startsWith("/portal") || path.startsWith("/subscriber") || path.startsWith("/dashboard");
+      
+      if (isProtectedRoute && !path.includes("/login")) {
+        window.location.href = "/login";
+      }
     }
 
     return Promise.reject(error);

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { HiEye, HiEyeSlash, HiExclamationTriangle, HiShieldCheck, HiArrowPath } from "react-icons/hi2";
 import { useAuth } from '../../context/AuthContext'
-import axiosInstance from '../../api/axiosInstance'
+import { changePassword } from '../../api/authApi'
 import toast from 'react-hot-toast'
 
 const getPasswordStrength = (password) => {
@@ -56,7 +56,7 @@ const ChangePasswordPage = () => {
 
     setLoading(true)
     try {
-      const response = await axiosInstance.post('/auth/change-password', {
+      const response = await changePassword({
         currentPassword: formData.currentPassword,
         newPassword: formData.newPassword,
       })

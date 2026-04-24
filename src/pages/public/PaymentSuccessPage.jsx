@@ -9,7 +9,7 @@ import {
   HiArrowLongRight,
 } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchMySubscription } from "../../api/paymentApi";
 
 const PaymentSuccessPage = () => {
   const { user } = useAuth();
@@ -21,7 +21,7 @@ const PaymentSuccessPage = () => {
   // ✅ FETCH SUBSCRIPTION (REAL DATA)
   const fetchSubscription = async () => {
     try {
-      const res = await axiosInstance.get("/subscriptions/my");
+      const res = await fetchMySubscription();
       setSubscription(res.data);
     } catch (error) {
       console.error("Failed to fetch subscription");

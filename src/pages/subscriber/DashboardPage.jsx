@@ -17,7 +17,8 @@ import {
 } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchMySubscription } from "../../api/paymentApi";
+import { fetchRecentQuestions } from "../../api/questionApi";
 import TechBadge from "../../components/common/TechBadge";
 import VoiceCallButton from "../../components/common/VoiceCallButton";
 
@@ -38,8 +39,8 @@ const DashboardPage = () => {
       setLoading(true);
       try {
         const [subRes, qRes] = await Promise.all([
-          axiosInstance.get("/subscriptions/my").catch(() => ({ data: [] })),
-          axiosInstance.get("/questions/recent")
+          fetchMySubscription().catch(() => ({ data: [] })),
+          fetchRecentQuestions()
         ]);
         
         const subData = Array.isArray(subRes.data) ? subRes.data : (subRes.data ? [subRes.data] : []);

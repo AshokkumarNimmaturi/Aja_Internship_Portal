@@ -1,18 +1,21 @@
-import axios from "axios";
-
-const API = axios.create({
-  baseURL: "http://localhost:8080/api/auth",
-});
+import axiosInstance from "./axiosInstance";
 
 // REGISTER
-export const registerUser = (data) => API.post("/register", data);
+export const registerUser = (data) => axiosInstance.post("/auth/register", data);
 
 // LOGIN
-export const loginUser = (data) => API.post("/login", data);
+export const loginUser = (data) => axiosInstance.post("/auth/login", data);
 
 // FORGOT PASSWORD
 export const forgotPassword = (email) =>
-  API.post("/forgot-password", { email });
+  axiosInstance.post("/auth/forgot-password", { email });
 
 // RESET PASSWORD
-export const resetPassword = (data) => API.post("/reset-password", data);
+export const resetPassword = (data) => axiosInstance.post("/auth/reset-password", data);
+
+// CHANGE PASSWORD (AUTHENTICATED)
+export const changePassword = (data) => axiosInstance.post("/auth/change-password", data);
+
+// USER IDENTITY & PROFILE
+export const fetchMe = () => axiosInstance.get("/auth/me");
+export const updateProfile = (data) => axiosInstance.put("/auth/profile", data);

@@ -6,7 +6,7 @@ import TechBadge from "../../components/common/TechBadge";
 import DifficultyBadge from "../../components/common/DifficultyBadge";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
-import axiosInstance from "../../api/axiosInstance";
+import { getBookmarks, toggleBookmarkApi } from "../../api/questionApi";
 
 const BookmarksPage = () => {
   const { user } = useAuth();
@@ -17,7 +17,7 @@ const BookmarksPage = () => {
   useEffect(() => {
     const fetchBookmarks = async () => {
       try {
-        const res = await axiosInstance.get("/bookmarks");
+        const res = await getBookmarks();
         setBookmarks(res.data);
       } catch (err) {
         console.error("Failed to load bookmarks", err);
@@ -30,7 +30,7 @@ const BookmarksPage = () => {
 
   const removeBookmark = async (id) => {
     try {
-      await axiosInstance.post(`/bookmarks/${id}`);
+      await toggleBookmarkApi(id);
       setBookmarks((prev) => prev.filter((b) => b.id !== id));
     } catch (err) {
       console.error("Failed to remove bookmark", err);

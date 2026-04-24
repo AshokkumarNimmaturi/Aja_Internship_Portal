@@ -14,7 +14,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import TechBadge from "../../components/common/TechBadge";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchMyQuestions, fetchQuestions } from "../../api/questionApi";
 import VoiceCallButton from "../../components/common/VoiceCallButton";
 
 export const StatusBadge = ({ status }) => {
@@ -46,8 +46,8 @@ const EmployeeDashboard = () => {
       setLoading(true);
       try {
         const [myRes, allRes] = await Promise.all([
-          axiosInstance.get("/questions/my"),
-          axiosInstance.get("/questions")
+          fetchMyQuestions(),
+          fetchQuestions()
         ]);
         
         setSubmissions(myRes.data);
