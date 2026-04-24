@@ -116,12 +116,12 @@ const QuestionDetailPage = () => {
                      <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-2 py-0.5 rounded-md bg-gray-50 border border-gray-100">{question.difficulty}</div>
                   </div>
                   
-                  <h1 className="text-lg font-bold text-[#232629] leading-tight mb-4">
+                  <h1 className="text-xl font-sans font-bold text-[#232629] leading-tight mb-4">
                      {question.title}
                   </h1>
 
                   <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
-                    <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                    <p className="text-sm text-gray-600 leading-relaxed font-sans font-medium">
                       {question.content}
                     </p>
                   </div>
@@ -138,7 +138,7 @@ const QuestionDetailPage = () => {
                </div>
                
                <div className="p-6">
-                  <div className="bg-white p-6 rounded-lg border border-[#E3E6E8] shadow-inner text-sm leading-relaxed text-[#232629] font-medium">
+                  <div className="bg-white p-6 rounded-lg border border-[#E3E6E8] shadow-inner text-sm leading-relaxed text-[#232629] font-sans font-medium">
                      {question.officialAnswer ? question.officialAnswer : question.initialAnswer || "No mastering guide available for this packet yet."}
                   </div>
                   
@@ -173,7 +173,7 @@ const QuestionDetailPage = () => {
                              <div className="text-[9px] font-black uppercase tracking-widest text-[#0074CC]/40">Expert Contribution</div>
                           </div>
                        </div>
-                       <p className="text-xs text-gray-500 leading-relaxed font-medium pl-4 border-l-2 border-gray-100 group-hover:border-blue-500/20 transition-all">
+                       <p className="text-sm text-gray-500 leading-relaxed font-sans font-medium pl-4 border-l-2 border-gray-100 group-hover:border-blue-500/20 transition-all">
                           {answer.content}
                        </p>
                     </div>

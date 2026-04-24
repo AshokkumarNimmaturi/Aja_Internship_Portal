@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap');
+/* Enforcing Traditional Typography: Times New Roman */
 
 @tailwind base;
 @tailwind components;
@@ -11,30 +11,31 @@
 }
 
 body {
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Calibri', 'Candara', 'Segoe UI', sans-serif;
   background-color: #ffffff;
   color: #0d0d0d;
   -webkit-font-smoothing: antialiased;
-  letter-spacing: -0.01em;
 }
 
 /* 🏢 ELITE INNER PORTAL SYSTEM 🏢 */
 .portal-modern {
-  font-family: 'Outfit', sans-serif !important;
-  letter-spacing: -0.02em;
+  font-family: 'Calibri', 'Candara', 'Segoe UI', sans-serif !important;
 }
 
 .portal-modern h1, 
 .portal-modern h2, 
 .portal-modern h3, 
-.portal-modern h4,
+.portal-modern h4 {
+  font-family: 'Times New Roman', Times, serif !important;
+}
+
 .portal-modern button,
 .portal-modern input,
 .portal-modern table,
 .portal-modern p,
 .portal-modern span,
 .portal-modern div {
-  font-family: 'Outfit', sans-serif !important;
+  font-family: 'Calibri', 'Candara', 'Segoe UI', sans-serif !important;
 }
 
 h1,
@@ -42,13 +43,11 @@ h2,
 h3,
 h4,
 .font-outfit {
-  font-family: 'Outfit', sans-serif;
-  letter-spacing: -0.03em;
+  font-family: 'Times New Roman', Times, serif;
 }
 
 .font-serif {
-  font-family: 'Outfit', sans-serif;
-  /* Replacing old serif with premium modern sans */
+  font-family: 'Times New Roman', Times, serif;
 }
 
 /* Antigravity Style Utilities */

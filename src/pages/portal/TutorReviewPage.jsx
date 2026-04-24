@@ -238,7 +238,7 @@ const TutorReviewPage = () => {
                               {/* Question Context - Tight */}
                               <div className="bg-[#F8F9F9] border-l-2 border-[#0074CC] px-6 py-5 rounded-r-lg">
                                  <div className="text-[8px] font-bold text-[#0074CC] uppercase tracking-widest mb-2 opacity-60">Submitted Intel</div>
-                                 <h3 className="text-sm font-bold text-[#0A1628] leading-tight uppercase tracking-tight">{q.title}</h3>
+                                 <h3 className="text-lg font-serif font-bold text-[#0A1628] leading-tight tracking-tight">{q.title}</h3>
                               </div>
 
                               {/* Source Content */}
@@ -248,7 +248,7 @@ const TutorReviewPage = () => {
                                     <span className="text-[9px] font-bold uppercase tracking-widest">Transmission Body</span>
                                  </div>
                                  <div className="p-5 bg-gray-50 border border-[#E3E6E8] rounded-lg">
-                                    <p className="text-xs text-[#232629] leading-relaxed font-medium uppercase tracking-tight opacity-70">{q.content}</p>
+                                    <p className="text-sm text-[#232629] leading-relaxed font-sans font-medium tracking-tight opacity-80">{q.content}</p>
                                  </div>
                               </div>
 
@@ -259,7 +259,7 @@ const TutorReviewPage = () => {
                                     <span className="text-[9px] font-bold uppercase tracking-widest">Mastery Proposal</span>
                                  </div>
                                  <div className="p-5 bg-[#0074CC]/5 border border-[#0074CC]/10 rounded-lg">
-                                    <p className="text-xs text-[#232629] leading-relaxed font-bold uppercase tracking-tight">
+                                    <p className="text-sm text-[#232629] leading-relaxed font-sans font-bold tracking-tight">
                                        {q.initialAnswer || "No documentation provided."}
                                     </p>
                                  </div>
@@ -292,7 +292,7 @@ const TutorReviewPage = () => {
                                 <textarea 
                                   value={comments[q.id] || ""}
                                   onChange={(e) => setComments({ ...comments, [q.id]: e.target.value })}
-                                  className="w-full px-4 py-3 bg-gray-50 border border-[#E3E6E8] rounded-lg text-xs font-bold uppercase tracking-tight text-gray-500 placeholder:text-gray-200 outline-none focus:bg-white focus:border-[#0074CC] transition-all"
+                                  className="w-full px-4 py-3 bg-gray-50 border border-[#E3E6E8] rounded-lg text-sm font-sans font-bold tracking-tight text-gray-500 placeholder:text-gray-200 outline-none focus:bg-white focus:border-[#0074CC] transition-all"
                                   placeholder="Technical feedback for the contributor network..."
                                   rows={1}
                                 />

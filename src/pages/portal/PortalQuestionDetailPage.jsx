@@ -133,9 +133,18 @@ const PortalQuestionDetailPage = () => {
         <div className="max-w-4xl mx-auto">
           {/* Top Bar - Minimalist */}
           <div className="mb-6 flex items-center justify-between">
-            <Link to="/portal/submissions" className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-widest hover:text-[#0074CC] transition-colors group">
-              <HiArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> History Sync
-            </Link>
+            <div className="flex items-center gap-6">
+              <button 
+                onClick={() => window.history.back()}
+                className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-widest hover:text-[#0074CC] transition-colors group"
+              >
+                <HiArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back
+              </button>
+              
+              <Link to="/portal/submissions" className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-widest hover:text-[#0074CC] transition-colors group border-l border-gray-200 pl-6">
+                History Sync
+              </Link>
+            </div>
             
             {canEdit && !isEditing && (
               <button 
@@ -181,7 +190,7 @@ const PortalQuestionDetailPage = () => {
               <>
                 <div className="flex items-start justify-between mb-6">
                   <div className="flex-1">
-                    <h1 className="text-xl font-bold text-[#0A1628] leading-tight mb-4">{question.title}</h1>
+                    <h1 className="text-xl font-sans font-bold text-[#0A1628] leading-tight mb-4">{question.title}</h1>
                     <div className="flex flex-wrap items-center gap-3">
                       <TechBadge tech={question.technologyName} className="!rounded-lg !text-[9px]" />
                       <DifficultyBadge difficulty={question.difficulty} />
@@ -195,7 +204,7 @@ const PortalQuestionDetailPage = () => {
                   </div>
                 </div>
                 <div className="bg-[#F8F9F9] p-5 rounded-lg border border-[#E3E6E8] mb-8">
-                  <p className="text-[#232629] text-xs leading-relaxed whitespace-pre-wrap font-medium">
+                  <p className="text-[#232629] text-sm leading-relaxed whitespace-pre-wrap font-sans font-medium">
                     {question.content}
                   </p>
                 </div>
@@ -218,7 +227,7 @@ const PortalQuestionDetailPage = () => {
                 <HiChatBubbleLeftEllipsis size={16} />
                 <span className="text-[9px] uppercase tracking-widest">Reviewer Feedback</span>
               </div>
-              <p className="text-xs text-amber-800 leading-relaxed font-bold uppercase tracking-tight opacity-80">{question.rejectionReason}</p>
+              <p className="text-sm text-amber-800 leading-relaxed font-sans font-bold tracking-tight opacity-90">{question.rejectionReason}</p>
             </div>
           )}
 
@@ -237,7 +246,7 @@ const PortalQuestionDetailPage = () => {
                    </div>
                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Submission Explanation</span>
                 </div>
-                <p className="text-xs text-gray-600 leading-relaxed font-medium uppercase tracking-tight">
+                <p className="text-sm text-gray-600 leading-relaxed font-sans font-medium tracking-tight">
                   {question.initialAnswer || "Zero documentation provided."}
                 </p>
               </div>
@@ -251,7 +260,7 @@ const PortalQuestionDetailPage = () => {
                      </div>
                      <span className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Verified Master Solution</span>
                   </div>
-                  <p className="text-sm text-white/90 leading-relaxed font-bold uppercase tracking-tight">
+                  <p className="text-base text-white/95 leading-relaxed font-sans font-bold tracking-tight">
                     {question.officialAnswer}
                   </p>
                 </div>
@@ -340,7 +349,7 @@ const PortalQuestionDetailPage = () => {
                        </div>
                     </div>
                   </div>
-                  <p className="text-xs text-[#232629] leading-relaxed font-medium uppercase tracking-tight border-l-2 border-[#F3F4F6] pl-4">
+                  <p className="text-sm text-[#232629] leading-relaxed font-sans font-medium tracking-tight border-l-2 border-[#F3F4F6] pl-4">
                     {answer.content}
                   </p>
                 </div>

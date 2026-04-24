@@ -19,9 +19,14 @@ export const Sidebar = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [subscription, setSubscription] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     logout();
     window.location.href = "/";
   };
@@ -155,12 +160,41 @@ export const Sidebar = () => {
           <button
             onClick={handleLogout}
             title={!isHovered ? "Logout" : ""}
-            className={`text-gray-400 hover:text-white transition-colors shrink-0 p-2 rounded-lg hover:bg-[#0A1628] ${!isHovered && 'hidden'}`}
+            className={`text-red-400 hover:text-red-600 transition-all shrink-0 p-2 rounded-lg hover:bg-red-50 ${!isHovered && 'hidden'}`}
           >
-            <HiArrowRightOnRectangle className="w-4 h-4" />
+            <HiArrowRightOnRectangle className="w-5 h-5" />
           </button>
         </div>
       </div>
+      {/* CUSTOM LOGOUT WARNING MODAL */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowLogoutModal(false)} />
+          <div className="bg-white border border-black/5 w-full max-w-sm rounded-2xl p-8 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200">
+             <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-100">
+                <HiArrowRightOnRectangle className="text-red-500 w-8 h-8" />
+             </div>
+             <h3 className="text-xl font-serif font-bold text-[#0A1628] text-center mb-2">Sign Out?</h3>
+             <p className="text-gray-400 text-[10px] text-center font-bold uppercase tracking-widest leading-relaxed mb-8 px-4">
+                Are you sure you want to exit your mastery vault? All active progress will be saved.
+             </p>
+             <div className="flex gap-4">
+                <button 
+                  onClick={() => setShowLogoutModal(false)}
+                  className="flex-1 py-3 bg-gray-50 hover:bg-gray-100 text-[#0A1628] text-[10px] font-bold uppercase tracking-widest rounded-lg border border-black/5 transition-all active:scale-95"
+                >
+                  No, Stay
+                </button>
+                <button 
+                  onClick={confirmLogout}
+                  className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-lg shadow-red-900/20 transition-all active:scale-95"
+                >
+                  Yes, Logout
+                </button>
+             </div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 };

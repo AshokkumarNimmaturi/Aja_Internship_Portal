@@ -69,7 +69,7 @@ const MySubmissionsPage = () => {
               <Link to="/portal/dashboard" className="flex items-center gap-1.5 text-[9px] font-bold text-gray-400 uppercase tracking-widest hover:text-[#0074CC] transition-colors mb-3 group">
                 <HiArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Dashboard
               </Link>
-              <h1 className="text-xl font-bold text-[#0A1628] mb-1">Submission Archive</h1>
+              <h1 className="text-2xl font-serif font-bold text-[#0A1628] mb-1">Submission Archive</h1>
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Tracking your technical intel history</p>
             </div>
             

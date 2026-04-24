@@ -170,7 +170,7 @@ const QuestionExplorerPage = () => {
             <header className="bg-white border-b border-[#E3E6E8] px-8 py-4 flex items-center justify-between shadow-sm relative z-10">
               <div className="flex items-center gap-8">
                 <div>
-                  <h1 className="text-lg font-bold text-[#0A1628] tracking-tight">Question Explorer</h1>
+                  <h1 className="text-2xl font-serif font-bold text-[#0A1628] tracking-tight">Question Explorer</h1>
                   <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Mastery Knowledge Base</p>
                 </div>
                 
@@ -346,7 +346,7 @@ const QuestionExplorerPage = () => {
                       </div>
 
                       <div className="mb-8 flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-[#0A1628] tracking-tight uppercase">
+                        <h2 className="text-xl font-sans font-bold text-[#0A1628] tracking-tight">
                             {selectedClient || selectedEmployee || selectedTech} <span className="text-gray-300 ml-1 font-bold">Repo</span>
                         </h2>
                         <div className="flex bg-white p-1 rounded-lg border border-[#E3E6E8] shadow-sm">
@@ -360,13 +360,13 @@ const QuestionExplorerPage = () => {
                         {finalQuestions.length > 0 ? finalQuestions.map(q => (
                           <div key={q.id} className="bg-white rounded-lg border border-[#E3E6E8] p-6 shadow-sm hover:border-[#0074CC]/30 transition-all group relative overflow-hidden">
                             <div className="flex justify-between items-start mb-4">
-                              <Link to={`/portal/questions/${q.id}`} className="text-sm font-bold text-[#0A1628] group-hover:text-[#0074CC] transition-colors leading-tight uppercase tracking-tight flex-1 pr-8">
+                              <Link to={`/portal/questions/${q.id}`} className="text-sm font-sans font-bold text-[#0A1628] group-hover:text-[#0074CC] transition-colors leading-tight tracking-tight flex-1 pr-8">
                                 {q.title}
                               </Link>
                               <DifficultyBadge difficulty={q.difficulty} />
                             </div>
 
-                            <p className="text-xs text-[#232629] leading-relaxed mb-6 line-clamp-2 font-medium uppercase tracking-tight opacity-70">
+                            <p className="text-sm text-[#232629] leading-relaxed mb-6 line-clamp-2 font-sans font-medium tracking-tight opacity-80">
                               {q.content || "Expert technical nuance regarding foundational implementation."}
                             </p>
 

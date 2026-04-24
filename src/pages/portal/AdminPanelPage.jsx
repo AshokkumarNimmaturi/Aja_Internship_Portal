@@ -355,7 +355,7 @@ const AdminPanelPage = () => {
           {/* Header & Agent Pulse - Professional */}
           <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-6">
             <div>
-              <h1 className="text-xl font-bold text-[#0A1628] uppercase tracking-tight mb-1">{activeView}</h1>
+              <h1 className="text-2xl font-serif font-bold text-[#0A1628] leading-tight mb-1">{activeView}</h1>
               <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Control Terminal</p>
             </div>
 
@@ -369,7 +369,7 @@ const AdminPanelPage = () => {
                       </div>
                       <div>
                         <div className="text-[9px] font-bold text-white uppercase tracking-widest mb-0.5">Telemetry Active</div>
-                        <h2 className="text-sm font-bold text-white uppercase tracking-tight">Live Support Mission</h2>
+                        <h2 className="text-sm font-sans font-bold text-white tracking-tight">Live Support Mission</h2>
                       </div>
                     </div>
                   </div>
@@ -427,7 +427,7 @@ const AdminPanelPage = () => {
                     <s.icon size={18} />
                   </div>
                   <div>
-                    <div className="text-xl font-bold text-[#0A1628] leading-tight tracking-tight uppercase">{s.count}</div>
+                    <div className="text-2xl font-serif font-bold text-[#0A1628] leading-tight tracking-tight">{s.count}</div>
                     <div className="text-[9px] text-gray-400 uppercase tracking-widest font-bold">{s.label}</div>
                   </div>
                 </div>
@@ -452,7 +452,7 @@ const AdminPanelPage = () => {
                     {Array.isArray(users) && users.map(u => (
                       <tr key={u.id} className="hover:bg-gray-50/50 transition-all group">
                         <td className="px-6 py-4">
-                          <div className="font-bold text-[#0A1628] uppercase tracking-tight">{u.fullName}</div>
+                          <div className="text-sm font-serif font-bold text-[#0A1628] tracking-tight">{u.fullName}</div>
                           <div className="text-[10px] text-gray-400 font-bold uppercase tracking-tight opacity-60">{u.email}</div>
                         </td>
                         <td className="px-6 py-4">
@@ -503,8 +503,8 @@ const AdminPanelPage = () => {
                       <div className="w-10 h-10 bg-[#0074CC]/5 text-[#0074CC] rounded-lg flex items-center justify-center mb-6 border border-[#0074CC]/10 shadow-inner relative z-10">
                         <HiArchiveBox size={20} />
                       </div>
-                      <h3 className="font-bold text-lg text-[#0A1628] mb-1 uppercase tracking-tight relative z-10">{pkg.name}</h3>
-                      <p className="text-[11px] text-gray-500 mb-6 font-medium uppercase tracking-tight line-clamp-2 relative z-10 opacity-70">
+                      <h3 className="font-serif font-bold text-xl text-[#0A1628] mb-1 tracking-tight relative z-10">{pkg.name}</h3>
+                      <p className="text-xs text-gray-500 mb-6 font-sans font-medium tracking-tight line-clamp-2 relative z-10 opacity-80">
                         {pkg.description || "Premium intel packet for professional interview mastery."}
                       </p>
                       
@@ -542,7 +542,7 @@ const AdminPanelPage = () => {
                         <td className="px-6 py-4 text-gray-400 text-[9px] font-bold uppercase tracking-tighter">
                           {new Date(log.createdAt).toLocaleString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}
                         </td>
-                        <td className="px-6 py-4 font-bold text-[#0A1628] uppercase tracking-tight">
+                        <td className="px-6 py-4 font-serif font-bold text-[#0A1628] tracking-tight">
                           {log.performedByEmail.split('@')[0]}
                         </td>
                         <td className="px-6 py-4">
@@ -573,7 +573,7 @@ const AdminPanelPage = () => {
                       {allQuestions.map(q => (
                         <tr key={q.id} className="group hover:bg-gray-50/50 transition-all cursor-pointer" onClick={() => (window.location.href = `/portal/questions/${q.id}`)}>
                           <td className="px-6 py-4">
-                            <div className="font-bold text-[#0A1628] uppercase tracking-tight group-hover:text-[#0074CC] transition-colors">{q.title}</div>
+                            <div className="text-xs font-sans font-bold text-[#0A1628] tracking-tight group-hover:text-[#0074CC] transition-colors">{q.title}</div>
                             <div className="text-[9px] text-[#0074CC] font-bold uppercase tracking-widest opacity-60">{q.clientName || "General Intake"}</div>
                           </td>
                           <td className="px-6 py-4"><span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{q.technologyName}</span></td>
@@ -599,13 +599,13 @@ const AdminPanelPage = () => {
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-purple-50 text-purple-600 rounded-lg flex items-center justify-center border border-purple-100 shadow-inner"><HiChatBubbleLeftEllipsis size={18} /></div>
                             <div>
-                                <h4 className="font-bold text-[#0A1628] text-sm uppercase tracking-tight">{req.subject}</h4>
+                                <h4 className="font-serif font-bold text-[#0A1628] text-base tracking-tight">{req.subject}</h4>
                                 <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest opacity-60">{req.userEmail.split('@')[0]}</span>
                             </div>
                         </div>
                         <span className={`text-[8px] font-bold px-3 py-1 rounded-lg uppercase tracking-widest border shadow-sm ${req.status === 'PENDING' ? 'bg-amber-50 text-amber-600 border-amber-100' : 'bg-green-50 text-green-600 border-green-100'}`}>{req.status}</span>
                         </div>
-                        <div className="bg-gray-50 p-4 rounded-lg border border-[#E3E6E8] text-[11px] text-[#232629] font-medium uppercase tracking-tight mb-6 shadow-inner opacity-70 leading-relaxed">"{req.message}"</div>
+                        <div className="bg-gray-50 p-4 rounded-lg border border-[#E3E6E8] text-xs text-[#232629] font-sans font-medium tracking-tight mb-6 shadow-inner opacity-80 leading-relaxed">"{req.message}"</div>
                         {req.status === 'PENDING' && (
                         <button onClick={() => handleSupportStatus(req.id, 'RESOLVED')} className="w-full py-2.5 bg-[#0A1628] text-white text-[9px] font-bold uppercase tracking-widest rounded-lg hover:bg-[#2E7D32] transition-all shadow-sm active:scale-95 flex items-center justify-center gap-2">
                              Resolve & Sync

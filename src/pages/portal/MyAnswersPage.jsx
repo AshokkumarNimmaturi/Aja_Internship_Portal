@@ -58,7 +58,7 @@ const MyAnswersPage = () => {
             <Link to="/portal/dashboard" className="flex items-center gap-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-widest hover:text-[#0A1628] transition-colors mb-4 group">
               <HiArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" /> Dashboard
             </Link>
-            <h1 className="text-xl font-bold text-[#0A1628] uppercase tracking-tight mb-1">My Contributions</h1>
+            <h1 className="text-2xl font-serif font-bold text-[#0A1628] mb-1">My Contributions</h1>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest opacity-70">Champion responses shared with the Aja global community</p>
           </div>
 
@@ -76,7 +76,7 @@ const MyAnswersPage = () => {
                    <div className="flex items-start justify-between mb-5 px-1">
                       <div className="flex-1">
                          <span className="text-[9px] font-bold text-[#0074CC] uppercase tracking-widest mb-1 block opacity-70">INTEL SOURCE</span>
-                         <h3 className="text-base font-bold text-[#0A1628] uppercase tracking-tight group-hover:text-[#0074CC] transition-colors leading-tight">
+                         <h3 className="text-lg font-serif font-bold text-[#0A1628] tracking-tight group-hover:text-[#0074CC] transition-colors leading-tight">
                             {ans.questionTitle || "Unknown Question Source"}
                          </h3>
                       </div>
@@ -93,7 +93,7 @@ const MyAnswersPage = () => {
                       </div>
                    </div>
 
-                   <div className="bg-gray-50/50 rounded-lg p-5 border border-[#E3E6E8] mb-5 text-[11px] text-[#232629] leading-relaxed font-medium uppercase tracking-tight opacity-70 shadow-inner">
+                   <div className="bg-gray-50/50 rounded-lg p-5 border border-[#E3E6E8] mb-5 text-sm text-[#232629] leading-relaxed font-sans font-medium tracking-tight opacity-70 shadow-inner">
                       "{ans.content}"
                    </div>
 

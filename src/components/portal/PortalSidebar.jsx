@@ -35,6 +35,7 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
   });
   const [livePendingCount, setLivePendingCount] = useState(initialCount);
   const [isOpen, setIsOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const location = useLocation();
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -66,6 +67,10 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
   }, [role]);
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
     logout();
     navigate("/login");
   };
@@ -150,17 +155,17 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
             <img src="/logo.png" alt="Aja logo" className="w-7 h-auto object-contain" />
           </div>
           <div className={`whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
-            <div className="text-white text-xs font-bold uppercase tracking-tight">
+            <div className="text-white text-base font-serif font-bold tracking-tight">
               Aja Vault
             </div>
-            <div className="text-white/30 text-[9px] font-bold mt-0.5 uppercase tracking-widest">
+            <div className="text-white/40 text-[9px] font-bold mt-0.5 uppercase tracking-[0.2em]">
               Internal
             </div>
           </div>
         </Link>
-        {/* Role Identity */}
-        <div className={`mt-4 absolute bottom-4 transition-all duration-300 ${isHovered ? 'left-16' : 'left-0 w-full flex justify-center'}`}>
-          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-lg bg-white/5 border border-white/5 uppercase tracking-widest text-white`}>
+        {/* Role Identity - Refined Positioning */}
+        <div className={`absolute bottom-2 transition-all duration-300 ${isHovered ? 'left-16 mb-1' : 'left-0 w-full flex justify-center mb-1'}`}>
+          <span className={`text-[8px] font-bold px-2 py-0.5 rounded border border-white/10 bg-white/5 uppercase tracking-[0.2em] text-white/50`}>
             {isHovered ? role : (roleLabels[role] || "U")}
           </span>
         </div>
@@ -221,15 +226,46 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
           </div>
           <button
             onClick={handleLogout}
-            className={`text-white/10 hover:text-white transition-colors shrink-0 p-2 rounded-lg hover:bg-white/5 ${!isHovered && 'hidden'}`}
+            className={`text-red-400/60 hover:text-red-500 transition-all duration-300 shrink-0 p-2 rounded-lg hover:bg-red-500/10 border border-transparent hover:border-red-500/20 ${!isHovered && 'hidden'}`}
+            title="Terminate Session"
           >
-            <HiArrowRightOnRectangle className="w-4 h-4" />
+            <HiArrowRightOnRectangle className="w-5 h-5" />
           </button>
         </div>
       </div>
     </aside>
     {/* Sidebar Spacer to maintain flex layout space while sidebar is fixed */}
     <div className={`shrink-0 transition-all duration-300 ${isHovered ? 'w-64' : 'w-[84px]'}`} />
+
+    {/* CUSTOM LOGOUT WARNING MODAL */}
+    {showLogoutModal && (
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300" onClick={() => setShowLogoutModal(false)} />
+        <div className="bg-[#0A1628] border border-white/10 w-full max-w-sm rounded-2xl p-8 shadow-2xl relative z-10 animate-in zoom-in-95 duration-200">
+           <div className="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border border-red-500/20">
+              <HiArrowRightOnRectangle className="text-red-500 w-8 h-8" />
+           </div>
+           <h3 className="text-xl font-serif font-bold text-white text-center mb-2">Terminate Session?</h3>
+           <p className="text-gray-400 text-xs text-center font-bold uppercase tracking-widest leading-relaxed mb-8">
+              Are you certain you want to exit the vault? All active telemetry streams will be disconnected.
+           </p>
+           <div className="flex gap-4">
+              <button 
+                onClick={() => setShowLogoutModal(false)}
+                className="flex-1 py-3 bg-white/5 hover:bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg border border-white/5 transition-all active:scale-95"
+              >
+                No, Stay
+              </button>
+              <button 
+                onClick={confirmLogout}
+                className="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white text-[10px] font-bold uppercase tracking-widest rounded-lg shadow-lg shadow-red-900/20 transition-all active:scale-95"
+              >
+                Yes, Logout
+              </button>
+           </div>
+        </div>
+      </div>
+    )}
     </>
   );
 };

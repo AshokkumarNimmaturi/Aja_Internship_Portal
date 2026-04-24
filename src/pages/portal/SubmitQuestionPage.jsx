@@ -100,7 +100,7 @@ const SubmitQuestionPage = () => {
         <div className="max-w-4xl mx-auto pb-10">
           
           <div className="mb-8 pl-1">
-            <h1 className="text-xl font-bold text-[#0A1628] mb-1">Submit Intelligence</h1>
+            <h1 className="text-2xl font-serif font-bold text-[#0A1628] mb-1">Submit Intelligence</h1>
             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Contribute to the global technical vault</p>
           </div>
 

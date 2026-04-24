@@ -48,7 +48,7 @@ const QuestionsPage = () => {
           {/* Elite Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10 pl-1">
             <div>
-              <h1 className="text-xl font-bold text-[#232629] mb-1">Your Question Bank</h1>
+              <h1 className="text-2xl font-serif font-bold text-[#232629] mb-1">Your Question Bank</h1>
               <p className="text-gray-500 text-xs">Master the nuances of professional technical interviews across your unlocked stacks.</p>
             </div>
             
@@ -106,7 +106,7 @@ const QuestionsPage = () => {
                                 <TechBadge tech={q.technologyName} />
                                 <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400 px-2 py-0.5 rounded-md bg-gray-50 border border-gray-100">{q.difficulty}</span>
                              </div>
-                             <h3 className="font-bold text-[#232629] text-sm group-hover:text-[#0074CC] transition-colors leading-tight">
+                             <h3 className="font-sans font-bold text-[#232629] text-sm group-hover:text-[#0074CC] transition-colors leading-tight">
                                 {q.title}
                              </h3>
                           </div>
