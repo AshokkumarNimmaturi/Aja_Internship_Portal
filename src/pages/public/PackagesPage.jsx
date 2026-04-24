@@ -13,21 +13,24 @@ const PackagesPage = () => {
   const [selectedDuration, setSelectedDuration] = useState(30);
   const [loading, setLoading] = useState(true);
 
-  const fetchPackages = async () => {
+  const loadPackageData = async () => {
     try {
+      setLoading(true);
       const res = await fetchPackages();
       // ✅ Handle Spring Boot "Page" objects vs "List" arrays
       const data = res.data.content || res.data;
       setPackages(Array.isArray(data) ? data : []);
     } catch (error) {
-      toast.error("Failed to load packages");
+      console.error("Package Sync Error:", error);
+      toast.error("Package intelligence is currently syncing");
+      // Optional: Set fallback packages here if needed
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPackages();
+    loadPackageData();
   }, []);
 
   // ✅ Price based on duration

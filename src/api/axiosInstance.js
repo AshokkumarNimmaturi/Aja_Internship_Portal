@@ -34,8 +34,8 @@ axiosInstance.interceptors.response.use(
   (error) => {
     console.error("[API RESPONSE ERROR]:", error.response?.status, error.message);
 
-    // 🔥 Guard: Handle both 401 (Unauthorized) and 403 (Forbidden)
-    if (error.response?.status === 401 || error.response?.status === 403) {
+    // 🔥 Guard: Handle 401 (Unauthorized/Expired Session)
+    if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 

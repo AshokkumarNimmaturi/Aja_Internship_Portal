@@ -42,7 +42,7 @@ const BookmarksPage = () => {
   );
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden portal-modern">
       <Sidebar />
 
       {/* Main */}

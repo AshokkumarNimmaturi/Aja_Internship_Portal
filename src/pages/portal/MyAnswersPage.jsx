@@ -44,7 +44,7 @@ const MyAnswersPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
       <PortalSidebar 
         user={user} 
         role={user?.role || "EMPLOYEE"} 

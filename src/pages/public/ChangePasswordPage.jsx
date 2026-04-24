@@ -82,7 +82,7 @@ const ChangePasswordPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12 font-sans">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12 font-sans portal-modern">
       <div className="w-full max-w-md">
 
         {/* Logo */}

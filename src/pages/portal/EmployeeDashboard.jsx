@@ -44,21 +44,28 @@ const EmployeeDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
+      
+      // ✅ RESILIENT FETCHING: Load personal data first
       try {
-        const [myRes, allRes] = await Promise.all([
-          fetchMyQuestions(),
-          fetchQuestions()
-        ]);
-        
-        setSubmissions(myRes.data);
-        
+        const myRes = await fetchMyQuestions();
+        setSubmissions(myRes.data || []);
+      } catch (err) {
+        console.warn("Could not load personal submissions", err.response?.status);
+      }
+
+      // ✅ PLATFORM STATS: Fail quietly if restricted
+      try {
+        const allRes = await fetchQuestions();
         const allQuestions = allRes.data.content || allRes.data;
+        const validQuestions = Array.isArray(allQuestions) ? allQuestions : [];
+        
         setGlobalStats({
-          totalReceived: allQuestions.length,
-          totalQuestions: allQuestions.filter(q => q.status === 'APPROVED').length
+          totalReceived: validQuestions.length,
+          totalQuestions: validQuestions.filter(q => q.status === 'APPROVED').length
         });
-      } catch (error) {
-        console.error("Dashboard Load Error:", error);
+      } catch (err) {
+        // Employees might not have permission for the global list, which is fine
+        console.debug("Global stats restricted for this role");
       } finally {
         setLoading(false);
       }
@@ -79,7 +86,7 @@ const EmployeeDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
       <PortalSidebar user={user} role={user?.role || "EMPLOYEE"} activeItem="Dashboard" />
 
       <main className="flex-1 p-8 py-10 overflow-y-auto">

@@ -93,7 +93,7 @@ const TutorReviewPage = () => {
   });
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
       <PortalSidebar user={user} role="TUTOR" activeItem="Review Queue" />
 
       <main className="flex-1 p-8 py-10 overflow-y-auto">

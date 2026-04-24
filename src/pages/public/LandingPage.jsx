@@ -102,17 +102,20 @@ const LandingPage = () => {
     setTimeout(() => setVisible(true), 100);
 
     const fetchData = async () => {
+      // ✅ RESILIENT FETCHING: Decouple requests so one failure doesn't crash the page
       try {
-        const [pkgRes, quesRes] = await Promise.all([
-          fetchPackages(),
-          fetchQuestions({ limit: 3 })
-        ]);
-
+        const pkgRes = await fetchPackages();
         const pkgData = pkgRes.data.content || pkgRes.data;
-        const quesData = quesRes.data.content || quesRes.data;
         setPackages(Array.isArray(pkgData) ? pkgData : []);
+      } catch (err) {
+        // Quietly fail and allow fallback UI
+      }
 
+      try {
+        const quesRes = await fetchQuestions({ limit: 3 });
+        const quesData = quesRes.data.content || quesRes.data;
         const fetchedQues = Array.isArray(quesData) ? quesData : [];
+        
         if (fetchedQues.length > 0) {
           setSampleQuestions(fetchedQues.slice(0, 3));
         } else {
@@ -122,8 +125,13 @@ const LandingPage = () => {
             { id: 's3', title: "Explain the concept of CI/CD pipelines in DevOps.", technology: "DevOps", difficulty: "HARD" }
           ]);
         }
-      } catch (error) {
-        console.error("Failed to fetch landing page data", error);
+      } catch (err) {
+        // Quietly fail and use premium fallback content
+        setSampleQuestions([
+          { id: 's1', title: "What is the difference between abstract class and interface in Java?", technology: "Java", difficulty: "EASY" },
+          { id: 's2', title: "How does the virtual DOM work in React?", technology: "React", difficulty: "MEDIUM" },
+          { id: 's3', title: "Explain the concept of CI/CD pipelines in DevOps.", technology: "DevOps", difficulty: "HARD" }
+        ]);
       }
     };
 

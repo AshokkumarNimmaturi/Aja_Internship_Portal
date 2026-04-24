@@ -136,26 +136,29 @@ const AdminPanelPage = () => {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    try {
-      const isAdmin = user?.role === 'ADMIN';
-      const fetches = [
-        isAdmin ? fetchUsersAdmin() : Promise.resolve({ data: [] }),
-        fetchQuestions(),
-        fetchPackages(),
-        fetchSupportTickets().catch(() => ({ data: [] })),
-        fetchSupportCalls().catch(() => ({ data: [] })),
-        fetchPendingQuestions().catch(() => ({ data: [] }))
-      ];
+    const isAdmin = user?.role === 'ADMIN';
 
-      const [uRes, qRes, pRes, sRes, callsRes, pendingRes] = await Promise.all(fetches);
+    // ✅ RESILIENT PARALLEL FETCHING
+    // We map every request to a "Safe Request" that catches its own errors
+    const safeFetches = [
+      (isAdmin ? fetchUsersAdmin() : Promise.resolve({ data: [] })).catch(() => ({ data: [] })),
+      fetchQuestions().catch(() => ({ data: [] })),
+      fetchPackages().catch(() => ({ data: [] })),
+      fetchSupportTickets().catch(() => ({ data: [] })),
+      fetchSupportCalls().catch(() => ({ data: [] })),
+      fetchPendingQuestions().catch(() => ({ data: [] }))
+    ];
+
+    try {
+      const [uRes, qRes, pRes, sRes, callsRes, pendingRes] = await Promise.all(safeFetches);
       
       setUsers(uRes.data?.content || uRes.data || []);
-      setAllQuestions(qRes.data.content || qRes.data);
+      setAllQuestions(qRes.data?.content || qRes.data || []);
       setPackages(pRes.data?.content || pRes.data || []);
       setSupportRequests(sRes.data?.content || sRes.data || []);
       setSupportCalls(callsRes.data || []);
       
-      const pendingList = Array.isArray(pendingRes.data) ? pendingRes.data : (pendingRes.data.content || []);
+      const pendingList = Array.isArray(pendingRes.data) ? pendingRes.data : (pendingRes.data?.content || []);
       setPendingQuestions(pendingList);
       
       const techs = ["All", ...new Set(pendingList.map(q => q.technologyName || "General"))];
@@ -163,12 +166,13 @@ const AdminPanelPage = () => {
 
       setStats({
         users: (uRes.data?.content || uRes.data || []).length,
-        questions: (qRes.data.content || qRes.data).length,
+        questions: (qRes.data?.content || qRes.data || []).length,
         pending: pendingList.length,
-        support: sRes.data.filter(r => r.status === 'PENDING').length
+        support: (sRes.data || []).filter(r => r.status === 'PENDING').length
       });
     } catch (err) {
-      toast.error("Dashboard sync error");
+      console.error("Critical Terminal Error:", err);
+      toast.error("Internal sync error - some data may be missing");
     } finally {
       setLoading(false);
     }
@@ -324,7 +328,7 @@ const AdminPanelPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden portal-modern">
       <PortalSidebar user={user} role={user?.role || "TUTOR"} activeItem={activeView} />
       
       <main className="flex-1 p-8 py-10 overflow-y-auto">

@@ -82,7 +82,7 @@ const QuestionsPage = () => {
   });
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden portal-modern">
       <Sidebar activeItem="Questions" />
       
       <main className="flex-1 p-8 py-10 overflow-y-auto w-full">

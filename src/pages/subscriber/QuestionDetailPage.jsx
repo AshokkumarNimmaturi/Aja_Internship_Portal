@@ -82,7 +82,7 @@ const QuestionDetailPage = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
       <Sidebar activeItem="Questions" />
       <main className="flex-1 p-10 py-10 overflow-y-auto max-w-5xl mx-auto w-full">
         {/* Elite Breadcrumb */}

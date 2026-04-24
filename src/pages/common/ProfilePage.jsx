@@ -146,7 +146,7 @@ const ProfilePage = ({ isPortal = false }) => {
     : <Sidebar />;
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
       {SidebarComponent}
 
       <main className="flex-1 p-8 py-10 overflow-y-auto">

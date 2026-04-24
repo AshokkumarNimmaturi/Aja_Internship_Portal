@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 // ✅ UPGRADED: Switched to elite Heroicons 2 (React Icons)
-import { 
-  HiPencilSquare, 
-  HiBuildingOffice, 
-  HiCodeBracket, 
-  HiInboxStack, 
-  HiTag, 
+import {
+  HiPencilSquare,
+  HiBuildingOffice,
+  HiCodeBracket,
+  HiInboxStack,
+  HiTag,
   HiSparkles,
   HiCheckCircle,
   HiBriefcase,
@@ -68,7 +68,7 @@ const SubmitQuestionPage = () => {
     try {
       let techId = formData.technologyId;
       if (techId === "NEW") {
-        const newTechRes = await createTechnology({ 
+        const newTechRes = await createTechnology({
           name: formData.newTechName,
           description: "Added by user during submission"
         });
@@ -88,10 +88,10 @@ const SubmitQuestionPage = () => {
 
       await submitQuestion(payload);
       toast.success("Intelligence submitted for review! 🦾");
-      
+
       setFormData({
         title: "", body: "", initialAnswer: "", clientName: "",
-        technologyId: "", newTechName: "", packageId: "", 
+        technologyId: "", newTechName: "", packageId: "",
         difficulty: "EASY", tags: ""
       });
     } catch (err) {
@@ -102,7 +102,7 @@ const SubmitQuestionPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
       <PortalSidebar user={user} role={user?.role} activeItem="Submit Intel" />
 
       <main className="flex-1 p-8 py-10 overflow-y-auto">
@@ -115,7 +115,7 @@ const SubmitQuestionPage = () => {
 
           <form onSubmit={handleSubmit} className="bg-white rounded-[60px] border border-black/5 shadow-sm p-12 space-y-10 overflow-hidden relative">
             <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none">
-               <HiSparkles size={200} className="text-blue-600" />
+              <HiSparkles size={200} className="text-blue-600" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
@@ -141,32 +141,32 @@ const SubmitQuestionPage = () => {
                   <HiBriefcase size={18} /> Company / Client
                 </label>
                 <div className="relative">
-                   <HiBuildingOffice size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300" />
-                   <input
-                     type="text"
-                     name="clientName"
-                     value={formData.clientName}
-                     onChange={handleChange}
-                     placeholder="e.g. Google, Amazon..."
-                     className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-black/5 rounded-2xl text-sm font-bold text-[#0A1628] focus:border-blue-400 outline-none transition-all placeholder-gray-200"
-                   />
+                  <HiBuildingOffice size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300" />
+                  <input
+                    type="text"
+                    name="clientName"
+                    value={formData.clientName}
+                    onChange={handleChange}
+                    placeholder="e.g. Google, Amazon..."
+                    className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-black/5 rounded-2xl text-sm font-bold text-[#0A1628] focus:border-blue-400 outline-none transition-all placeholder-gray-200"
+                  />
                 </div>
               </div>
 
               {/* Tags */}
               <div>
                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">
-                   <HiTag size={18} /> Semantic Tags
+                  <HiTag size={18} /> Semantic Tags
                 </label>
                 <div className="relative">
-                   <HiTag size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300" />
-                   <input
-                     name="tags"
-                     value={formData.tags}
-                     onChange={handleChange}
-                     placeholder="e.g. algorithms, linked-list"
-                     className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-black/5 rounded-2xl text-sm font-bold text-[#0A1628] focus:border-blue-400 outline-none transition-all placeholder-gray-200 uppercase"
-                   />
+                  <HiTag size={18} className="absolute left-6 top-1/2 -translate-y-1/2 text-gray-300" />
+                  <input
+                    name="tags"
+                    value={formData.tags}
+                    onChange={handleChange}
+                    placeholder="e.g. algorithms, linked-list"
+                    className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-black/5 rounded-2xl text-sm font-bold text-[#0A1628] focus:border-blue-400 outline-none transition-all placeholder-gray-200 uppercase"
+                  />
                 </div>
               </div>
 
@@ -205,7 +205,7 @@ const SubmitQuestionPage = () => {
               {/* Tech Select */}
               <div>
                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">
-                   <HiCodeBracket size={18} /> Technology Core <span className="text-red-400">*</span>
+                  <HiCodeBracket size={18} /> Technology Core <span className="text-red-400">*</span>
                 </label>
                 <select
                   name="technologyId"
@@ -221,20 +221,20 @@ const SubmitQuestionPage = () => {
                   <option value="NEW" className="text-blue-600 font-bold">+ New Intel Category</option>
                 </select>
                 {formData.technologyId === "NEW" && (
-                   <input
-                     name="newTechName"
-                     value={formData.newTechName}
-                     onChange={handleChange}
-                     placeholder="New Tech Identity..."
-                     className="mt-3 w-full px-6 py-3 bg-blue-50/50 border border-blue-200 rounded-xl text-xs font-bold text-blue-700 placeholder-blue-300 focus:border-blue-400 outline-none animate-in fade-in slide-in-from-top-2 duration-300"
-                   />
+                  <input
+                    name="newTechName"
+                    value={formData.newTechName}
+                    onChange={handleChange}
+                    placeholder="New Tech Identity..."
+                    className="mt-3 w-full px-6 py-3 bg-blue-50/50 border border-blue-200 rounded-xl text-xs font-bold text-blue-700 placeholder-blue-300 focus:border-blue-400 outline-none animate-in fade-in slide-in-from-top-2 duration-300"
+                  />
                 )}
               </div>
 
               {/* Package Select */}
               <div>
                 <label className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 mb-4">
-                   <HiInboxStack size={18} /> Catalog Assignment <span className="text-red-400">*</span>
+                  <HiInboxStack size={18} /> Catalog Assignment <span className="text-red-400">*</span>
                 </label>
                 <select
                   name="packageId"
@@ -263,9 +263,8 @@ const SubmitQuestionPage = () => {
                       key={d.value}
                       type="button"
                       onClick={() => handleDifficulty(d.value)}
-                      className={`flex-1 py-4.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 border border-transparent ${
-                        formData.difficulty === d.value ? d.active : `${d.base} opacity-60 grayscale hover:grayscale-0 hover:opacity-100`
-                      }`}
+                      className={`flex-1 py-4.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all active:scale-95 border border-transparent ${formData.difficulty === d.value ? d.active : `${d.base} opacity-60 grayscale hover:grayscale-0 hover:opacity-100`
+                        }`}
                     >
                       {d.label}
                     </button>
@@ -276,20 +275,20 @@ const SubmitQuestionPage = () => {
 
             {/* Submit Action */}
             <div className="pt-10 border-t border-black/5">
-               <button
-                 type="submit"
-                 disabled={loading}
-                 className="w-full py-6 bg-[#0A1628] text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-[30px] hover:bg-blue-600 transition-all shadow-2xl shadow-blue-900/40 disabled:opacity-60 flex items-center justify-center gap-4 active:scale-95 group"
-               >
-                 {loading ? <HiArrowPath size={24} className="animate-spin" /> : <HiSparkles size={24} className="group-hover:rotate-12 transition-transform" />}
-                 {loading ? "COMMITTING INTELLIGENCE..." : "INITIALIZE CURATION SYNC"}
-               </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full py-6 bg-[#0A1628] text-white text-[11px] font-black uppercase tracking-[0.3em] rounded-[30px] hover:bg-blue-600 transition-all shadow-2xl shadow-blue-900/40 disabled:opacity-60 flex items-center justify-center gap-4 active:scale-95 group"
+              >
+                {loading ? <HiArrowPath size={24} className="animate-spin" /> : <HiSparkles size={24} className="group-hover:rotate-12 transition-transform" />}
+                {loading ? "COMMITTING INTELLIGENCE..." : "INITIALIZE CURATION SYNC"}
+              </button>
             </div>
           </form>
-          
+
           <div className="mt-12 text-center opacity-30 group hover:opacity-100 transition-opacity">
             <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.5em] flex items-center justify-center gap-2">
-               <HiShieldCheck size={16} /> Data Encryption Active — Session Secure
+              <HiShieldCheck size={16} /> Data Encryption Active — Session Secure
             </p>
           </div>
         </div>

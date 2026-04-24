@@ -22,19 +22,21 @@ const PackageDetailPage = () => {
   const [selectedDuration, setSelectedDuration] = useState(90);
   const [processing, setProcessing] = useState(false);
 
-  const fetchPackage = async () => {
+  const loadPackageDetail = async () => {
     try {
+      setLoading(true);
       const res = await fetchPackageById(id);
       setPkg(res.data);
     } catch (error) {
-      toast.error("Package not found");
+      console.error("Detail Fetch Error:", error);
+      toast.error("Detailed intelligence is syncing...");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchPackage();
+    loadPackageDetail();
   }, [id]);
 
   const getPrice = () => {
@@ -49,26 +51,29 @@ const PackageDetailPage = () => {
   };
 
   if (loading) return (
-    <div className="h-screen bg-gray-50 flex items-center justify-center">
+    <div className="h-screen bg-white flex items-center justify-center">
       <div className="animate-pulse flex flex-col items-center">
-        <HiBolt className="w-12 h-12 text-blue-200 mb-4 animate-bounce" />
-        <p className="text-gray-400 font-serif italic">Syncing Package Intel...</p>
+        <div className="w-12 h-12 border-4 border-blue-50 border-t-[#2563EB] rounded-full animate-spin mb-4" />
+        <p className="text-[#0A1628] font-bold text-[10px] uppercase tracking-widest">Syncing Intel...</p>
       </div>
     </div>
   );
 
   if (!pkg) return (
-    <div className="h-screen bg-gray-50 flex items-center justify-center flex-col">
-      <HiShieldCheck className="w-16 h-16 text-red-100 mb-4" />
-      <p className="text-[#0A1628] font-serif text-xl font-bold">Package Data Corrupted</p>
-      <Link to="/portal/packages" className="mt-4 text-blue-600 underline">Return to Vault</Link>
+    <div className="h-screen bg-white flex items-center justify-center flex-col p-6 text-center">
+      <div className="w-20 h-20 bg-red-50 text-red-500 rounded-3xl flex items-center justify-center mb-6">
+        <HiShieldCheck size={40} />
+      </div>
+      <p className="text-[#0A1628] font-serif text-2xl font-bold mb-2">Intel Blocked or Missing</p>
+      <p className="text-gray-400 text-sm max-w-xs mb-8">The requested technical track is currently being updated by our expert team.</p>
+      <Link to="/packages" className="px-8 py-3 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-widest rounded-2xl shadow-xl">Return to Storefront</Link>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-16 px-6 font-sans">
+    <div className="min-h-screen bg-white flex flex-col items-center py-16 px-6 font-sans">
       <div className="w-full max-w-4xl">
-        <Link to="/portal/packages" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-[#0A1628] transition-colors mb-8 group">
+        <Link to="/packages" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 hover:text-[#0A1628] transition-colors mb-8 group">
           <HiArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> Back to Storefront
         </Link>
         

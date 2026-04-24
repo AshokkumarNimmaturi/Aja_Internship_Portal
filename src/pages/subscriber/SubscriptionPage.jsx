@@ -42,7 +42,7 @@ const SubscriptionPage = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden">
+    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
       <Sidebar />
       <main className="flex-1 flex flex-col items-center py-10 px-4 overflow-y-auto w-full">
         <div className="w-full max-w-4xl mb-6 flex justify-between items-center">
