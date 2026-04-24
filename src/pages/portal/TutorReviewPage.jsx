@@ -78,25 +78,22 @@ const TutorReviewPage = () => {
   const handleAction = async (id, decision) => {
     setProcessing(id + decision);
     try {
-      await questionApi.reviewQuestion(id, {
+      await reviewQuestion(id, {
         decision: decision,
         rejectionReason: comments[id] || "",
         correctedAnswer: correctedAnswers[id] || ""
       });
-      toast.success(`Packet #${id} ${decision === 'APPROVED' ? 'Synchronized' : 'Decommissioned'}`);
+      toast.success(`Packet #${String(id).split('-')[0]} ${decision === 'APPROVED' ? 'Synchronized' : 'Decommissioned'}`);
       
       // Update local state by removing processed question
-      const updatedQuestions = questions.filter(q => q.id !== id);
-      setQuestions(updatedQuestions);
+      setQuestions(prev => prev.filter(q => q.id !== id));
 
       // If we are in drill-down mode, update or exit the current view
       if (selectedReviewEmployee) {
-         const remainingForEmp = updatedQuestions.filter(q => (q.submittedByEmail || "Unknown") === selectedReviewEmployee.email);
-         if (remainingForEmp.length === 0) {
-            setSelectedReviewEmployee(null); // Exit to dashboard if done with this agent
-         } else {
-            setSelectedReviewEmployee(prev => ({ ...prev, questions: remainingForEmp }));
-         }
+         setSelectedReviewEmployee(prev => {
+            const nextQuestions = prev.questions.filter(q => q.id !== id);
+            return nextQuestions.length === 0 ? null : { ...prev, questions: nextQuestions };
+         });
       }
     } catch (err) {
       toast.error(err.response?.data?.message || "Telemetry Sync Failed");
@@ -107,37 +104,40 @@ const TutorReviewPage = () => {
 
   const filtered = questions.filter(q => {
     const matchesTech = activeFilter === "All" || (q.technologyName || "General") === activeFilter;
-    const matchesSearch = q.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                         (q.clientName || "").toLowerCase().includes(searchQuery.toLowerCase());
+    const title = q.title || "";
+    const client = q.clientName || "";
+    const matchesSearch = title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                         client.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesTech && matchesSearch;
   });
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
+    <div className="flex h-screen bg-[#F3F4F6] font-sans overflow-hidden">
       <PortalSidebar user={user} role="TUTOR" activeItem="Review Queue" />
 
-      <main className="flex-1 p-8 py-10 overflow-y-auto">
+      <main className="flex-1 p-8 py-10 overflow-y-auto w-full">
         <div className="max-w-5xl mx-auto">
           {!selectedReviewEmployee ? (
             <>
-              <div className="flex items-center justify-between mb-12 px-6">
+              {/* Contributor Overview - Professional */}
+              <div className="flex items-center justify-between mb-10 px-2">
                 <div>
-                  <h1 className="text-3xl font-serif text-[#0A1628] mb-2 font-bold italic">Intelligence Sources</h1>
-                  <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] opacity-70 italic">Contributors awaiting expert verification sync</p>
+                  <h1 className="text-xl font-bold text-[#0A1628] mb-1">Intelligence Pipeline</h1>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Contributors awaiting expert verification</p>
                 </div>
-                <button onClick={fetchQuestions} className="flex items-center gap-3 px-6 py-3 text-[10px] font-black uppercase tracking-widest text-[#0A1628] border border-black/10 rounded-2xl hover:bg-white transition-all shadow-sm active:scale-95 bg-gray-50/50">
-                  <HiArrowPath size={16} className={loadingQ ? "animate-spin" : ""} /> Sync Telemetry
+                <button onClick={fetchQuestions} className="flex items-center gap-2 px-6 py-2 text-[10px] font-bold uppercase tracking-widest text-[#0074CC] border border-[#E3E6E8] rounded-lg hover:bg-white transition-all shadow-sm active:scale-95 bg-white/50">
+                  <HiArrowPath size={14} className={loadingQ ? "animate-spin" : ""} /> Sync Telemetry
                 </button>
               </div>
 
-              {/* Contributor Grid */}
+              {/* Contributor Grid - Tight */}
               {loadingQ ? (
-                <div className="py-40 bg-white border-2 border-dashed border-black/5 rounded-[60px] flex flex-col items-center justify-center text-center">
-                   <HiArrowPath className="animate-spin text-blue-100 mb-6" size={48} />
-                   <p className="text-gray-400 font-serif italic text-lg">Accessing contributor network...</p>
+                <div className="py-24 bg-white border border-[#E3E6E8] border-dashed rounded-lg flex flex-col items-center justify-center text-center">
+                   <HiArrowPath className="animate-spin text-gray-200 mb-4" size={32} />
+                   <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Accessing contributor network...</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in duration-500">
                   {Object.values(filtered.reduce((acc, q) => {
                     const key = q.submittedByEmail || "Unknown";
                     if (!acc[key]) acc[key] = { email: key, name: q.submittedByName || "Internal Member", questions: [] };
@@ -147,189 +147,180 @@ const TutorReviewPage = () => {
                     <div 
                       key={agent.email} 
                       onClick={() => setSelectedReviewEmployee(agent)}
-                      className="group bg-white p-10 rounded-[50px] border border-black/8 shadow-sm hover:shadow-2xl hover:border-blue-300 transition-all duration-500 cursor-pointer relative overflow-hidden"
+                      className="group bg-white p-6 rounded-lg border border-[#E3E6E8] shadow-sm hover:border-[#0074CC]/30 transition-all cursor-pointer relative overflow-hidden"
                     >
-                       <div className="absolute -top-10 -right-10 opacity-0 group-hover:opacity-5 group-hover:scale-150 transition-all duration-700 text-[#0A1628]">
-                          <HiBriefcase size={160} />
-                       </div>
-                       <div className="flex items-center gap-6 mb-10">
-                          <div className="w-16 h-16 bg-gray-50 rounded-3xl flex items-center justify-center border border-black/5 group-hover:bg-blue-600 group-hover:text-white transition-all duration-500 shadow-inner">
-                             <HiBriefcase size={32} className="text-gray-400 group-hover:text-white" />
+                       <div className="flex items-center gap-4 mb-6">
+                          <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center border border-[#E3E6E8] group-hover:bg-[#0074CC] group-hover:text-white transition-all shadow-inner font-bold text-gray-300">
+                             {agent.name.charAt(0)}
                           </div>
                           <div>
-                             <h4 className="text-xl font-black text-[#0A1628] uppercase tracking-tight group-hover:text-blue-700 transition-colors leading-tight mb-1">{agent.name}</h4>
-                             <p className="text-[10px] text-gray-400 font-mono italic">{agent.email}</p>
+                             <h4 className="text-sm font-bold text-[#0A1628] uppercase tracking-tight group-hover:text-[#0074CC] transition-colors mb-0.5">{agent.name}</h4>
+                             <p className="text-[9px] text-gray-400 font-bold uppercase tracking-widest opacity-60 truncate max-w-[120px]">{agent.email}</p>
                           </div>
                        </div>
-                       <div className="flex items-center justify-between pt-8 border-t border-black/8">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">Pending Intel Packets</span>
-                          <div className="w-12 h-12 bg-[#0A1628] text-white rounded-[18px] flex items-center justify-center text-sm font-black shadow-lg shadow-blue-900/10 group-hover:scale-110 group-hover:bg-blue-600 transition-all">{agent.questions.length}</div>
+                       <div className="flex items-center justify-between pt-5 border-t border-[#F3F4F6]">
+                          <span className="text-[9px] font-bold uppercase tracking-widest text-gray-400">Pending Intel</span>
+                          <div className="w-8 h-8 bg-[#0A1628] text-white rounded-lg flex items-center justify-center text-[10px] font-bold group-hover:bg-[#0074CC] transition-all">{agent.questions.length}</div>
                        </div>
                     </div>
                   ))}
 
                   {filtered.length === 0 && (
-                    <div className="col-span-3 py-40 bg-white border-2 border-dashed border-black/5 rounded-[60px] text-center px-10">
-                       <div className="text-6xl mb-6 grayscale hover:grayscale-0 transition-all italic opacity-20">🥂</div>
-                       <h3 className="text-2xl font-serif text-[#0A1628] font-black mb-2">Curation Queue Sanitized</h3>
-                       <p className="text-gray-400 text-sm font-light italic max-w-sm mx-auto leading-relaxed">Expert curation queue is perfectly synchronized. All telemetry systems are nominal.</p>
+                    <div className="col-span-full py-24 bg-white border border-[#E3E6E8] border-dashed rounded-lg text-center px-10">
+                       <h3 className="text-sm font-bold text-[#0A1628] mb-1 uppercase tracking-widest">Curation Queue Sanitized</h3>
+                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest max-w-sm mx-auto leading-relaxed">Expert curation queue is perfectly synchronized. All telemetry systems nominal.</p>
                     </div>
                   )}
                 </div>
               )}
             </>
           ) : (
-            <div className="animate-in slide-in-from-bottom-6 duration-700">
-               {/* Stage 2: Individual Question Curation (Premium Reference UI) */}
-               <div className="flex items-center justify-between mb-12 px-6">
-                  <div className="flex items-center gap-6">
+            <div className="animate-in fade-in duration-500">
+               {/* Question Review Terminal - Professional */}
+               <div className="flex items-center justify-between mb-10 px-2">
+                  <div className="flex items-center gap-4">
                      <button 
                        onClick={() => setSelectedReviewEmployee(null)}
-                       className="w-10 h-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+                       className="w-8 h-8 bg-white border border-[#E3E6E8] rounded-lg flex items-center justify-center text-gray-400 hover:text-[#0074CC] transition-all shadow-sm"
                      >
-                        <HiArrowPath className="rotate-180" size={20} />
+                        <HiArrowPath className="rotate-180" size={16} />
                      </button>
-                     <nav className="flex items-center gap-2 text-sm font-medium">
+                     <div className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest">
                         <span className="text-gray-400">Auditing</span>
-                        <span className="text-gray-300">/</span>
-                        <span className="text-blue-600 font-bold">{selectedReviewEmployee.name}</span>
-                     </nav>
+                        <span className="text-gray-200">/</span>
+                        <span className="text-[#0074CC]">{selectedReviewEmployee.name}</span>
+                     </div>
                   </div>
-                  <div className="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 rounded-full border border-green-100 text-[10px] font-bold">
+                  <div className="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 rounded-lg border border-green-100 text-[9px] font-bold uppercase tracking-widest">
                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                     Verified Sync
+                     Live Sync
                   </div>
                </div>
 
-               <div className="flex flex-col gap-10">
+               <div className="flex flex-col gap-8">
                   {selectedReviewEmployee.questions.map((q) => (
-                    <div key={q.id} className="bg-white border border-gray-100 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.02)] overflow-hidden">
-                       
-                        {/* Meta Info Bar (4 Columns) */}
-                        <div className="bg-gray-50/50 border-b border-gray-100 px-10 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
-                           <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-white rounded-xl border border-gray-100 flex items-center justify-center text-gray-400 shadow-sm"><HiTag size={18} /></div>
+                    <div key={q.id} className="bg-white border border-[#E3E6E8] rounded-lg shadow-sm overflow-hidden">
+                        
+                        {/* Meta Info Bar - High Density */}
+                        <div className="bg-gray-50/50 border-b border-[#E3E6E8] px-6 py-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+                           <div className="flex items-center gap-3">
+                              <HiTag size={14} className="text-gray-300" />
                               <div>
-                                 <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Technology</div>
-                                 <div className="text-sm font-bold text-gray-800">{q.technologyName || "General"}</div>
+                                 <div className="text-[8px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Stack</div>
+                                 <div className="text-[10px] font-bold text-[#0A1628] uppercase">{q.technologyName || "General"}</div>
                               </div>
                            </div>
-                           <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-white rounded-xl border border-gray-100 flex items-center justify-center text-amber-500 shadow-sm"><HiChartBar size={18} /></div>
+                           <div className="flex items-center gap-3">
+                              <HiChartBar size={14} className="text-gray-300" />
                               <div>
-                                 <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Difficulty</div>
-                                 <div className="text-sm font-bold text-gray-800 capitalize">{q.difficulty?.toLowerCase() || "Medium"}</div>
+                                 <div className="text-[8px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Level</div>
+                                 <div className="text-[10px] font-bold text-[#0A1628] uppercase">{q.difficulty || "Medium"}</div>
                               </div>
                            </div>
-                           <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-white rounded-xl border border-gray-100 flex items-center justify-center text-blue-500 shadow-sm"><HiIdentification size={18} /></div>
+                           <div className="flex items-center gap-3">
+                              <HiIdentification size={14} className="text-gray-300" />
                               <div>
-                                 <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Question ID</div>
-                                 <div className="text-sm font-bold text-gray-800">{q.id}</div>
+                                 <div className="text-[8px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Packet ID</div>
+                                 <div className="text-[10px] font-bold text-[#0A1628] uppercase truncate max-w-[80px]">{String(q.id).split('-')[0]}</div>
                               </div>
                            </div>
-                           <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-white rounded-xl border border-gray-100 flex items-center justify-center text-emerald-500 shadow-sm"><HiBriefcase size={18} /></div>
+                           <div className="flex items-center gap-3">
+                              <HiBriefcase size={14} className="text-gray-300" />
                               <div>
-                                 <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Source Path</div>
-                                 <div className="text-sm font-bold text-emerald-700 italic truncate max-w-[120px]">{q.clientName || "General Storefront"}</div>
+                                 <div className="text-[8px] text-gray-400 font-bold uppercase tracking-widest mb-0.5">Origin</div>
+                                 <div className="text-[10px] font-bold text-[#0074CC] uppercase truncate max-w-[80px]">{q.clientName || "Vault"}</div>
                               </div>
                            </div>
                         </div>
 
-                       <div className="p-10">
-                           <div className="space-y-6 mb-10">
-                              {/* Question Context */}
-                              <div className="bg-gray-50/30 border-l-4 border-blue-600 px-8 py-6 rounded-r-2xl">
-                                 <div className="text-[9px] font-black text-blue-600 uppercase tracking-[0.2em] mb-3 opacity-60">Submitted Intel</div>
-                                 <h3 className="text-xl font-bold text-gray-900 leading-snug">{q.title}</h3>
+                        <div className="p-6">
+                           <div className="space-y-6 mb-8">
+                              {/* Question Context - Tight */}
+                              <div className="bg-[#F8F9F9] border-l-2 border-[#0074CC] px-6 py-5 rounded-r-lg">
+                                 <div className="text-[8px] font-bold text-[#0074CC] uppercase tracking-widest mb-2 opacity-60">Submitted Intel</div>
+                                 <h3 className="text-sm font-bold text-[#0A1628] leading-tight uppercase tracking-tight">{q.title}</h3>
                               </div>
 
-                              {/* Source Intelligence - Full Width */}
-                              <div className="space-y-3">
-                                 <div className="flex items-center gap-2 text-gray-400 px-2">
-                                    <HiDocumentText size={14} />
-                                    <span className="text-[10px] font-bold uppercase tracking-wider">Source Transmission Context</span>
+                              {/* Source Content */}
+                              <div className="space-y-2">
+                                 <div className="flex items-center gap-2 text-gray-400 px-1">
+                                    <HiDocumentText size={12} />
+                                    <span className="text-[9px] font-bold uppercase tracking-widest">Transmission Body</span>
                                  </div>
-                                 <div className="p-8 bg-gray-50 border border-gray-100/50 rounded-[30px] shadow-inner">
-                                    <p className="text-sm text-gray-600 leading-relaxed font-medium italic">"{q.content}"</p>
+                                 <div className="p-5 bg-gray-50 border border-[#E3E6E8] rounded-lg">
+                                    <p className="text-xs text-[#232629] leading-relaxed font-medium uppercase tracking-tight opacity-70">{q.content}</p>
                                  </div>
                               </div>
 
-                              {/* Contributor Proposal - Full Width */}
-                              <div className="space-y-3">
-                                 <div className="flex items-center gap-2 text-blue-500 px-2">
-                                    <HiShieldCheck size={14} />
-                                    <span className="text-[10px] font-bold uppercase tracking-wider">Contributor Mastery Proposal</span>
+                              {/* Proposal Content */}
+                              <div className="space-y-2">
+                                 <div className="flex items-center gap-2 text-[#0074CC] px-1">
+                                    <HiShieldCheck size={12} />
+                                    <span className="text-[9px] font-bold uppercase tracking-widest">Mastery Proposal</span>
                                  </div>
-                                 <div className="p-8 bg-blue-50/30 border border-blue-100/50 rounded-[30px] shadow-sm">
-                                    <p className="text-sm text-gray-700 leading-relaxed font-bold">
-                                       {q.initialAnswer || "No proposal provided."}
+                                 <div className="p-5 bg-[#0074CC]/5 border border-[#0074CC]/10 rounded-lg">
+                                    <p className="text-xs text-[#232629] leading-relaxed font-bold uppercase tracking-tight">
+                                       {q.initialAnswer || "No documentation provided."}
                                     </p>
                                  </div>
                               </div>
                            </div>
 
-                          {/* Main Editor Terminal */}
-                          <div className="space-y-8">
-                             <div className="space-y-4">
-                                <div className="flex items-center justify-between">
-                                   <div className="flex items-center gap-3 text-gray-400">
-                                      <HiPencilSquare size={16} />
-                                      <span className="text-[10px] font-bold uppercase tracking-wider">Verify Source Truth</span>
-                                   </div>
+                          {/* Action Terminal - Streamlined */}
+                          <div className="space-y-6 pt-6 border-t border-[#F3F4F6]">
+                             <div className="space-y-3">
+                                <div className="flex items-center justify-between px-1">
                                    <div className="flex items-center gap-2 text-gray-400">
-                                      <HiArrowPath size={14} className="animate-spin-slow opacity-30" />
-                                      <span className="text-[10px] font-bold uppercase tracking-tight opacity-50">Synchronize</span>
+                                      <HiPencilSquare size={14} />
+                                      <span className="text-[9px] font-bold uppercase tracking-widest">Verify Source Truth</span>
                                    </div>
                                 </div>
                                 <textarea
                                   placeholder="Compose the verified master intelligence packet..."
                                   value={correctedAnswers[q.id] || ""}
                                   onChange={(e) => setCorrectedAnswers({ ...correctedAnswers, [q.id]: e.target.value })}
-                                  className="w-full p-8 bg-white border border-gray-100 rounded-2xl text-sm text-gray-800 placeholder:text-gray-300 focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all shadow-inner"
+                                  className="w-full p-4 bg-gray-50 border border-[#E3E6E8] rounded-lg text-xs text-[#232629] placeholder:text-gray-300 focus:bg-white focus:border-[#0074CC] outline-none transition-all font-medium"
                                   rows={2}
                                 />
                              </div>
 
-                             <div className="space-y-4">
-                                <div className="flex items-center gap-3 text-gray-400 px-2">
-                                   <HiChatBubbleLeftEllipsis size={16} />
-                                   <span className="text-[10px] font-bold uppercase tracking-wider">Contributor Pipeline Response</span>
+                             <div className="space-y-3">
+                                <div className="flex items-center gap-2 text-gray-400 px-1">
+                                   <HiChatBubbleLeftEllipsis size={14} />
+                                   <span className="text-[9px] font-bold uppercase tracking-widest">Contributor Response Payload</span>
                                 </div>
                                 <textarea 
                                   value={comments[q.id] || ""}
                                   onChange={(e) => setComments({ ...comments, [q.id]: e.target.value })}
-                                  className="w-full px-8 py-6 bg-white border border-gray-100 rounded-2xl text-sm font-medium italic text-gray-500 placeholder:text-gray-200 outline-none focus:border-blue-300 transition-all shadow-inner"
+                                  className="w-full px-4 py-3 bg-gray-50 border border-[#E3E6E8] rounded-lg text-xs font-bold uppercase tracking-tight text-gray-500 placeholder:text-gray-200 outline-none focus:bg-white focus:border-[#0074CC] transition-all"
                                   placeholder="Technical feedback for the contributor network..."
                                   rows={1}
                                 />
                              </div>
 
-                             {/* Bottom Action Bar */}
-                             <div className="flex items-center justify-between pt-6">
+                             {/* Action Bar - Sharp */}
+                             <div className="flex items-center justify-between pt-4">
                                 <button 
                                   onClick={() => handleAction(q.id, 'REJECTED')}
                                   disabled={!!processing}
-                                  className="flex items-center gap-3 px-8 py-3 rounded-xl border border-red-100 text-red-500 text-[11px] font-bold uppercase tracking-wider hover:bg-red-50 transition-all active:scale-95"
+                                  className="flex items-center gap-2 px-6 py-2 rounded-lg border border-red-100 text-red-500 text-[9px] font-bold uppercase tracking-widest hover:bg-red-50 transition-all active:scale-95"
                                 >
-                                   <HiTrash size={16} /> {processing === q.id + "REJECTED" ? 'REJECTING...' : 'Decommission Intel'}
+                                   <HiTrash size={14} /> {processing === q.id + "REJECTED" ? 'REJECTING...' : 'Decommission Intel'}
                                 </button>
                                 <button 
                                   onClick={() => handleAction(q.id, 'APPROVED')}
                                   disabled={!!processing}
-                                  className="flex items-center gap-3 px-10 py-3.5 rounded-xl bg-blue-600 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                                  className="flex items-center gap-2 px-8 py-2.5 rounded-lg bg-[#0074CC] text-white text-[9px] font-bold uppercase tracking-widest hover:bg-[#0063AD] transition-all active:scale-95 shadow-sm"
                                 >
-                                   <HiCheckCircle size={18} /> {processing === q.id + "APPROVED" ? 'SYNCING...' : 'Verify & Broadcast to Storefront'}
+                                   <HiCheckCircle size={14} /> {processing === q.id + "APPROVED" ? 'SYNCING...' : 'Verify & Broadcast'}
                                 </button>
                              </div>
                           </div>
-                       </div>
+                        </div>
                     </div>
                   ))}
                </div>
             </div>
-
           )}
         </div>
       </main>

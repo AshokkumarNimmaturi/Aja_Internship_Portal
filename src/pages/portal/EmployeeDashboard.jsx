@@ -29,7 +29,7 @@ export const StatusBadge = ({ status }) => {
     REJECTED: <HiXCircle size={12} />,
   };
   return (
-    <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tight px-2.5 py-1.5 rounded-xl ${styles[status] || styles.PENDING}`}>
+    <span className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${styles[status] || styles.PENDING}`}>
       {icons[status] || icons.PENDING} {status}
     </span>
   );
@@ -86,76 +86,75 @@ const EmployeeDashboard = () => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
+    <div className="flex h-screen bg-[#F3F4F6] font-sans overflow-hidden">
       <PortalSidebar user={user} role={user?.role || "EMPLOYEE"} activeItem="Dashboard" />
 
-      <main className="flex-1 p-8 py-10 overflow-y-auto">
+      <main className="flex-1 p-8 py-10 overflow-y-auto w-full">
         <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex items-center justify-between mb-10">
+          {/* Header - Minimalist */}
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="font-serif text-3xl text-[#0A1628] mb-1 font-bold">Contributor Hub</h1>
-              <p className="text-xs text-gray-500">
-                Active Session: <span className="text-gray-700 font-semibold">{user?.fullName || "Aja Member"}</span>
+              <h1 className="text-xl font-bold text-[#0A1628] mb-1">Contributor Dashboard</h1>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                Active Member: <span className="text-[#0074CC]">{user?.fullName || "Aja Member"}</span>
               </p>
             </div>
             <Link
               to="/portal/submit"
-              className="flex items-center gap-2 px-6 py-3 bg-[#0A1628] text-white text-xs font-semibold rounded-2xl hover:bg-blue-900 transition-all shadow-xl shadow-blue-900/20 active:scale-95"
+              className="flex items-center gap-2 px-6 py-2 bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-black transition-all active:scale-95"
             >
-              <HiPlusCircle size={18} /> New Submission
+              <HiPlusCircle size={14} /> New Submission
             </Link>
           </div>
 
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          {/* Stats Overview - High Density */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             {stats.map((s, i) => (
-              <div key={i} className="bg-white p-8 rounded-[40px] border border-black/5 shadow-sm hover:shadow-xl transition-all group overflow-hidden relative">
-                <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:scale-125 transition-transform">
-                   <s.icon size={80} className={s.color} />
+              <div key={i} className="bg-white p-6 rounded-lg border border-[#E3E6E8] shadow-sm hover:border-[#0074CC]/20 transition-all group">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-10 h-10 rounded-lg ${s.bg} ${s.color} flex items-center justify-center border border-black/5`}>
+                     <s.icon size={18} />
+                  </div>
+                  <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</div>
                 </div>
-                <div className={`w-14 h-14 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center mb-6 border border-black/5 shadow-inner group-hover:scale-110 transition-transform`}>
-                   <s.icon size={28} />
-                </div>
-                <div className="text-5xl font-serif text-[#0A1628] mb-1 font-black">{s.value}</div>
-                <div className="text-xs text-gray-500 font-semibold">{s.label}</div>
+                <div className="text-3xl font-bold text-[#0A1628]">{s.value}</div>
               </div>
             ))}
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Recent Table */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Recent Table - Professional */}
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-[50px] border border-black/8 p-10 shadow-sm relative overflow-hidden">
-                <div className="flex items-center justify-between mb-10">
-                  <h2 className="text-2xl font-serif text-[#0A1628] font-bold">Intelligence Feed</h2>
-                  <Link to="/portal/submissions" className="text-xs font-bold text-blue-600 hover:underline transition-all">View Archive</Link>
+              <div className="bg-white rounded-lg border border-[#E3E6E8] p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-sm font-bold text-[#0A1628] uppercase tracking-widest">Submission Stream</h2>
+                  <Link to="/portal/submissions" className="text-[10px] font-bold text-[#0074CC] uppercase tracking-widest hover:underline">View All</Link>
                 </div>
 
-                <div className="overflow-x-auto text-sm">
+                <div className="overflow-x-auto">
                   {loading ? (
-                    <div className="py-24 text-center"><HiArrowPath className="animate-spin mx-auto text-blue-100" size={44} /></div>
+                    <div className="py-20 text-center"><HiArrowPath className="animate-spin mx-auto text-gray-200" size={32} /></div>
                   ) : submissions.length > 0 ? (
-                    <table className="w-full text-left font-sans">
+                    <table className="w-full text-left font-sans text-xs">
                       <thead>
-                        <tr className="border-b border-black/5">
-                          <th className="pb-5 text-xs font-bold text-gray-400">Mastery Content</th>
-                          <th className="pb-5 text-xs font-bold text-gray-400">Origin / Company</th>
-                          <th className="pb-5 text-xs font-bold text-gray-400">Technology</th>
-                          <th className="pb-5 text-xs font-bold text-gray-400 text-center">Status</th>
-                          <th className="pb-5 text-xs font-bold text-gray-400 text-right">Date</th>
+                        <tr className="border-b border-[#E3E6E8]">
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px]">Content</th>
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px]">Organization</th>
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px]">Stack</th>
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px] text-center">Status</th>
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px] text-right">Date</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-black/5">
+                      <tbody className="divide-y divide-[#F3F4F6]">
                         {submissions.slice(0, 8).map((q) => (
-                          <tr key={q.id} className="group hover:bg-gray-50/50 transition-all cursor-default">
-                            <td className="py-6 font-bold text-[#0A1628] tracking-tight line-clamp-1 max-w-[180px] group-hover:text-blue-600">{q.title}</td>
-                            <td className="py-6">
-                               <span className="text-xs font-bold text-gray-400 uppercase tracking-tight">{q.clientName || "General"}</span>
+                          <tr key={q.id} className="group hover:bg-gray-50/50 transition-all cursor-default text-xs">
+                            <td className="py-4 font-bold text-[#0A1628] line-clamp-1 max-w-[200px] group-hover:text-[#0074CC]">{q.title}</td>
+                            <td className="py-4">
+                               <span className="font-bold text-gray-500 uppercase tracking-tight text-[10px]">{q.clientName || "General"}</span>
                             </td>
-                            <td className="py-6"><TechBadge tech={q.technologyName || q.technology} /></td>
-                            <td className="py-6 flex justify-center"><StatusBadge status={q.status} /></td>
-                            <td className="py-6 text-right text-xs font-medium text-gray-400 italic">
+                            <td className="py-4"><TechBadge tech={q.technologyName || q.technology} className="!text-[9px] !py-0.5" /></td>
+                            <td className="py-4 flex justify-center"><StatusBadge status={q.status} /></td>
+                            <td className="py-4 text-right text-gray-400 font-bold uppercase text-[9px]">
                                {new Date(q.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                             </td>
                           </tr>
@@ -163,10 +162,10 @@ const EmployeeDashboard = () => {
                       </tbody>
                     </table>
                   ) : (
-                    <div className="py-24 text-center bg-gray-50/50 rounded-[40px] border-2 border-dashed border-black/5 group">
-                       <p className="text-sm text-gray-400 italic font-serif max-w-xs mx-auto mb-6">Your technical intel contribution pipeline is currently empty.</p>
-                       <Link to="/portal/submit" className="inline-flex items-center gap-2 px-8 py-4 bg-white border border-black/8 text-xs font-bold text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm active:scale-95">
-                          <HiPlusCircle size={18} /> Initiate Submission
+                    <div className="py-20 text-center bg-gray-50/30 rounded-lg border border-dashed border-[#E3E6E8]">
+                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-6">Pipeline idle. Start your contribution.</p>
+                       <Link to="/portal/submit" className="inline-flex items-center gap-2 px-6 py-2 bg-[#0A1628] text-white text-[9px] font-bold uppercase tracking-widest rounded-lg hover:bg-black transition-all active:scale-95">
+                          Launch Submission
                        </Link>
                     </div>
                   )}
@@ -174,53 +173,48 @@ const EmployeeDashboard = () => {
               </div>
             </div>
 
-            {/* Platform Insights */}
-            <div className="space-y-6">
-               <div className="bg-[#0A1628] p-10 rounded-[50px] text-white shadow-2xl shadow-blue-900/20 relative overflow-hidden group">
-                  <div className="absolute -bottom-10 -right-10 opacity-5 group-hover:scale-110 transition-transform duration-700">
-                    <HiChartBar size={200} />
-                  </div>
-                  <h3 className="text-xl font-serif mb-8 font-bold relative z-10">Platform Pulse</h3>
-                  <div className="space-y-8 relative z-10">
+            {/* Platform Insights - Compact */}
+            <div className="space-y-4">
+               <div className="bg-[#0A1628] p-6 rounded-lg text-white shadow-sm relative overflow-hidden group">
+                  <h3 className="text-sm font-bold uppercase tracking-widest mb-6">Network Health</h3>
+                  <div className="space-y-6">
                     <div>
-                       <div className="flex justify-between text-xs font-bold text-blue-300/60 mb-3">
-                          <span>Quality Sync Rate</span>
+                       <div className="flex justify-between text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-2">
+                          <span>Verified Curation</span>
                           <span>{((globalStats.totalQuestions / (globalStats.totalReceived || 1)) * 100).toFixed(0)}%</span>
                        </div>
-                       <div className="h-1.5 bg-white/10 rounded-full overflow-hidden shadow-inner">
-                          <div className="h-full bg-blue-400 shadow-[0_0_12px_rgba(96,165,250,0.5)] transition-all duration-1000" style={{ width: `${(globalStats.totalQuestions / (globalStats.totalReceived || 1)) * 100}%` }} />
+                       <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-400 transition-all duration-1000" style={{ width: `${(globalStats.totalQuestions / (globalStats.totalReceived || 1)) * 100}%` }} />
                        </div>
                     </div>
-                    <div className="pt-6 border-t border-white/5 space-y-6">
-                       <div className="flex justify-between items-center bg-white/5 p-4 rounded-3xl border border-white/5">
-                          <span className="text-xs text-blue-200 font-bold">Global Intel Pool</span>
-                          <span className="text-3xl font-serif font-black tracking-tighter text-blue-100">{globalStats.totalReceived}</span>
+                    <div className="pt-4 border-t border-white/5 grid grid-cols-2 gap-3">
+                       <div className="bg-white/5 p-3 rounded-lg border border-white/5 text-center">
+                          <span className="block text-[8px] text-blue-200 font-bold uppercase tracking-widest mb-1">Global Vault</span>
+                          <span className="text-lg font-bold text-white">{globalStats.totalReceived}</span>
                        </div>
-                       <div className="flex justify-between items-center bg-emerald-500/10 p-4 rounded-3xl border border-emerald-500/10 text-emerald-400">
-                          <span className="text-xs font-bold">Verified Mastery</span>
-                          <span className="text-3xl font-serif font-black tracking-tighter">{globalStats.totalQuestions}</span>
+                       <div className="bg-white/5 p-3 rounded-lg border border-white/5 text-center">
+                          <span className="block text-[8px] text-green-300 font-bold uppercase tracking-widest mb-1">Verified</span>
+                          <span className="text-lg font-bold text-white">{globalStats.totalQuestions}</span>
                        </div>
                     </div>
                   </div>
                </div>
 
-               <div className="bg-white border border-black/8 p-10 rounded-[50px] shadow-sm relative overflow-hidden">
-                  <h4 className="font-serif text-xl text-[#0A1628] mb-6 font-bold">Vault Guidelines</h4>
-                  <ul className="space-y-6">
-                     <li className="flex gap-4 text-sm text-gray-500 leading-relaxed italic group items-start">
-                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                        "Elite technical nuance ensures high-priority curation sync."
+               <div className="bg-white border border-[#E3E6E8] p-6 rounded-lg shadow-sm">
+                  <h4 className="text-[10px] font-bold text-[#0A1628] uppercase tracking-widest mb-4">Submission Ethics</h4>
+                  <ul className="space-y-4">
+                     <li className="flex gap-3 text-[10px] text-gray-500 leading-normal font-bold uppercase tracking-widest">
+                        <div className="mt-1 w-1 h-1 rounded-full bg-[#0074CC] shrink-0" />
+                        Detailed nuance ensures priority sync.
                      </li>
-                     <li className="flex gap-4 text-sm text-gray-500 leading-relaxed italic group items-start">
-                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
-                        "Accurate technology tagging optimizes global discoverability."
+                     <li className="flex gap-3 text-[10px] text-gray-500 leading-normal font-bold uppercase tracking-widest">
+                        <div className="mt-1 w-1 h-1 rounded-full bg-[#0074CC] shrink-0" />
+                        Accurate tagging optimizes vault discovery.
                      </li>
                   </ul>
                   
-                  {/* Internal Technical Support */}
-                  <div className="mt-10 pt-8 border-t border-black/5 text-gray-400">
-                    <p className="text-xs font-bold mb-4 uppercase tracking-widest text-center">Internal Support</p>
-                    <VoiceCallButton />
+                  <div className="mt-8 pt-6 border-t border-[#F3F4F6]">
+                    <VoiceCallButton className="w-full !rounded-lg !py-2.5 !text-[9px] !bg-gray-50 !text-[#0A1628] border border-gray-100 hover:!bg-white" />
                   </div>
                </div>
             </div>

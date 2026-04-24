@@ -144,62 +144,58 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
       }}
     >
       {/* Logo */}
-      <div className="p-5 border-b border-white/10 h-28 flex flex-col justify-center shrink-0 overflow-hidden relative">
+      <div className="p-5 border-b border-white/5 h-24 flex flex-col justify-center shrink-0 overflow-hidden relative">
         <Link to="/" className="flex items-center gap-3 w-full">
-          <div className="w-10 h-10 bg-white rounded-2xl flex items-center justify-center shrink-0 border border-white/10 shadow-inner overflow-hidden">
+          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shrink-0 border border-white/10 shadow-sm overflow-hidden">
             <img src="/logo.png" alt="Aja logo" className="w-7 h-auto object-contain" />
           </div>
           <div className={`whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
-            <div className="text-white text-sm font-semibold tracking-tight">
-              Aja Interview Vault
+            <div className="text-white text-xs font-bold uppercase tracking-tight">
+              Aja Vault
             </div>
-            <div className="text-white/40 text-[10px] font-bold mt-0.5 tracking-wide">
-              Internal Access
+            <div className="text-white/30 text-[9px] font-bold mt-0.5 uppercase tracking-widest">
+              Internal
             </div>
           </div>
         </Link>
         {/* Role Identity */}
         <div className={`mt-4 absolute bottom-4 transition-all duration-300 ${isHovered ? 'left-16' : 'left-0 w-full flex justify-center'}`}>
-          {isHovered ? (
-             <span className={`text-[10px] font-bold px-3 py-1 rounded bg-white/5 border border-white/10 uppercase tracking-wider text-white shadow-sm`}>
-              {role}
-            </span>
-          ) : (
-            <span className={`text-[10px] font-bold px-2 py-1 rounded bg-white/5 border border-white/10 text-white`} title={role}>
-              {roleLabels[role] || "U"}
-            </span>
-          )}
+          <span className={`text-[9px] font-bold px-2 py-0.5 rounded-lg bg-white/5 border border-white/5 uppercase tracking-widest text-white`}>
+            {isHovered ? role : (roleLabels[role] || "U")}
+          </span>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 px-3 py-6 flex flex-col gap-2 overflow-y-auto scrollbar-hide overflow-x-hidden">
+      <nav className="flex-1 px-3 py-6 flex flex-col gap-1 overflow-y-auto scrollbar-hide overflow-x-hidden">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           return (
             <Link
               key={item.label}
               to={item.path}
-              className={`flex items-center rounded-xl transition-all duration-200 h-12 relative group ${
+              className={`flex items-center rounded-lg transition-all duration-200 h-10 relative group ${
                 isActive
-                  ? "bg-white/10 text-white border border-white/5 shadow-sm"
-                  : "text-white/40 hover:bg-white/5 hover:text-white"
+                  ? "bg-white/10 text-white"
+                  : "text-white/30 hover:bg-white/5 hover:text-white"
               } ${isHovered ? 'px-4 justify-between gap-3' : 'justify-center mx-2'}`}
               title={!isHovered ? item.label : ""}
             >
               <div className={`flex items-center ${isHovered ? 'gap-3.5' : ''}`}>
-                <span className={`shrink-0 transition-transform ${isActive ? 'scale-110' : 'group-hover:scale-110'}`}>{item.icon}</span>
-                <span className={`text-[13px] font-medium whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
+                <span className={`shrink-0 transition-transform ${isActive ? 'scale-105' : 'group-hover:scale-105'}`}>
+                   {item.icon && typeof item.icon === 'object' ? { ...item.icon, props: { ...item.icon.props, size: 18 } } : item.icon}
+                </span>
+                <span className={`text-xs font-bold uppercase tracking-widest whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
                   {item.label}
                 </span>
               </div>
               {item.badge && (
                  isHovered ? (
-                  <span className="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-md relative z-10 shrink-0">
+                  <span className="bg-[#0074CC] text-white text-[9px] font-bold px-1.5 py-0.5 rounded-sm relative z-10 shrink-0 uppercase">
                     {item.badge}
                   </span>
                  ) : (
-                  <span className="absolute top-2.5 right-2 text-red-500 font-black">●</span>
+                  <span className="absolute top-2.5 right-2 text-[#0074CC] font-black">●</span>
                  )
               )}
             </Link>
@@ -208,26 +204,26 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
       </nav>
 
       {/* Profile Area */}
-      <div className="p-5 border-t border-white/5 flex flex-col gap-3 shrink-0 overflow-hidden bg-black/10">
+      <div className="p-5 border-t border-white/5 flex flex-col gap-3 shrink-0 overflow-hidden bg-black/5">
         <div className={`flex items-center ${isHovered ? 'justify-between' : 'justify-center'}`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gray-700 text-white text-sm font-bold flex items-center justify-center shrink-0 border border-white/5 shadow-inner">
+            <div className="w-9 h-9 rounded-lg bg-white/5 text-white text-xs font-bold flex items-center justify-center shrink-0 border border-white/5 shadow-inner uppercase">
               {user?.fullName?.charAt(0) || "U"}
             </div>
             <div className={`whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
-              <div className="text-sm font-bold text-white truncate w-24">
-                {user?.fullName || user?.name || "User"}
+              <div className="text-xs font-bold text-white truncate w-24">
+                {user?.fullName || user?.name || "Member"}
               </div>
-              <div className="text-[11px] text-white/30 truncate w-24">
-                {user?.email || "internal@aja.tech"}
+              <div className="text-[9px] font-bold text-white/30 uppercase tracking-widest truncate w-24">
+                {role}
               </div>
             </div>
           </div>
           <button
             onClick={handleLogout}
-            className={`text-white/20 hover:text-red-400 transition-colors shrink-0 p-2 rounded-xl hover:bg-red-500/10 ${!isHovered && 'hidden'}`}
+            className={`text-white/10 hover:text-white transition-colors shrink-0 p-2 rounded-lg hover:bg-white/5 ${!isHovered && 'hidden'}`}
           >
-            <HiArrowRightOnRectangle className="w-5 h-5" />
+            <HiArrowRightOnRectangle className="w-4 h-4" />
           </button>
         </div>
       </div>

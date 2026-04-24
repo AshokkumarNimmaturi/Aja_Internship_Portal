@@ -93,105 +93,99 @@ const SubmitQuestionPage = () => {
   };
 
   return (
-    <div className="flex h-screen bg-[#F1F2F3] font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F3F4F6] font-sans overflow-hidden">
       <PortalSidebar user={user} role={user?.role} activeItem="Submit Intel" />
 
-      <main className="flex-1 overflow-y-auto p-10">
-        <div className="max-w-5xl mx-auto pb-20">
+      <main className="flex-1 overflow-y-auto p-8 py-10 w-full">
+        <div className="max-w-4xl mx-auto pb-10">
           
           <div className="mb-8 pl-1">
-            <h1 className="text-3xl font-semibold text-[#232629] mb-1">Submit a Question</h1>
-            <p className="text-gray-500 text-sm">Ask your question clearly and get helpful answers from the community.</p>
+            <h1 className="text-xl font-bold text-[#0A1628] mb-1">Submit Intelligence</h1>
+            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Contribute to the global technical vault</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="bg-white border border-[#E3E6E8] rounded-md shadow-sm overflow-hidden">
-            <div className="p-8 space-y-8">
+          <form onSubmit={handleSubmit} className="bg-white border border-[#E3E6E8] rounded-lg shadow-sm overflow-hidden">
+            <div className="p-6 space-y-6">
               
               {/* ── TITLE ── */}
-              <div className="space-y-2">
-                <label className="block text-base font-semibold text-[#232629]">Title <span className="text-red-500">*</span></label>
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Title <span className="text-red-500">*</span></label>
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  placeholder="e.g. How to implement binary search in C++?"
+                  placeholder="e.g. Implement Binary Search"
                   required
-                  className="w-full px-3 py-2 border border-[#BABFC4] rounded-md focus:ring-1 focus:ring-blue-400 focus:border-blue-400 outline-none text-sm placeholder-gray-300 transition-all font-medium"
+                  className="w-full px-4 py-2.5 border border-[#E3E6E8] rounded-lg text-sm focus:outline-none focus:border-[#0074CC] transition-all font-medium"
                 />
-                <p className="text-[11px] text-gray-500">Be specific and imagine you’re asking a question to another person.</p>
               </div>
 
               {/* ── DETAILS ── */}
-              <div className="space-y-2">
-                <label className="block text-base font-semibold text-[#232629]">Details <span className="text-red-500">*</span></label>
-                <div className="border border-[#BABFC4] rounded-md overflow-hidden focus-within:ring-1 focus-within:ring-blue-400 focus-within:border-blue-400 transition-all">
-                  <div className="bg-[#F8F9F9] border-b border-[#BABFC4] px-4 py-2 flex gap-4 text-gray-400">
-                     <span className="cursor-default font-bold">B</span>
-                     <span className="cursor-default italic">I</span>
-                     <span className="cursor-default font-mono">{"<>"}</span>
-                     <span className="cursor-default">🔗</span>
-                     <span className="cursor-default">❝</span>
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Details <span className="text-red-500">*</span></label>
+                <div className="border border-[#E3E6E8] rounded-lg overflow-hidden focus-within:border-[#0074CC] transition-all">
+                  <div className="bg-gray-50 border-b border-[#E3E6E8] px-4 py-1.5 flex gap-4 text-gray-300">
+                     <span className="text-[10px] font-bold uppercase tracking-widest">Question Body</span>
                   </div>
                   <textarea
                     name="body"
                     value={formData.body}
                     onChange={handleChange}
-                    placeholder="Provide as much detail as possible about your question..."
+                    placeholder="Provide technical specifics..."
                     required
-                    rows={8}
-                    className="w-full p-4 outline-none text-sm text-gray-700 leading-relaxed font-light"
+                    rows={6}
+                    className="w-full p-4 outline-none text-sm text-[#232629] leading-relaxed font-medium bg-white"
                   />
                 </div>
-                <p className="text-[11px] text-gray-500">Include all the information someone would need to answer your question.</p>
               </div>
 
               {/* ── MASTERY RESPONSE ── */}
-              <div className="space-y-2">
-                <label className="block text-base font-semibold text-[#232629]">Mastery Response <span className="text-red-400">*</span></label>
-                <div className="border border-[#BABFC4] rounded-md overflow-hidden focus-within:ring-1 focus-within:ring-emerald-400 focus-within:border-emerald-400 transition-all">
-                   <div className="bg-[#F8F9F9] border-b border-[#BABFC4] px-4 py-2 flex gap-4 text-emerald-600/60">
-                     <span className="text-[9px] font-black uppercase tracking-widest">Internal Benchmark Solution</span>
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Benchmark Solution <span className="text-red-400">*</span></label>
+                <div className="border border-[#E3E6E8] rounded-lg overflow-hidden focus-within:border-green-400 transition-all">
+                   <div className="bg-gray-50 border-b border-[#E3E6E8] px-4 py-1.5 flex gap-4 text-green-600/60">
+                     <span className="text-[10px] font-bold uppercase tracking-widest">Internal Verification Key</span>
                   </div>
                   <textarea
                     name="initialAnswer"
                     value={formData.initialAnswer}
                     onChange={handleChange}
-                    placeholder="Provide the benchmark solution for review..."
+                    placeholder="Provide the benchmark response..."
                     required
-                    rows={6}
-                    className="w-full p-4 outline-none text-sm text-emerald-900 leading-relaxed font-medium bg-emerald-50/5"
+                    rows={5}
+                    className="w-full p-4 outline-none text-sm text-[#232629] leading-relaxed font-medium bg-green-50/5"
                   />
                 </div>
               </div>
 
               {/* ── META DATA ── */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Technology Stack</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Technology Stack</label>
                   <select
                     name="technologyId"
                     value={formData.technologyId}
                     onChange={handleChange}
                     required
-                    className="w-full px-3 py-2.5 border border-[#BABFC4] rounded-md text-sm outline-none bg-white shadow-sm"
+                    className="w-full px-3 py-2 border border-[#E3E6E8] rounded-lg text-sm outline-none bg-gray-50 focus:bg-white transition-all font-bold"
                   >
                     <option value="">Select Stack...</option>
                     {techList.map((t) => (
                       <option key={t.id} value={t.id}>{t.name}</option>
                     ))}
-                    <option value="NEW" className="text-blue-600">+ Add New Technology</option>
+                    <option value="NEW">+ Create New Stack</option>
                   </select>
                 </div>
 
-                <div>
-                   <label className="block text-xs font-bold text-gray-600 mb-2 uppercase tracking-wide">Catalog Assignment</label>
+                <div className="space-y-1.5">
+                   <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Vault Category</label>
                    <select
                      name="packageId"
                      value={formData.packageId}
                      onChange={handleChange}
                      required
-                     className="w-full px-3 py-2.5 border border-[#BABFC4] rounded-md text-sm outline-none bg-white shadow-sm"
+                     className="w-full px-3 py-2 border border-[#E3E6E8] rounded-lg text-sm outline-none bg-gray-50 focus:bg-white transition-all font-bold"
                    >
                      <option value="">Select Package...</option>
                      {packages.map((pkg) => (
@@ -201,57 +195,57 @@ const SubmitQuestionPage = () => {
                 </div>
               </div>
 
-              <div className="space-y-8 pt-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-4 uppercase tracking-wide text-center">Complexity Grading</label>
-                  <div className="flex border border-[#BABFC4] rounded-md divide-x divide-[#BABFC4] overflow-hidden shadow-sm">
+              <div className="space-y-6 pt-2">
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest text-center">Complexity Calibration</label>
+                  <div className="flex border border-[#E3E6E8] rounded-lg divide-x divide-[#E3E6E8] overflow-hidden shadow-sm">
                     {["EASY", "MEDIUM", "HARD"].map((lvl) => (
                       <button
                         key={lvl}
                         type="button"
                         onClick={() => handleDifficulty(lvl)}
-                        className={`flex-1 py-3 text-[10px] font-black uppercase transition-all ${
+                        className={`flex-1 py-2 text-[9px] font-bold uppercase tracking-widest transition-all ${
                           formData.difficulty === lvl 
-                            ? "bg-blue-600 text-white" 
-                            : "bg-white text-gray-400 hover:bg-gray-50"
+                            ? "bg-[#0A1628] text-white" 
+                            : "bg-gray-50 text-gray-400 hover:bg-gray-100"
                         }`}
                       >
-                        {lvl === "EASY" ? "Foundational" : lvl === "MEDIUM" ? "Professional" : "Mastery"}
+                        {lvl}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide">Company / Origin</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Organization / Origin</label>
                     <input
                       type="text"
                       name="clientName"
                       value={formData.clientName}
                       onChange={handleChange}
                       placeholder="e.g. Google"
-                      className="w-full px-3 py-2 border border-[#BABFC4] rounded-md text-sm outline-none focus:border-blue-400 transition-all font-medium"
+                      className="w-full px-4 py-2 border border-[#E3E6E8] rounded-lg text-sm outline-none focus:border-[#0074CC] transition-all font-medium"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <label className="block text-xs font-bold text-gray-600 uppercase tracking-wide">Semantic Tags</label>
+                  <div className="space-y-1.5">
+                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-0.5">Discovery Tags</label>
                     <input
                       name="tags"
                       value={formData.tags}
                       onChange={handleChange}
-                      placeholder="e.g. java, arrays, loops"
-                      className="w-full px-3 py-2 border border-[#BABFC4] rounded-md text-sm outline-none focus:border-blue-400 transition-all font-medium"
+                      placeholder="e.g. java, backend"
+                      className="w-full px-4 py-2 border border-[#E3E6E8] rounded-lg text-sm outline-none focus:border-[#0074CC] border-dashed transition-all font-medium"
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#F8F9F9] border-t border-[#E3E6E8] p-8 flex items-center justify-end gap-4">
+            <div className="bg-gray-50 border-t border-[#E3E6E8] p-6 flex items-center justify-end gap-3">
               <button 
                 type="button" 
-                className="px-5 py-2.5 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium transition-colors"
+                className="px-5 py-2 text-[10px] font-bold uppercase tracking-widest text-gray-400 hover:text-gray-600 transition-colors"
                 onClick={() => window.history.back()}
               >
                 Cancel
@@ -259,19 +253,13 @@ const SubmitQuestionPage = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="px-8 py-2.5 bg-[#0074CC] hover:bg-[#0063AD] text-white rounded-md text-sm font-medium shadow-sm transition-all flex items-center gap-2 disabled:opacity-50"
+                className="px-8 py-2.5 bg-[#0074CC] hover:bg-[#0063AD] text-white rounded-lg text-[10px] font-bold uppercase tracking-widest transition-all flex items-center gap-2 disabled:opacity-50"
               >
                 {loading && <HiArrowPath className="animate-spin" />}
-                {loading ? "Submitting..." : "Submit Question"}
+                {loading ? "Processing..." : "Submit Entry"}
               </button>
             </div>
           </form>
-          
-          <div className="mt-8 text-center opacity-40">
-             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest flex items-center justify-center gap-2">
-                <HiShieldCheck /> Submission Gateway Secure
-             </p>
-          </div>
         </div>
       </main>
     </div>
