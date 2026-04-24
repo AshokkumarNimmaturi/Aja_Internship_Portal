@@ -94,6 +94,7 @@ const MySubmissionsPage = () => {
                   <thead className="bg-gray-50/50 border-b border-black/5">
                     <tr>
                       <th className="px-8 py-5 text-[10px] uppercase font-black tracking-[0.15em] text-gray-400">Question Content</th>
+                      <th className="px-8 py-5 text-[10px] uppercase font-black tracking-[0.15em] text-gray-400">Origin / Company</th>
                       <th className="px-8 py-5 text-[10px] uppercase font-black tracking-[0.15em] text-gray-400">Technology</th>
                       <th className="px-8 py-5 text-[10px] uppercase font-black tracking-[0.15em] text-gray-400">Submitted On</th>
                       <th className="px-8 py-5 text-[10px] uppercase font-black tracking-[0.15em] text-gray-400">Status</th>
@@ -115,7 +116,10 @@ const MySubmissionsPage = () => {
                         <tr key={q.id} className="hover:bg-gray-50/80 transition-all group">
                            <td className="px-8 py-6">
                               <div className="font-bold text-[#0A1628] mb-1 line-clamp-1 text-sm tracking-tight group-hover:text-blue-600 transition-colors uppercase">{q.title}</div>
-                              <div className="text-xs text-gray-400 line-clamp-1 max-w-sm italic opacity-70">"{q.content || "No description provided"}"</div>
+                              <div className="text-xs text-gray-400 line-clamp-1 max-w-[200px] italic opacity-70">"{q.content || "No description provided"}"</div>
+                           </td>
+                           <td className="px-8 py-6">
+                              <span className="text-xs font-bold text-gray-400 uppercase tracking-tight">{q.clientName || "General Intake"}</span>
                            </td>
                            <td className="px-8 py-6">
                               <TechBadge tech={q.technologyName || q.technology} />

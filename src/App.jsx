@@ -28,7 +28,9 @@ import ProfilePage from "./pages/common/ProfilePage";
 import MySubmissionsPage from "./pages/portal/MySubmissionsPage";
 import MyAnswersPage from "./pages/portal/MyAnswersPage";
 import PortalQuestionDetailPage from "./pages/portal/PortalQuestionDetailPage";
+import QuestionExplorerPage from "./pages/portal/QuestionExplorerPage";
 import PrivacyPolicyPage from "./pages/public/PrivacyPolicyPage";
+import UnauthorizedPage from "./pages/common/UnauthorizedPage";
 
 import ProtectedRoute from "./routes/ProtectedRoute";
 import RoleRoute from "./routes/RoleRoute";
@@ -44,9 +46,9 @@ function App() {
           <ScrollToTop />
           <Toaster position="bottom-right" />
           <Routes>
-            {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/unauthorized" element={<UnauthorizedPage />} />
 
             {/* We will add more routes here as we build each page */}
 
@@ -170,6 +172,14 @@ function App() {
               element={
                 <RoleRoute allowedRoles={["EMPLOYEE", "TUTOR", "ADMIN"]}>
                   <EmployeeDashboard />
+                </RoleRoute>
+              }
+            />
+            <Route
+              path="/portal/explorer"
+              element={
+                <RoleRoute allowedRoles={["EMPLOYEE", "TUTOR", "ADMIN"]}>
+                  <QuestionExplorerPage />
                 </RoleRoute>
               }
             />

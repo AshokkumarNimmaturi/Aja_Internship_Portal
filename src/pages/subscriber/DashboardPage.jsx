@@ -58,126 +58,98 @@ const DashboardPage = () => {
   }, [user]);
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden portal-modern">
+    <div className="flex h-screen bg-[#F3F4F6] font-sans overflow-hidden">
       <Sidebar activeItem="Dashboard" />
       
-      <main className="flex-1 p-8 overflow-y-auto">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex items-center justify-between mb-8">
+      <main className="flex-1 p-8 overflow-y-auto w-full">
+        <div className="max-w-5xl mx-auto">
+          <div className="flex items-center justify-between mb-10">
             <div className="animate-in fade-in slide-in-from-left duration-700">
-              <h1 className="text-3xl font-serif text-[#0A1628] mb-1">
-                Welcome back, {user?.fullName?.split(" ")[0] || "Subscriber"}! 🚀
+              <h1 className="text-xl font-bold text-[#0A1628] mb-1">
+                Dashboard Overview
               </h1>
-              <p className="text-xs text-gray-400 font-bold font-sans uppercase tracking-[0.2em]">
-                {subscription ? `${subscription.packageName} Plan Active` : "Choose a plan to unlock full potential"}
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">
+                {subscription ? `${subscription.packageName} stream initialized` : "Unsubscribe status detected"}
               </p>
-            </div>
-            
-            <div className="flex items-center gap-4 animate-in fade-in slide-in-from-right duration-700">
-               <div className="figma-card rounded-2xl px-5 py-3 flex items-center gap-4">
-                  <div className="p-2.5 bg-amber-50 text-amber-500 rounded-xl shadow-inner"><HiBolt size={20} className="animate-pulse" /></div>
-                  <div>
-                    <div className="text-sm font-black text-[#0A1628] leading-tight flex items-center gap-2">{stats.currentStreak} Day Streak! <span className="flex w-2 h-2 rounded-full bg-emerald-400 animate-pulse-ring"></span></div>
-                    <div className="text-[9px] text-gray-400 font-bold uppercase tracking-widest">Consistency is key</div>
-                  </div>
-               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <div className="lg:col-span-2 space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-100">
-              <div className="figma-card rounded-[40px] p-10 relative overflow-hidden group">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 opacity-30" />
-                <div className="flex items-center justify-between mb-10">
-                  <h2 className="text-2xl font-serif text-[#0A1628]">Recently Viewed Intel</h2>
-                  <Link to="/dashboard/questions" className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:text-blue-700 transition-colors flex items-center gap-2 group/link">
-                    Full Question Bank <HiArrowLongRight size={16} className="group-hover/link:translate-x-1 transition-transform" />
-                  </Link>
-                </div>
-                
-                <div className="space-y-4">
-                  {loading ? (
-                    <div className="py-24 text-center">
-                       <div className="animate-spin text-blue-100 flex justify-center mb-4"><HiArrowPath size={40} /></div>
-                       <p className="text-xs font-bold text-gray-300 uppercase tracking-widest">Fetching Intel...</p>
-                    </div>
-                  ) : recentQuestions.length > 0 ? (
-                    recentQuestions.map((q, idx) => (
-                      <Link key={q.id} to={`/dashboard/questions/${q.id}`} 
-                        className="flex items-center justify-between p-6 rounded-[32px] figma-card group/item animate-fade-in-up hover:border-blue-200"
-                        style={{ animationDelay: `${idx * 150}ms`, opacity: 0 }}
-                      >
-                         <div className="flex items-center gap-5">
-                            <div className="w-12 h-12 bg-gray-50 rounded-2xl flex items-center justify-center text-gray-300 group-hover/item:scale-[1.05] group-hover/item:bg-gradient-to-br group-hover/item:from-blue-50 group-hover/item:to-blue-100 group-hover/item:text-blue-500 apple-transition shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] group-hover/item:shadow-[0_4px_12px_rgba(59,130,246,0.1)]">
-                              <HiStar size={22} />
-                            </div>
-                            <div>
-                               <h4 className="font-bold text-[#0A1628] text-base mb-1.5 group-hover/item:text-blue-600 transition-colors">{q.title}</h4>
-                               <div className="flex items-center gap-3">
-                                  <TechBadge tech={q.technologyName} />
-                                  <span className="text-[10px] text-gray-300 font-black uppercase tracking-[0.1em]">• {q.difficulty}</span>
-                               </div>
-                            </div>
-                         </div>
-                         <div className="text-gray-200 group-hover/item:text-blue-400 transform group-hover/item:translate-x-1 transition-all"><HiArrowLongRight size={24} /></div>
-                      </Link>
-                    ))
-                  ) : (
-                     <div className="py-24 text-center figma-card rounded-[40px] border-dashed">
-                       <div className="text-4xl mb-4 grayscale opacity-30">📚</div>
-                       <p className="text-sm text-gray-400 font-serif italic mb-4">You haven't studied any questions yet.</p>
-                       <Link to="/dashboard/questions" className="inline-flex px-8 py-3 figma-button rounded-2xl text-[10px] uppercase tracking-widest font-black">Begin Mastery</Link>
-                    </div>
-                  )}
-                </div>
-              </div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            {/* Intel Center */}
+            <div className="lg:col-span-8 space-y-6">
+               <div className="bg-white border border-[#E3E6E8] rounded-lg p-6 shadow-sm">
+                  <div className="flex items-center justify-between mb-8 border-b border-gray-50 pb-4">
+                     <h2 className="text-sm font-bold text-[#0A1628]">Recently Viewed Questions</h2>
+                     <Link to="/dashboard/questions" className="text-[9px] font-black text-[#0074CC] uppercase tracking-widest hover:underline">
+                        View Entire Repository
+                     </Link>
+                  </div>
+                  
+                  <div className="space-y-3">
+                     {loading ? (
+                        <div className="py-12 text-center text-gray-300"><HiArrowPath className="animate-spin inline mr-2" /> <span className="text-[10px] font-bold uppercase tracking-widest">Residuing Intel...</span></div>
+                     ) : recentQuestions.length > 0 ? (
+                        recentQuestions.map((q) => (
+                           <Link key={q.id} to={`/dashboard/questions/${q.id}`} className="flex items-center justify-between p-4 border border-gray-100 rounded-lg hover:border-[#0074CC]/20 hover:bg-gray-50/50 transition-all group">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-300 group-hover:text-[#0074CC] transition-colors"><HiStar size={16} /></div>
+                                 <div>
+                                    <h4 className="text-sm font-bold text-gray-700 mb-0.5">{q.title}</h4>
+                                    <div className="flex items-center gap-2"><TechBadge tech={q.technologyName} /><span className="text-[8px] font-bold uppercase text-gray-300 tracking-widest">· {q.difficulty}</span></div>
+                                 </div>
+                              </div>
+                              <HiArrowLongRight size={18} className="text-gray-200 group-hover:text-[#0074CC] group-hover:translate-x-1 transition-all" />
+                           </Link>
+                        ))
+                     ) : (
+                        <div className="py-20 text-center border-2 border-dashed border-gray-100 rounded-xl">
+                           <p className="text-xs text-gray-400 mb-6 font-medium">Your study history is currently blank.</p>
+                           <Link to="/dashboard/questions" className="text-[9px] font-black uppercase tracking-widest px-6 py-2.5 bg-[#0A1628] text-white rounded-lg">Browse Intel</Link>
+                        </div>
+                     )}
+                  </div>
+               </div>
             </div>
 
-            <div className="space-y-8 animate-fade-in-up animation-delay-200" style={{ opacity: 0 }}>
-               <div className={`rounded-[40px] p-10 border shadow-2xl relative overflow-hidden group ${subscription ? 'bg-gradient-to-br from-[#0A1628] via-[#112236] to-[#1E3A5F] text-white border-white/10' : 'figma-card'}`}>
-                  {subscription && <HiStar size={180} className="absolute -bottom-10 -right-10 text-white/5 rotate-12 group-hover:scale-110 apple-transition duration-1000 animate-float-slow" />}
-                  
-                  <div className="flex items-center gap-4 mb-8 relative z-10 animate-fade-in-up animation-delay-300">
-                    <div className={`p-4 rounded-2xl shadow-xl ${subscription ? 'bg-blue-500/20 text-blue-300 border border-white/10 glass-dark' : 'bg-blue-50 text-blue-600 border border-blue-100'}`}>
-                      <HiAcademicCap size={30} />
-                    </div>
-                    <div>
-                      <h3 className="font-bold text-xl leading-tight font-serif">{subscription ? subscription.packageName : "Ascend to Premium"}</h3>
-                      <p className={`text-[10px] font-black uppercase tracking-[0.2em] ${subscription ? 'text-blue-300/80' : 'text-gray-400'}`}>
-                        {subscription ? 'Elite Vault Access' : 'Secure the future'}
-                      </p>
-                    </div>
+            {/* Status Panel */}
+            <div className="lg:col-span-4 space-y-6">
+               <div className={`bg-white border border-[#E3E6E8] rounded-lg p-6 shadow-sm h-full ${subscription ? 'border-l-4 border-l-[#0074CC]' : ''}`}>
+                  <div className="flex items-center gap-4 mb-8">
+                     <div className="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-[#0A1628] border border-gray-100">
+                        <HiAcademicCap size={20} />
+                     </div>
+                     <div>
+                        <h3 className="text-sm font-bold text-[#0A1628] leading-tight">{subscription ? subscription.packageName : "Basic Account"}</h3>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-[#0074CC]">Membership Protocol</p>
+                     </div>
                   </div>
 
-                  {!subscription ? (
-                    <div className="relative z-10">
-                      <p className="text-sm text-gray-500 mb-10 leading-relaxed italic font-light">Join the top 1% of candidates with curated mock interviews and deep behavioral analytics.</p>
-                      <Link to="/portal/packages" className="block w-full py-5 figma-button rounded-2xl text-center text-[10px] font-black uppercase tracking-widest">Get Access Now</Link>
-                    </div>
-                  ) : (
-                    <div className="relative z-10">
-                      <div className="space-y-5 mb-10">
-                         <div className="flex justify-between text-[10px] font-black uppercase tracking-widest">
-                            <span className="text-blue-200">Subscription Meta</span>
-                             <span className="font-mono text-white/80">{subscription.status === "ACTIVE" ? new Date(subscription.endDate || subscription.expiryDate).toLocaleDateString() : "Trial Mode"}</span>
-                         </div>
-                         <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden shadow-inner">
-                            <div className="h-full bg-blue-400 rounded-full shadow-[0_0_15px_rgba(96,165,250,0.5)]" style={{ width: '65%' }} />
-                         </div>
-                      </div>
-                      <Link to="/dashboard/subscription" className="block w-full py-5 bg-white/10 backdrop-blur-xl text-white border border-white/20 rounded-2xl text-center text-xs font-black uppercase tracking-[0.2em] hover:bg-white/20 hover:scale-[1.02] shadow-[0_8px_30px_rgb(0,0,0,0.12)] transition-all duration-300 active:scale-[0.98]">Manage Access</Link>
-                      
-                      <div className="mt-6 pt-6 border-t border-white/10 relative z-10">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-[10px] font-black uppercase tracking-widest text-blue-200">Priority Support</span>
-                          <span className="px-3 py-1 bg-blue-500/20 rounded-full text-[8px] font-black text-white border border-white/10 uppercase tracking-widest">Direct Line</span>
+                  {subscription ? (
+                     <div className="space-y-6">
+                        <div className="space-y-3">
+                           <div className="flex justify-between text-[9px] font-black uppercase tracking-widest text-gray-400">
+                              <span>Sync Status</span>
+                              <span className="text-gray-700">Expires {new Date(subscription.endDate || subscription.expiryDate).toLocaleDateString()}</span>
+                           </div>
+                           <div className="w-full h-1 bg-gray-100 rounded-full overflow-hidden">
+                              <div className="h-full bg-[#0074CC] transition-all duration-1000" style={{ width: '65%' }} />
+                           </div>
                         </div>
-                        <VoiceCallButton 
-                          toNumber="support" 
-                          label="Admin Support" 
-                          className="w-full py-4.5 bg-white text-blue-600 rounded-2xl shadow-[inset_0_1px_1px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.1)] active:scale-95 apple-transition text-[10px] font-black tracking-[0.2em] uppercase flex items-center justify-center gap-3 hover:bg-gray-50"
-                        />                      </div>
-                    </div>
+                        <Link to="/dashboard/subscription" className="block w-full py-2.5 bg-[#0074CC] text-white text-center text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-[#0063AD] transition-all">Manage Stream</Link>
+                        
+                        <div className="pt-6 border-t border-gray-50 space-y-4">
+                           <div className="flex justify-between items-center">
+                              <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Expert Relay</span>
+                              <span className="px-2 py-0.5 bg-green-50 text-[8px] font-bold text-green-600 rounded-full border border-green-100 uppercase tracking-widest">Enabled</span>
+                           </div>
+                           <VoiceCallButton toNumber="support" label="Support" className="w-full py-2.5 !rounded-lg !text-[10px] !font-bold !bg-gray-50 !text-[#0A1628] !shadow-none border border-gray-100 hover:!bg-white hover:!border-[#0074CC]/30" />
+                        </div>
+                     </div>
+                  ) : (
+                     <div className="space-y-6">
+                        <p className="text-xs text-gray-400 leading-relaxed font-medium">Access premium technical intel and mock interview simulations.</p>
+                        <Link to="/portal/packages" className="block w-full py-2.5 bg-[#0A1628] text-white text-center text-[10px] font-bold uppercase tracking-widest rounded-lg">Upgrade Now</Link>
+                     </div>
                   )}
                </div>
             </div>

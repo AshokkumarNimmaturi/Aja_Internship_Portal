@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 // ✅ UPGRADED: Using elite Heroicons 2
-import { HiMagnifyingGlass, HiAdjustmentsHorizontal, HiChevronRight, HiBookOpen, HiStar, HiBolt, HiArrowPath } from "react-icons/hi2";
+import { HiMagnifyingGlass, HiAdjustmentsHorizontal, HiChevronRight, HiBookOpen, HiStar, HiBolt, HiArrowPath, HiShieldCheck } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
 import { fetchMySubscription } from "../../api/paymentApi";
@@ -20,50 +20,8 @@ const QuestionsPage = () => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const [subRes, qRes] = await Promise.all([
-          fetchMySubscription().catch(() => ({ data: [] })),
-          fetchQuestions()
-        ]);
-
-        const activeSubs = Array.isArray(subRes.data) ? subRes.data : [];
-        setSubscriptions(activeSubs);
-
-        const allQs = qRes.data.content || qRes.data || [];
-        
-        if (user?.role === "SUBSCRIBER") {
-           const activeSubsRaw = activeSubs.filter(s => 
-             s.status?.toUpperCase() === "ACTIVE" || 
-             new Date(s.endDate || s.expiryDate) > new Date()
-           );
-
-           const allowedTechs = activeSubsRaw.flatMap(s => {
-             const t = [];
-             if (s.technologyName) t.push(s.technologyName);
-             const pName = s.packageName || "";
-             const pType = s.packageType || "";
-             
-             if (pName.includes("Backend") || pType === "BACKEND") {
-               t.push("Java", "Spring", "SpringBoot", "Node", "Backend", "Express", "Microservices");
-             }
-             if (pName.includes("Frontend") || pType === "FRONTEND") {
-               t.push("React", "Frontend", "JavaScript", "Redux", "Angular", "Vue", "CSS", "HTML");
-             }
-             if (pType === "FULL_STACK") {
-               t.push("Full Stack", "Java", "Spring", "React", "Node", "JavaScript");
-             }
-             return t;
-           });
-           
-           const filtered = allQs.filter(q => 
-             q.status === "APPROVED" && 
-             (allowedTechs.includes(q.technologyName) || 
-              (q.packageType && allowedTechs.some(at => at.toUpperCase() === q.packageType.toUpperCase())))
-           );
-           setQuestions(filtered);
-        } else {
-           setQuestions(allQs);
-        }
-
+        const qRes = await fetchQuestions();
+        setQuestions(qRes.data.content || qRes.data || []);
       } catch (error) {
         console.error("Error fetching questions:", error);
       } finally {
@@ -71,7 +29,7 @@ const QuestionsPage = () => {
       }
     };
     fetchData();
-  }, [user]);
+  }, []);
 
   const techs = ["All", ...new Set(questions.map(q => q.technologyName))];
 
@@ -82,95 +40,96 @@ const QuestionsPage = () => {
   });
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden portal-modern">
+    <div className="flex h-screen bg-[#F1F2F3] font-sans overflow-hidden portal-modern">
       <Sidebar activeItem="Questions" />
       
-      <main className="flex-1 p-8 py-10 overflow-y-auto w-full">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+      <main className="flex-1 p-8 py-12 overflow-y-auto w-full">
+        <div className="max-w-5xl mx-auto">
+          {/* Elite Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10 pl-1">
             <div>
-              <h1 className="text-3xl font-serif text-[#0A1628] mb-1">Your Question Bank</h1>
-              <p className="text-xs text-gray-400 font-light tracking-wide uppercase">
-                {questions.length} premium questions unlocked
-              </p>
+              <h1 className="text-xl font-bold text-[#232629] mb-1">Your Question Bank</h1>
+              <p className="text-gray-500 text-xs">Master the nuances of professional technical interviews across your unlocked stacks.</p>
             </div>
-
-            <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-black/5 shadow-sm w-full md:w-96">
-              <HiMagnifyingGlass size={18} className="text-gray-400" />
+            
+            <div className="flex items-center gap-4 bg-white px-5 py-2.5 rounded-lg border border-[#E3E6E8] shadow-sm w-full md:w-[380px] focus-within:ring-1 focus-within:ring-blue-400 transition-all">
+              <HiMagnifyingGlass size={18} className="text-gray-300" />
               <input 
                 type="text" 
-                placeholder="Search concepts, questions..."
-                className="bg-transparent border-none outline-none text-sm w-full font-medium"
+                placeholder="Find specific intel, concepts..."
+                className="bg-transparent border-none outline-none text-xs w-full font-medium text-[#232629] placeholder-gray-300"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
           </div>
 
-          {/* Filters */}
-          <div className="flex gap-2 overflow-x-auto pb-4 mb-8 scrollbar-hide">
-            {techs.map(tech => (
-              <button
-                key={tech}
-                onClick={() => setSelectedTech(tech)}
-                className={`px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all whitespace-nowrap ${
-                  selectedTech === tech 
-                    ? "bg-[#0A1628] text-white shadow-lg shadow-blue-900/10" 
-                    : "bg-white text-gray-400 border border-black/5 hover:bg-gray-50"
-                }`}
-              >
-                {tech}
-              </button>
-            ))}
+          <div className="flex items-center justify-between mb-8 border-b border-[#E3E6E8] pb-6">
+             <div className="flex gap-3 overflow-x-auto scrollbar-hide py-1">
+                {techs.map(tech => (
+                  <button
+                    key={tech}
+                    onClick={() => setSelectedTech(tech)}
+                    className={`px-6 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all whitespace-nowrap ${
+                      selectedTech === tech 
+                        ? "bg-[#0074CC] text-white shadow-md" 
+                        : "bg-white text-gray-500 border border-[#E3E6E8] hover:bg-gray-50"
+                    }`}
+                  >
+                    {tech}
+                  </button>
+                ))}
+             </div>
+             <div className="hidden lg:flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-[#0074CC]/40 italic">
+                <HiShieldCheck size={14} /> Security Cleared Repository
+             </div>
           </div>
 
           {/* Content */}
           {loading ? (
-             <div className="py-40 text-center">
-                <div className="animate-spin text-blue-500 flex justify-center mb-4"><HiArrowPath size={40} /></div>
-                <p className="text-gray-400 font-serif italic">Syncing your personalized library...</p>
+             <div className="py-40 text-center animate-pulse">
+                <HiArrowPath size={40} className="animate-spin mx-auto text-blue-200 mb-6" />
+                <p className="text-gray-400 font-serif italic">Accessing your premium intelligence vault...</p>
              </div>
           ) : filteredQuestions.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-               {filteredQuestions.map(q => (
-                 <Link 
-                   key={q.id} 
-                   to={`/dashboard/questions/${q.id}`} 
-                   className="bg-white p-7 rounded-[40px] border border-black/5 hover:border-blue-200 transition-all group flex flex-col justify-between shadow-sm hover:shadow-md"
-                 >
-                   <div>
-                      <div className="flex items-center justify-between mb-4">
-                        <TechBadge tech={q.technologyName} />
-                        <div className="text-[10px] font-black text-gray-300 uppercase tracking-widest leading-none bg-gray-50 px-2.5 py-1 rounded-full">{q.difficulty}</div>
-                      </div>
-                      <h3 className="font-bold text-[#0A1628] text-lg mb-3 group-hover:text-blue-600 transition-colors line-clamp-2 leading-snug">{q.title}</h3>
-                   </div>
-                   
-                   <div className="flex items-center justify-between pt-6 border-t border-black/5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
-                          <HiBolt size={14} fill="currentColor" />
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Mastery Sync Available</span>
-                      </div>
-                      <div className="text-blue-600 transform group-hover:translate-x-1 transition-transform"><HiChevronRight size={20} /></div>
-                   </div>
-                 </Link>
-               ))}
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700">
+                {filteredQuestions.map(q => (
+                  <Link 
+                    key={q.id} 
+                    to={`/dashboard/questions/${q.id}`} 
+                    className="block bg-white rounded-lg border border-[#E3E6E8] shadow-sm hover:border-[#0074CC]/20 hover:bg-gray-50/50 transition-all group overflow-hidden"
+                  >
+                    <div className="p-5">
+                       <div className="flex items-center justify-between gap-6">
+                          <div className="flex-1">
+                             <div className="flex items-center gap-2 mb-2">
+                                <TechBadge tech={q.technologyName} />
+                                <span className="text-[8px] font-bold uppercase tracking-widest text-gray-400 px-2 py-0.5 rounded-md bg-gray-50 border border-gray-100">{q.difficulty}</span>
+                             </div>
+                             <h3 className="font-bold text-[#232629] text-sm group-hover:text-[#0074CC] transition-colors leading-tight">
+                                {q.title}
+                             </h3>
+                          </div>
+                          <div className="w-8 h-8 rounded-lg border border-gray-100 flex items-center justify-center text-gray-200 group-hover:text-[#0074CC] group-hover:bg-blue-50 transition-all shrink-0">
+                             <HiChevronRight size={18} />
+                          </div>
+                       </div>
+                    </div>
+                  </Link>
+                ))}
             </div>
           ) : (
-            <div className="py-40 text-center bg-white rounded-[60px] border border-black/5 shadow-inner">
-               <div className="w-20 h-20 bg-gray-50 text-gray-200 rounded-full flex items-center justify-center mx-auto mb-6">
-                 <HiBookOpen size={40} />
+            <div className="py-40 text-center bg-white rounded-xl border border-[#E3E6E8] shadow-inner px-12">
+               <div className="w-20 h-20 bg-gray-50 text-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-black/5">
+                 <HiBookOpen size={32} />
                </div>
-               <h3 className="text-xl font-serif text-[#0A1628] mb-2">No questions found</h3>
-               <p className="text-sm text-gray-400 italic max-w-sm mx-auto mb-8">
-                 {searchTerm ? "Try adjusting your search terms or filters." : "You haven't unlocked any content for this category yet."}
+               <h3 className="text-xl font-bold text-[#232629] mb-2 font-black">No Intel Detected</h3>
+               <p className="text-sm text-gray-400 max-w-sm mx-auto mb-10 leading-relaxed">
+                 {searchTerm ? "Your current search query doesn't match any packets in your vault. Try adjusting your mission parameters." : "Your intelligence vault is currently empty. You haven't subscribed to any mastery packages yet."}
                </p>
                {!searchTerm && (
-                 <Link to="/packages" className="px-8 py-3 bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest rounded-2xl hover:bg-blue-900 transition-all shadow-xl shadow-blue-900/20">
-                   Explore Packages
+                 <Link to="/packages" className="inline-flex px-12 py-4 bg-[#232629] text-white text-[11px] font-black uppercase tracking-widest rounded-2xl hover:bg-[#0074CC] transition-all shadow-2xl shadow-blue-900/10 active:scale-95">
+                   Explore Mastery Packages
                  </Link>
                )}
             </div>

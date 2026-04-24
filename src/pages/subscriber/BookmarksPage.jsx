@@ -41,85 +41,83 @@ const BookmarksPage = () => {
     b.title.toLowerCase().includes(search.toLowerCase()),
   );
 
-  return (
-    <div className="flex h-screen bg-[#F8FAFC] font-sans overflow-hidden portal-modern">
-      <Sidebar />
+  return (    <div className="flex h-screen bg-[#F3F4F6] font-sans overflow-hidden">
+      <Sidebar activeItem="Bookmarks" />
 
       {/* Main */}
-      <main className="flex-1 p-8 py-10 overflow-y-auto">
-        <div className="mb-8 animate-fade-in-up">
-          <h1 className="font-serif text-3xl text-[#0A1628] mb-1 font-bold">Bookmarks</h1>
-          <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em]">
-            Curated Knowledge Vault
+      <main className="flex-1 p-8 py-10 overflow-y-auto w-full">
+        <div className="mb-8 animate-in fade-in slide-in-from-left duration-500">
+          <h1 className="text-xl font-bold text-[#0A1628] mb-1">Bookmarks</h1>
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+            Saved Knowledge Repository
           </p>
         </div>
 
         {/* Search */}
-        <div className="relative max-w-md mb-8 animate-fade-in-up animation-delay-100">
+        <div className="relative max-w-md mb-8">
           <HiMagnifyingGlass
-            size={15}
-            className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300"
+            size={14}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"
           />
           <input
             type="text"
-            placeholder="Search bookmarks..."
+            placeholder="Filter saved intel..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 bg-white border border-black/8 rounded-xl text-sm text-gray-700 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 bg-white border border-[#E3E6E8] rounded-lg text-sm text-[#232629] placeholder-gray-300 focus:outline-none focus:border-[#0074CC] transition-all"
           />
         </div>
 
         {filtered.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 animate-fade-in-up animation-delay-200">
-            {filtered.map((q, idx) => (
-               <div
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {filtered.map((q) => (
+                <div
                 key={q.id}
-                style={{ animationDelay: `${idx * 100}ms` }}
-                className="glass-panel rounded-3xl p-6 hover:border-blue-200 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgb(59,130,246,0.12)] transition-all duration-300 group animate-fade-in-up"
+                className="bg-white border border-[#E3E6E8] rounded-lg p-5 hover:border-[#0074CC]/20 transition-all group shadow-sm flex flex-col justify-between"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <TechBadge tech={q.technology} />
-                  <button
-                    onClick={() => removeBookmark(q.id)}
-                    className="transition-colors"
-                  >
-                    <HiBookmark
-                      size={15}
-                      className="text-[#2563EB] fill-[#2563EB] hover:fill-none"
-                    />
-                  </button>
+                <div>
+                  <div className="flex items-start justify-between mb-3">
+                    <TechBadge tech={q.technology} />
+                    <button
+                      onClick={() => removeBookmark(q.id)}
+                      className="text-[#0074CC] hover:scale-110 transition-transform"
+                    >
+                      <HiBookmark size={16} />
+                    </button>
+                  </div>
+                  <Link to={`/dashboard/questions/${q.id}`}>
+                    <h3 className="text-sm font-bold text-[#232629] leading-tight mb-4 group-hover:text-[#0074CC] transition-colors line-clamp-3">
+                      {q.title}
+                    </h3>
+                  </Link>
                 </div>
-                <Link to={`/dashboard/questions/${q.id}`}>
-                  <h3 className="text-sm font-bold text-[#0A1628] leading-snug mb-5 line-clamp-2 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-blue-600 group-hover:to-indigo-600 transition-all duration-300">
-                    {q.title}
-                  </h3>
-                </Link>
-                <div className="flex items-center justify-between">
-                  <DifficultyBadge difficulty={q.difficulty} />
-                  <div className="flex items-center gap-1 text-gray-400 text-xs">
-                    <HiChatBubbleLeftEllipsis size={12} />
-                    <span>{q.answerCount} answers</span>
+                
+                <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                  <span className="text-[8px] font-bold text-gray-300 uppercase tracking-widest">{q.difficulty}</span>
+                  <div className="flex items-center gap-1.5 text-gray-400 text-[10px] font-medium">
+                    <HiChatBubbleLeftEllipsis size={14} />
+                    <span>{q.answerCount} results</span>
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-24 text-center glass-panel rounded-[40px] border-dashed border-black/8 animate-fade-in-up animation-delay-200">
-            <div className="w-20 h-20 bg-blue-50/50 rounded-3xl flex items-center justify-center mb-6 shadow-inner animate-float-slow">
-              <HiBookmark size={36} className="text-blue-300" />
+          <div className="flex flex-col items-center justify-center py-20 text-center bg-white border border-dashed border-[#E3E6E8] rounded-lg">
+            <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center mb-4 border border-gray-100">
+              <HiBookmark size={20} className="text-gray-300" />
             </div>
-            <h3 className="text-xl font-serif font-bold text-[#0A1628] mb-2">
-              Empty Vault
+            <h3 className="text-base font-bold text-[#0A1628] mb-1">
+              Empty Repository
             </h3>
-            <p className="text-[11px] text-gray-400 mb-8 font-bold uppercase tracking-widest">
+            <p className="text-[9px] text-gray-400 mb-6 font-bold uppercase tracking-widest">
               Save questions to build your priority list
             </p>
             <Link
               to="/dashboard"
-              className="px-8 py-3 bg-gradient-to-r from-[#0A1628] to-blue-900 text-white text-[10px] font-black uppercase tracking-widest rounded-xl hover:scale-[1.02] shadow-xl shadow-blue-900/20 active:scale-95 transition-all"
+              className="px-6 py-2 bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-black transition-all"
             >
-              Browse Questions
+              Browse Intel
             </Link>
           </div>
         )}

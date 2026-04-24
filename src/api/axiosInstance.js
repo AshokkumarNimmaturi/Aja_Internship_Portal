@@ -42,7 +42,7 @@ axiosInstance.interceptors.response.use(
       // Only redirect if on a protected route (portal or subscriber)
       const path = window.location.pathname;
       const isProtectedRoute = path.startsWith("/portal") || path.startsWith("/subscriber") || path.startsWith("/dashboard");
-      
+
       if (isProtectedRoute && !path.includes("/login")) {
         window.location.href = "/login";
       }

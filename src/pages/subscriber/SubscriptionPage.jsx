@@ -42,107 +42,118 @@ const SubscriptionPage = () => {
   }
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
-      <Sidebar />
-      <main className="flex-1 flex flex-col items-center py-10 px-4 overflow-y-auto w-full">
-        <div className="w-full max-w-4xl mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-[#0A1628]">My Subscriptions</h1>
-        <button
-          onClick={() => (window.location.href = "/packages")}
-          className="px-5 py-2 bg-[#2563EB] hover:bg-blue-700 text-white text-sm font-medium rounded-xl transition"
-        >
-          Browse Packages
-        </button>
-      </div>
-
-      {subscriptions.length === 0 ? (
-        <div className="bg-white p-10 rounded-2xl shadow-sm border border-black/5 w-full max-w-3xl flex flex-col items-center text-center">
-          <div className="text-5xl mb-4">💳</div>
-          <h2 className="text-xl font-semibold mb-2 text-[#0A1628]">No Active Subscription</h2>
-          <p className="text-gray-500 mb-6 max-w-md">
-            You haven't unlocked any of our premium packages yet. Purchase a package to get full access to the interview question bank.
-          </p>
-          <button
-            onClick={() => (window.location.href = "/packages")}
-            className="px-6 py-3 bg-[#0A1628] text-white font-medium rounded-xl hover:bg-gray-800 transition"
-          >
-            Explore Packages
-          </button>
-        </div>
-      ) : (
-        <div className="w-full max-w-3xl flex flex-col gap-5">
-          {subscriptions.map((sub, idx) => {
-            const start = new Date(sub.startDate || new Date());
-            const end = new Date(sub.endDate || new Date());
-            const now = new Date();
-            const totalDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
-            const leftDays = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
-            const used = totalDays - leftDays;
-            const progress = Math.min(100, Math.round((used / totalDays) * 100));
-            const isActive = sub.status === "ACTIVE" || leftDays > 0;
-
-            return (
-              <div key={sub.id || idx} className="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-black/5 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between transition hover:shadow-md">
-                <div className="flex-1 w-full">
-                  <div className="flex items-center gap-3 mb-2">
-                    <h2 className="text-xl font-bold text-[#0A1628]">
-                      {sub.packageName || "Premium Package"}
-                    </h2>
-                    <span className={`px-3 py-1 text-xs font-semibold rounded-full ${isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                      {sub.status || (isActive ? "ACTIVE" : "EXPIRED")}
-                    </span>
-                  </div>
-
-                  {/* DATES */}
-                  <div className="flex gap-4 text-sm text-gray-500 mt-1 mb-4">
-                    <p>Start: <span className="text-gray-700 font-medium">{start.toLocaleDateString()}</span></p>
-                    <p>Expires: <span className="text-gray-700 font-medium">{end.toLocaleDateString()}</span></p>
-                  </div>
-
-                  {/* PROGRESS BAR */}
-                  <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden mb-2">
-                    <div
-                      className={`h-full transition-all duration-500 ${isActive ? 'bg-[#2563EB]' : 'bg-red-500'}`}
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                  
-                  {/* WARNINGS */}
-                  <div className="flex justify-between items-center text-xs mt-2">
-                    {leftDays === 0 ? (
-                      <span className="text-red-600 font-medium flex items-center gap-1">❌ Subscription expired</span>
-                    ) : leftDays <= 3 ? (
-                      <span className="text-orange-500 font-medium flex items-center gap-1">⚠️ Expiring soon!</span>
-                    ) : (
-                      <span className="text-green-600 font-medium flex items-center gap-1">✅ Active</span>
-                    )}
-                    <span className="font-semibold text-gray-700">{leftDays} days remaining</span>
-                  </div>
-                  
-                  {isActive && (
-                    <div className="mt-6 border-t border-black/5 pt-6">
-                      <VoiceCallButton />
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-
-          <div className="mt-4 p-6 bg-blue-50 rounded-2xl border border-blue-100 flex flex-col sm:flex-row items-center justify-between text-center sm:text-left gap-4">
+    <div className="flex h-screen bg-[#F3F4F6] font-sans overflow-hidden">
+      <Sidebar activeItem="Subscription" />
+      <main className="flex-1 overflow-y-auto px-8 py-10 w-full">
+        <div className="max-w-4xl mx-auto">
+          {/* Elite Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-10 pl-1">
             <div>
-              <h3 className="font-semibold text-blue-900 mb-1">Looking for more topics?</h3>
-              <p className="text-sm text-blue-700">Explore additional packages and expand your interview prep.</p>
+              <h1 className="text-xl font-bold text-[#0A1628] mb-1">Subscriptions</h1>
+              <p className="text-gray-400 text-[10px] font-bold uppercase tracking-wider">Manage your active streams and support access</p>
             </div>
             <button
               onClick={() => (window.location.href = "/packages")}
-              className="shrink-0 px-6 py-2.5 bg-white text-blue-700 font-semibold rounded-xl shadow-sm hover:shadow transition"
+              className="px-5 py-2 bg-[#0074CC] hover:bg-[#0063AD] text-white text-[10px] font-bold uppercase tracking-widest rounded-lg transition-all active:scale-95"
             >
-              View More Packages
+              Browse Packages
             </button>
           </div>
+
+          {subscriptions.length === 0 ? (
+            <div className="bg-white p-12 rounded-lg shadow-sm border border-[#E3E6E8] text-center">
+              <div className="w-16 h-16 bg-gray-50 rounded-lg flex items-center justify-center mx-auto mb-6 text-2xl border border-gray-100">💳</div>
+              <h2 className="text-lg font-bold text-[#0A1628] mb-2">No Active Membership</h2>
+              <p className="text-xs text-gray-500 mb-8 max-w-sm mx-auto leading-relaxed">
+                Unlock professional technical interview intelligence. Subscriptions grant access to curated question banks.
+              </p>
+              <button
+                onClick={() => (window.location.href = "/packages")}
+                className="px-8 py-2.5 bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest rounded-lg"
+              >
+                Get Started
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {subscriptions.map((sub, idx) => {
+                const start = new Date(sub.startDate || new Date());
+                const end = new Date(sub.endDate || new Date());
+                const now = new Date();
+                const totalDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
+                const leftDays = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
+                const progress = Math.min(100, Math.round(((totalDays - leftDays) / totalDays) * 100));
+                const isActive = sub.status === "ACTIVE" || leftDays > 0;
+
+                return (
+                  <div key={sub.id || idx} className="bg-white rounded-lg border border-[#E3E6E8] shadow-sm hover:border-[#0074CC]/20 transition-all group">
+                    <div className="p-6">
+                       <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+                          <div className="flex-1 w-full">
+                             <div className="flex items-center gap-3 mb-4">
+                                <h2 className="text-base font-bold text-[#0A1628]">
+                                  {sub.packageName || "Premium Package"}
+                                </h2>
+                                <span className={`px-2 py-0.5 text-[8px] font-bold uppercase tracking-widest rounded-full border ${
+                                  isActive ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-600 border-red-100'
+                                }`}>
+                                  {isActive ? "ACTIVE" : "EXPIRED"}
+                                </span>
+                             </div>
+
+                             <div className="flex gap-6 mb-5">
+                                <div className="space-y-1">
+                                   <div className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Initiated</div>
+                                   <div className="text-[11px] font-bold text-gray-700">{start.toLocaleDateString()}</div>
+                                </div>
+                                <div className="space-y-1">
+                                   <div className="text-[8px] font-black text-gray-300 uppercase tracking-widest">Next Expiry</div>
+                                   <div className="text-[11px] font-bold text-gray-700">{end.toLocaleDateString()}</div>
+                                </div>
+                             </div>
+
+                             <div className="space-y-2">
+                                <div className="w-full bg-gray-100 h-1 rounded-full overflow-hidden">
+                                   <div
+                                     className={`h-full transition-all duration-1000 ${isActive ? 'bg-[#0074CC]' : 'bg-red-500'}`}
+                                     style={{ width: `${progress}%` }}
+                                   />
+                                </div>
+                                <div className="flex justify-between items-center text-[9px] font-bold uppercase tracking-widest">
+                                   <span className={isActive ? 'text-green-600' : 'text-red-500'}>
+                                      {isActive ? 'Status: Valid' : 'Status: Terminated'}
+                                   </span>
+                                   <span className="text-gray-400">{leftDays} days remaining</span>
+                                </div>
+                             </div>
+                          </div>
+
+                          {isActive && (
+                            <div className="shrink-0 w-full md:w-auto">
+                               <VoiceCallButton className="w-full !rounded-lg !py-2.5 !text-[10px] !bg-gray-50 !text-[#0A1628] !shadow-none border border-gray-100 hover:!bg-white" />
+                            </div>
+                          )}
+                       </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              <div className="mt-10 bg-white rounded-lg border border-[#E3E6E8] p-6 flex flex-col md:flex-row items-center justify-between gap-6 border-l-4 border-l-[#0A1628]/10">
+                 <div>
+                    <h3 className="text-sm font-bold text-[#0A1628] mb-1">Upgrade your path</h3>
+                    <p className="text-[10px] text-gray-400 font-medium">Explore additional stacks to diversify your interview preparation.</p>
+                 </div>
+                 <button
+                   onClick={() => (window.location.href = "/packages")}
+                   className="px-6 py-2 bg-gray-50 text-[#0A1628] text-[9px] font-black uppercase tracking-widest rounded-lg border border-gray-100 hover:bg-white hover:border-[#0074CC]/30 transition-all font-sans"
+                 >
+                   View Catalog
+                 </button>
+              </div>
+            </div>
+          )}
         </div>
-      )}
       </main>
     </div>
   );

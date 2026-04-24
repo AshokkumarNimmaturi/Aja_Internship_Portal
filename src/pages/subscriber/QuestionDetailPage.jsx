@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { HiArrowLeft, HiBookmark, HiBriefcase, HiCheckBadge, HiStar, HiArrowPath, HiBolt } from "react-icons/hi2";
+import { HiArrowLeft, HiBookmark, HiBriefcase, HiCheckBadge, HiStar, HiArrowPath, HiBolt, HiShieldCheck } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
 import { 
   fetchQuestionById, 
-  recordQuestionVisit, 
+  // recordQuestionVisit, 
   getBookmarks, 
   getQuestionAnswers, 
   toggleBookmarkApi 
@@ -26,8 +26,8 @@ const QuestionDetailPage = () => {
   const fetchQuestion = async () => {
     setLoading(true);
     try {
-      // ✅ ELITE SYNC: Record visit for Recently Viewed dashboard
-      recordQuestionVisit(id).catch(() => {});
+      // ✅ ELITE SYNC: Disabled Visit Telemetry until Backend is ready
+      // recordQuestionVisit(id).catch(() => {});
 
       const [qRes, bRes, aRes] = await Promise.all([
         fetchQuestionById(id),
@@ -82,141 +82,112 @@ const QuestionDetailPage = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-50 font-sans overflow-hidden portal-modern">
+    <div className="flex h-screen bg-[#F1F2F3] font-sans overflow-hidden portal-modern">
       <Sidebar activeItem="Questions" />
-      <main className="flex-1 p-10 py-10 overflow-y-auto max-w-5xl mx-auto w-full">
-        {/* Elite Breadcrumb */}
-        <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 mb-10 transition-all">
-          <Link to="/dashboard" className="hover:text-blue-600 transition-colors">Command</Link>
-          <span className="text-gray-200">/</span>
-          <Link to="/dashboard/questions" className="hover:text-blue-600 transition-colors">Intelligence</Link>
-          <span className="text-gray-200">/</span>
-          <span className="text-[#0A1628]">Packet #{id}</span>
-        </div>
-
-        {/* Question Intelligence Section */}
-        <div className="bg-white border border-black/5 rounded-[50px] p-12 mb-10 shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 p-8 opacity-5">
-             <HiBriefcase size={180} className="rotate-12" />
+      <main className="flex-1 p-8 py-12 overflow-y-auto w-full">
+        <div className="max-w-4xl mx-auto">
+          {/* Back Nav */}
+          <div className="flex items-center justify-between mb-8">
+             <Link to="/dashboard/questions" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[#0074CC] transition-all group">
+                <HiArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Question Bank
+             </Link>
+             <div className="flex items-center gap-3">
+                <button 
+                  onClick={toggleBookmark} 
+                  disabled={isSyncing}
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    bookmarked 
+                      ? "bg-[#0074CC] text-white shadow-lg shadow-blue-500/20" 
+                      : "bg-white text-gray-500 border border-[#E3E6E8] hover:bg-gray-50"
+                  }`}
+                >
+                  <HiBookmark size={16} className={bookmarked ? "fill-white" : ""} />
+                  {bookmarked ? "Bookmarked" : "Save to Vault"}
+                </button>
+             </div>
           </div>
-          
-          <div className="flex justify-between items-start mb-10 relative z-10">
-             <div className="flex-1 pr-12">
-               <h1 className="text-4xl font-serif text-[#0A1628] leading-tight mb-6">{question.title}</h1>
-               <div className="flex flex-wrap gap-4 items-center">
-                  <TechBadge tech={question.technologyName || "General"} />
-                  <DifficultyBadge difficulty={question.difficulty} />
-                  <div className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest rounded-2xl border border-blue-100/50">
-                     <HiBriefcase size={14} /> {question.clientName || "General Intake"}
+
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            {/* Core intelligence Packet */}
+            <div className="bg-white border border-[#E3E6E8] rounded-lg shadow-sm">
+               <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                     <TechBadge tech={question.technologyName || "General"} />
+                     <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-2 py-0.5 rounded-md bg-gray-50 border border-gray-100">{question.difficulty}</div>
+                  </div>
+                  
+                  <h1 className="text-lg font-bold text-[#232629] leading-tight mb-4">
+                     {question.title}
+                  </h1>
+
+                  <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
+                    <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                      {question.content}
+                    </p>
                   </div>
                </div>
-             </div>
-             
-             <button 
-                onClick={toggleBookmark} 
-                disabled={isSyncing}
-                className={`shrink-0 w-16 h-16 flex items-center justify-center rounded-[24px] border transition-all shadow-xl ${
-                  bookmarked 
-                    ? "bg-blue-600 border-blue-500 shadow-blue-500/20" 
-                    : "bg-white border-black/5 hover:border-blue-200 shadow-black/5"
-                } ${isSyncing ? "opacity-50" : "active:scale-95"}`}
-              >
-                <HiBookmark 
-                  size={24} 
-                  className={bookmarked ? "text-white fill-white" : "text-gray-300"} 
-                />
-             </button>
-          </div>
+            </div>
 
-          <div className="bg-gray-50/50 p-10 rounded-[40px] border border-black/5 shadow-inner relative z-10">
-             <div className="flex items-center gap-2 mb-6">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.2em]">Intel Description</h3>
-             </div>
-             <p className="text-lg text-[#0A1628] leading-relaxed italic whitespace-pre-wrap font-serif font-light">
-               "{question.content}"
+            {/* Master Solution Guide */}
+            <div className="bg-white border border-[#E3E6E8] rounded-lg shadow-sm">
+               <div className="bg-gray-50 border-b border-[#E3E6E8] px-6 py-2.5 flex items-center justify-between">
+                  <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Official Solution</h2>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-[#0074CC] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                     Verified
+                  </span>
+               </div>
+               
+               <div className="p-6">
+                  <div className="bg-white p-6 rounded-lg border border-[#E3E6E8] shadow-inner text-sm leading-relaxed text-[#232629] font-medium">
+                     {question.officialAnswer ? question.officialAnswer : question.initialAnswer || "No mastering guide available for this packet yet."}
+                  </div>
+                  
+                  <div className="mt-10 flex items-center justify-between">
+                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Aja Consulting Services • Verified Intel</p>
+                     <div className="flex items-center gap-4">
+                        <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[#0074CC] transition-colors">
+                           <HiStar size={16} /> Mark as Mastered
+                        </button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            {/* Community Intelligence Section */}
+            {answers.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 px-1">
+                   <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Alternative Perspectives ({answers.length})</h2>
+                   <div className="h-px w-full bg-gray-200" />
+                </div>
+                
+                <div className="grid grid-cols-1 gap-6">
+                  {answers.map((answer) => (
+                    <div key={answer.id} className="bg-white border border-[#E3E6E8] rounded-xl p-8 shadow-sm group hover:border-[#0074CC]/30 transition-all">
+                       <div className="flex items-center gap-4 mb-5">
+                          <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 font-black text-xs">
+                             {answer.authorName?.charAt(0) || "A"}
+                          </div>
+                          <div>
+                             <div className="text-sm font-bold text-[#232629] mb-0.5">{answer.authorName || "Anonymous Contributor"}</div>
+                             <div className="text-[9px] font-black uppercase tracking-widest text-[#0074CC]/40">Expert Contribution</div>
+                          </div>
+                       </div>
+                       <p className="text-xs text-gray-500 leading-relaxed font-medium pl-4 border-l-2 border-gray-100 group-hover:border-blue-500/20 transition-all">
+                          {answer.content}
+                       </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          
+          <div className="mt-20 text-center opacity-30 pb-20">
+             <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-center gap-2 italic">
+                <HiShieldCheck size={14} /> End-to-End Encryption • Mastery Sync 🦾
              </p>
           </div>
-        </div>
-
-        {/* Master Official Answer Section */}
-        <div className="bg-[#0A1628] rounded-[60px] p-14 shadow-2xl relative overflow-hidden group border border-white/5 animate-in zoom-in duration-700">
-           <div className="absolute top-0 right-0 p-12 opacity-5 pointer-events-none group-hover:scale-110 transition-transform duration-1000">
-              <HiCheckBadge size={280} className="text-white" />
-           </div>
-           
-           <div className="flex items-center justify-between mb-10 relative z-10">
-              <div className="flex items-center gap-4">
-                 <div className="w-14 h-14 bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 border border-white/10 shadow-2xl">
-                    <HiCheckBadge size={28} />
-                 </div>
-                 <div>
-                   <h2 className="text-2xl font-black text-white tracking-tight">
-                      {question.officialAnswer ? "Master Official Answer" : "Initial Submission Answer"}
-                   </h2>
-                   <p className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em]">
-                      {question.officialAnswer ? "Curation Verified by Aja Tutors" : "Initial context provided by submitter"}
-                   </p>
-                 </div>
-              </div>
-              <div className="flex items-center gap-2 px-5 py-2.5 bg-blue-600/20 text-blue-300 rounded-full text-[10px] font-black uppercase tracking-widest border border-blue-500/20 shadow-lg">
-                 <HiBolt size={14} className="animate-pulse" /> {question.officialAnswer ? "Final Protocol" : "Draft Protocol"}
-              </div>
-           </div>
-
-           <div className="text-xl leading-relaxed text-white/90 bg-white/5 p-10 rounded-[40px] border border-white/5 shadow-2xl min-h-[300px] italic font-medium font-serif relative z-10 transition-all group-hover:bg-white/[0.07]">
-             {question.officialAnswer ? (
-                `"${question.officialAnswer}"`
-             ) : (
-                `"${question.initialAnswer || "No detailed explanation was provided with this submission."}"`
-             )}
-           </div>
-           
-           <div className="mt-12 flex items-center justify-between pt-10 border-t border-white/5 relative z-10">
-              <div className="flex items-center gap-4">
-                 <div className="flex items-center gap-3 px-6 py-3 rounded-2xl border border-white/10 bg-white/5 text-blue-300 font-black text-[10px] uppercase tracking-widest hover:bg-white/10 transition-all cursor-pointer">
-                    <HiStar size={16} /> Mark as Elite Intel
-                 </div>
-              </div>
-              <Link to="/dashboard/questions" className="text-[10px] font-black text-white/40 uppercase tracking-[0.3em] hover:text-white transition-colors flex items-center gap-3 group/back">
-                 <HiArrowLeft size={18} className="group-hover/back:-translate-x-1 transition-transform" /> Back to Base
-              </Link>
-           </div>
-
-         {/* Expert Answers Section */}
-         <div className="mt-12 mb-12">
-            <h2 className="text-xl font-bold text-[#0A1628] mb-6 flex items-center gap-2 font-serif">
-               Community Intelligence ({answers.length})
-            </h2>
-
-            <div className="flex flex-col gap-6">
-              {answers.length > 0 ? answers.map((answer) => (
-                <div key={answer.id} className="bg-white border rounded-[32px] p-7 shadow-sm relative overflow-hidden group border-black/5 hover:shadow-md transition-shadow">
-                  <div className="flex items-start justify-between mb-5">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-[#F8FAFC] text-gray-400 flex items-center justify-center font-black text-sm uppercase tracking-widest border border-black/5">
-                        {answer.authorName?.charAt(0) || "A"}
-                      </div>
-                      <div>
-                        <div className="text-sm font-bold text-[#0A1628] mb-0.5">{answer.authorName || "Anonymous Contributor"}</div>
-                        <div className="text-[9px] font-black uppercase tracking-[0.1em] text-gray-300">
-                           Expert Submission
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-600 leading-relaxed font-light font-sans pl-2 border-l-2 border-blue-500/20">
-                    {answer.content}
-                  </p>
-                </div>
-              )) : (
-                 <div className="py-16 text-center text-gray-400 text-sm italic font-light border border-dashed border-black/5 rounded-[40px] bg-white/50">
-                    No community intel has been submitted for this packet yet.
-                 </div>
-              )}
-            </div>
-         </div>
-         
         </div>
       </main>
     </div>

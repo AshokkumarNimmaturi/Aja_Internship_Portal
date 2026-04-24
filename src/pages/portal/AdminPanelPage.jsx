@@ -21,7 +21,12 @@ import {
   HiBriefcase,
   HiMagnifyingGlass,
   HiAdjustmentsHorizontal,
-  HiPhone
+  HiPhone,
+  HiTag,
+  HiChartBar,
+  HiIdentification,
+  HiDocumentText,
+  HiTrash
 } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { PortalSidebar } from "../../components/portal/PortalSidebar";
@@ -86,6 +91,7 @@ const AdminPanelPage = () => {
   const [techFilters, setTechFilters] = useState(["All"]);
   const [correctedAnswers, setCorrectedAnswers] = useState({});
   const [comments, setComments] = useState({});
+  const [selectedReviewEmployee, setSelectedReviewEmployee] = useState(null);
 
   // Agent Status States
   const [status, setStatus] = useState(user?.status || "OFFLINE");
@@ -216,7 +222,20 @@ const AdminPanelPage = () => {
         correctedAnswer: correctedAnswers[id] || ""
       });
       toast.success(`Question ${decision.toLowerCase()} successfully!`);
+      
+      // Update local state
       setPendingQuestions(prev => prev.filter(q => q.id !== id));
+      
+      // If auditing a specific employee, update their list
+      if (selectedReviewEmployee) {
+        const updatedQuestions = selectedReviewEmployee.questions.filter(q => q.id !== id);
+        if (updatedQuestions.length === 0) {
+          setSelectedReviewEmployee(null);
+        } else {
+          setSelectedReviewEmployee({ ...selectedReviewEmployee, questions: updatedQuestions });
+        }
+      }
+      
       fetchData(); // Refresh all stats
     } catch (err) {
       toast.error(err.response?.data?.message || "Review action failed.");
@@ -713,133 +732,218 @@ const AdminPanelPage = () => {
              </div>
           )}
 
-          {/* VIEW: Review Queue (Admin Integrated) */}
+          {/* VIEW: Review Queue (Elite Drill-Down Curation) */}
           {activeView === "Review Queue" && (
-            <div className="space-y-8 py-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
-               {/* Search & Filters */}
-               <div className="flex flex-col md:flex-row gap-4 mb-8">
-                <div className="relative flex-1">
-                  <HiMagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-                  <input
-                    type="text"
-                    placeholder="Search pending intelligence packets..."
-                    className="w-full pl-12 pr-4 py-4 bg-white border border-black/8 rounded-2xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all shadow-sm"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-4">
-                  <div className="relative">
-                    <HiAdjustmentsHorizontal className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
-                    <select
-                      className="pl-12 pr-10 py-4 bg-white border border-black/8 rounded-2xl text-xs font-black uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-blue-500/20 appearance-none shadow-sm cursor-pointer"
-                      value={activeFilter}
-                      onChange={(e) => setActiveFilter(e.target.value)}
-                    >
-                      {techFilters.map(tech => (
-                        <option key={tech} value={tech}>{tech}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6">
-                {(pendingQuestions || [])
-                  .filter(q => (activeFilter === "All" || q.technologyName === activeFilter))
-                  .filter(q => (q.title?.toLowerCase().includes(searchQuery.toLowerCase()) || q.answer?.toLowerCase().includes(searchQuery.toLowerCase())))
-                  .length > 0 ? (
-                  pendingQuestions
-                    .filter(q => (activeFilter === "All" || q.technologyName === activeFilter))
-                    .filter(q => (q.title?.toLowerCase().includes(searchQuery.toLowerCase()) || q.answer?.toLowerCase().includes(searchQuery.toLowerCase())))
-                    .map((q) => (
-                      <div key={q.id} className="bg-white rounded-[40px] border border-black/8 overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300">
-                        <div className="px-8 py-6 bg-gray-50/50 border-b border-black/5 flex justify-between items-center">
-                          <div className="flex items-center gap-4">
-                            <TechBadge tech={q.technologyName} />
-                            <DifficultyBadge difficulty={q.difficulty} />
-                          </div>
-                          <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest font-mono italic">ID: {q.id}</span>
-                        </div>
-
-                        <div className="p-8">
-                          <h3 className="text-xl font-bold text-[#0A1628] mb-4 font-serif leading-tight">{q.title}</h3>
-                          
-                          <div className="space-y-6">
-                            {/* Context Cards */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="bg-gray-50 p-6 rounded-[32px] border border-black/5 shadow-inner">
-                                <h4 className="text-[9px] font-black uppercase tracking-widest text-gray-400 mb-2">Submission Content</h4>
-                                <p className="text-sm text-gray-600 leading-relaxed italic">"{q.content}"</p>
-                              </div>
-                              <div className="bg-blue-50/30 p-6 rounded-[32px] border border-blue-100/50 shadow-inner">
-                                <h4 className="text-[9px] font-black uppercase tracking-widest text-blue-600 mb-2">Proposed Explanation</h4>
-                                <p className="text-sm text-gray-600 leading-relaxed font-medium italic">"{q.initialAnswer || "No explanation provided."}"</p>
-                              </div>
-                            </div>
-
-                            {/* Corrected Answer Input */}
-                            <div>
-                              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Verified Master Answer (Syncs to Storefront)</h4>
-                              <textarea
-                                className="w-full p-6 bg-white border border-black/8 rounded-[32px] text-sm font-medium focus:outline-none focus:ring-8 focus:ring-blue-50/30 transition-all shadow-inner leading-relaxed"
-                                placeholder="Craft the official, high-quality answer for subscribers..."
-                                rows={4}
-                                value={correctedAnswers[q.id] || ""}
-                                onChange={(e) => setCorrectedAnswers(prev => ({ ...prev, [q.id]: e.target.value }))}
-                              />
-                            </div>
-
-                            {/* Rejection Comments */}
-                            <div>
-                              <h4 className="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Rejection Feedback</h4>
-                              <input
-                                type="text"
-                                className="w-full px-6 py-4 bg-white border border-black/8 rounded-2xl text-sm font-medium focus:outline-none focus:ring-4 focus:ring-red-50/10 transition-all shadow-inner"
-                                placeholder="Internal feedback if deferring this packet..."
-                                value={comments[q.id] || ""}
-                                onChange={(e) => setComments(prev => ({ ...prev, [q.id]: e.target.value }))}
-                              />
-                            </div>
-
-                            {/* Actions */}
-                            <div className="flex gap-4 pt-4">
-                              <button
-                                onClick={() => handleReviewAction(q.id, 'APPROVED')}
-                                disabled={processing === (q.id + 'APPROVED')}
-                                className="flex-1 py-4.5 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-900/10 active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
-                              >
-                                {processing === (q.id + 'APPROVED') ? (
-                                  <HiArrowPath className="animate-spin" size={18} />
-                                ) : (
-                                  <HiCheckCircle size={18} />
-                                )}
-                                Approve
-                              </button>
-                              <button
-                                onClick={() => handleReviewAction(q.id, 'REJECTED')}
-                                disabled={processing === (q.id + 'REJECTED')}
-                                className="flex-1 py-4.5 bg-white text-red-600 border border-red-100 text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-red-50 transition-all active:scale-95 flex items-center justify-center gap-3 disabled:opacity-50"
-                              >
-                                {processing === (q.id + 'REJECTED') ? (
-                                  <HiArrowPath className="animate-spin" size={18} />
-                                ) : (
-                                  <HiXCircle size={18} />
-                                )}
-                                Reject
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+            <div className="space-y-10 py-6 animate-in fade-in slide-in-from-bottom-8 duration-500">
+               {!selectedReviewEmployee ? (
+                 <>
+                   {/* Stage 1: Intelligence Sources Discovery */}
+                   <div className="flex items-center justify-between mb-10 px-6">
+                      <div>
+                         <h3 className="text-3xl font-serif text-[#0A1628] font-bold italic">Intelligence Sources</h3>
+                         <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.25em] mt-2 italic opacity-70">Active contributors awaiting verification sync</p>
                       </div>
-                    ))
-                ) : (
-                  <div className="py-32 bg-white rounded-[50px] border-2 border-dashed border-black/5 text-center">
-                    <HiBriefcase size={64} className="mx-auto text-gray-100 mb-6" />
-                    <p className="text-gray-300 italic font-serif text-xl">Review queue synchronized. All intelligence packets verified.</p>
-                  </div>
-                )}
-              </div>
+                      <div className="flex items-center gap-3 px-6 py-3 bg-amber-50 text-amber-600 rounded-[22px] border border-amber-100 shadow-sm animate-pulse">
+                         <div className="w-2 h-2 bg-amber-400 rounded-full" />
+                         <span className="text-[10px] font-black uppercase tracking-widest leading-none">Telemetry Live Sync</span>
+                      </div>
+                   </div>
+
+                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                      {Object.values(pendingQuestions.reduce((acc, q) => {
+                         const key = q.submittedByEmail || "Unknown";
+                         if (!acc[key]) acc[key] = { email: key, name: q.submittedByName || "Internal Member", questions: [] };
+                         acc[key].questions.push(q);
+                         return acc;
+                      }, {})).map((agent) => (
+                         <div 
+                           key={agent.email} 
+                           onClick={() => setSelectedReviewEmployee(agent)}
+                           className="group bg-white p-10 rounded-[50px] border border-black/8 shadow-sm hover:shadow-2xl hover:border-blue-300 transition-all duration-500 cursor-pointer relative overflow-hidden"
+                         >
+                            <div className="absolute -top-10 -right-10 opacity-0 group-hover:opacity-5 group-hover:scale-150 group-hover:rotate-12 transition-all duration-700 text-[#0A1628]">
+                               <HiUsers size={160} />
+                            </div>
+                            <div className="flex items-center gap-6 mb-10 relative z-10">
+                               <div className="w-16 h-16 bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl flex items-center justify-center border border-black/5 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all duration-500">
+                                  <HiUsers size={32} className="text-gray-400 group-hover:text-white transition-colors" />
+                               </div>
+                               <div>
+                                  <h4 className="text-xl font-black text-[#0A1628] uppercase tracking-tight group-hover:text-blue-700 transition-colors leading-tight mb-1">{agent.name}</h4>
+                                  <p className="text-[10px] text-gray-400 font-mono italic tracking-tighter opacity-80">{agent.email}</p>
+                               </div>
+                            </div>
+                            <div className="flex items-center justify-between pt-8 border-t border-black/8 relative z-10">
+                               <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 group-hover:text-gray-600 transition-colors">Pending Intel Packets</span>
+                               <div className="w-12 h-12 bg-[#0A1628] text-white rounded-[18px] flex items-center justify-center text-sm font-black shadow-xl shadow-blue-900/10 group-hover:scale-110 group-hover:bg-blue-600 transition-all">{agent.questions.length}</div>
+                            </div>
+                         </div>
+                      ))}
+
+                      {pendingQuestions.length === 0 && (
+                         <div className="col-span-3 py-40 bg-white rounded-[60px] border-2 border-dashed border-black/5 flex flex-col items-center justify-center text-center px-10">
+                            <div className="w-24 h-24 bg-gray-50 rounded-[35px] flex items-center justify-center mb-8 border border-black/5 shadow-inner">
+                               <HiShieldCheck size={44} className="text-gray-200" />
+                            </div>
+                            <h3 className="text-2xl font-serif text-[#0A1628] mb-3 font-black">Control Deck Clear</h3>
+                            <p className="text-sm text-gray-400 font-light italic max-w-sm leading-relaxed">Expert curation queue is perfectly synchronized. All telemetry systems are nominal.</p>
+                         </div>
+                      )}
+                   </div>
+                 </>
+               ) : (
+                 <div className="animate-in slide-in-from-bottom-6 duration-700">
+                   {/* Stage 2: Individual Question Curation (Premium Reference UI) */}
+                   <div className="flex items-center justify-between mb-12">
+                      <div className="flex items-center gap-6">
+                         <button 
+                           onClick={() => setSelectedReviewEmployee(null)}
+                           className="w-10 h-10 bg-white border border-gray-200 rounded-lg flex items-center justify-center text-gray-500 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm"
+                         >
+                            <HiArrowPath className="rotate-180" size={20} />
+                         </button>
+                         <nav className="flex items-center gap-2 text-sm font-medium">
+                            <span className="text-gray-400">Auditing</span>
+                            <span className="text-gray-300">/</span>
+                            <span className="text-blue-600 font-bold">{selectedReviewEmployee.name}</span>
+                         </nav>
+                      </div>
+                      <div className="flex items-center gap-2 px-3 py-1 bg-green-50 text-green-600 rounded-full border border-green-100 text-[10px] font-bold">
+                         <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                         Verified Sync
+                      </div>
+                   </div>
+
+                   <div className="flex flex-col gap-10">
+                      {selectedReviewEmployee.questions.map((q) => (
+                        <div key={q.id} className="bg-white border border-gray-100 rounded-3xl shadow-[0_4px_20px_rgba(0,0,0,0.03)] overflow-hidden">
+                           
+                           {/* Meta Info Bar */}
+                           {/* Meta Info Bar (4 Columns) */}
+                           <div className="bg-gray-50/50 border-b border-gray-100 px-10 py-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+                              <div className="flex items-center gap-4">
+                                 <div className="w-10 h-10 bg-white rounded-xl border border-gray-100 flex items-center justify-center text-gray-400 shadow-sm"><HiTag size={18} /></div>
+                                 <div>
+                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Technology</div>
+                                    <div className="text-sm font-bold text-gray-800">{q.technologyName || "General"}</div>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                 <div className="w-10 h-10 bg-white rounded-xl border border-gray-100 flex items-center justify-center text-amber-500 shadow-sm"><HiChartBar size={18} /></div>
+                                 <div>
+                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Difficulty</div>
+                                    <div className="text-sm font-bold text-gray-800 capitalize">{q.difficulty?.toLowerCase() || "Medium"}</div>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                 <div className="w-10 h-10 bg-white rounded-xl border border-gray-100 flex items-center justify-center text-blue-500 shadow-sm"><HiIdentification size={18} /></div>
+                                 <div>
+                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Question ID</div>
+                                    <div className="text-sm font-bold text-gray-800">{q.id}</div>
+                                 </div>
+                              </div>
+                              <div className="flex items-center gap-4">
+                                 <div className="w-10 h-10 bg-white rounded-xl border border-gray-100 flex items-center justify-center text-emerald-500 shadow-sm"><HiBriefcase size={18} /></div>
+                                 <div>
+                                    <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-0.5">Source Path</div>
+                                    <div className="text-sm font-bold text-emerald-700 italic truncate max-w-[120px]">{q.clientName || "General Storefront"}</div>
+                                 </div>
+                              </div>
+                           </div>
+
+                           <div className="p-10">
+                              <div className="space-y-6 mb-10">
+                                 {/* Question Context */}
+                                 <div className="bg-gray-50/30 border-l-4 border-blue-600 px-8 py-6 rounded-r-2xl">
+                                    <div className="text-[9px] font-black text-blue-600 uppercase tracking-[0.2em] mb-3 opacity-60">Submitted Intel</div>
+                                    <h3 className="text-xl font-bold text-gray-900 leading-snug">{q.title}</h3>
+                                 </div>
+
+                                 {/* Source Intelligence - Full Width */}
+                                 <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-gray-400 px-2">
+                                       <HiDocumentText size={14} />
+                                       <span className="text-[10px] font-bold uppercase tracking-wider">Source Transmission Context</span>
+                                    </div>
+                                    <div className="p-8 bg-gray-50 border border-gray-100/50 rounded-[30px] shadow-inner">
+                                       <p className="text-sm text-gray-600 leading-relaxed font-medium italic">"{q.content}"</p>
+                                    </div>
+                                 </div>
+
+                                 {/* Contributor Proposal - Full Width */}
+                                 <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-blue-500 px-2">
+                                       <HiShieldCheck size={14} />
+                                       <span className="text-[10px] font-bold uppercase tracking-wider">Contributor Mastery Proposal</span>
+                                    </div>
+                                    <div className="p-8 bg-blue-50/30 border border-blue-100/50 rounded-[30px] shadow-sm">
+                                       <p className="text-sm text-gray-700 leading-relaxed font-bold">
+                                          {q.initialAnswer || "No proposal provided."}
+                                       </p>
+                                    </div>
+                                 </div>
+                              </div>
+
+                              {/* Main Editor Terminal */}
+                              <div className="space-y-8">
+                                 <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                       <div className="flex items-center gap-3 text-gray-400">
+                                          <HiPencilSquare size={16} />
+                                          <span className="text-[10px] font-bold uppercase tracking-wider">Verify Source Truth</span>
+                                       </div>
+                                       <div className="flex items-center gap-2 text-gray-400">
+                                          <HiArrowPath size={14} className="animate-spin-slow opacity-30" />
+                                          <span className="text-[10px] font-bold uppercase tracking-tight opacity-50">Synchronize</span>
+                                       </div>
+                                    </div>
+                                    <textarea
+                                      placeholder="Compose the verified master intelligence packet..."
+                                      value={correctedAnswers[q.id] || ""}
+                                      onChange={(e) => setCorrectedAnswers({ ...correctedAnswers, [q.id]: e.target.value })}
+                                      className="w-full p-8 bg-white border border-gray-100 rounded-2xl text-sm text-gray-800 placeholder:text-gray-300 focus:ring-4 focus:ring-blue-50 focus:border-blue-400 outline-none transition-all shadow-inner"
+                                      rows={2}
+                                    />
+                                 </div>
+
+                                 <div className="space-y-4">
+                                    <div className="flex items-center gap-3 text-gray-400 px-2">
+                                       <HiChatBubbleLeftEllipsis size={16} />
+                                       <span className="text-[10px] font-bold uppercase tracking-wider">Contributor Pipeline Response</span>
+                                    </div>
+                                    <textarea 
+                                      value={comments[q.id] || ""}
+                                      onChange={(e) => setComments({ ...comments, [q.id]: e.target.value })}
+                                      className="w-full px-8 py-6 bg-white border border-gray-100 rounded-2xl text-sm font-medium italic text-gray-500 placeholder:text-gray-300 outline-none focus:border-blue-300 transition-all shadow-inner"
+                                      placeholder="Technical feedback for the contributor network..."
+                                      rows={1}
+                                    />
+                                 </div>
+
+                                 {/* Bottom Action Bar */}
+                                 <div className="flex items-center justify-between pt-6">
+                                    <button 
+                                      onClick={() => handleReviewAction(q.id, 'REJECTED')}
+                                      disabled={!!processing}
+                                      className="flex items-center gap-3 px-8 py-3 rounded-xl border border-red-100 text-red-500 text-[11px] font-bold uppercase tracking-wider hover:bg-red-50 transition-all active:scale-95"
+                                    >
+                                       <HiTrash size={16} /> {processing === q.id + "REJECTED" ? 'REJECTING...' : 'Decommission Intel'}
+                                    </button>
+                                    <button 
+                                      onClick={() => handleReviewAction(q.id, 'APPROVED')}
+                                      disabled={!!processing}
+                                      className="flex items-center gap-3 px-10 py-3.5 rounded-xl bg-blue-600 text-white text-[11px] font-bold uppercase tracking-widest hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 active:scale-95"
+                                    >
+                                       <HiCheckCircle size={18} /> {processing === q.id + "APPROVED" ? 'SYNCING...' : 'Verify & Broadcast to Storefront'}
+                                    </button>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                      ))}
+                   </div>
+                 </div>
+               )}
             </div>
           )}
 

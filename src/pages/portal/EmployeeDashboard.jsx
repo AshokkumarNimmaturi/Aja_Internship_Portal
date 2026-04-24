@@ -29,7 +29,7 @@ export const StatusBadge = ({ status }) => {
     REJECTED: <HiXCircle size={12} />,
   };
   return (
-    <span className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-xl ${styles[status] || styles.PENDING}`}>
+    <span className={`flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-tight px-2.5 py-1.5 rounded-xl ${styles[status] || styles.PENDING}`}>
       {icons[status] || icons.PENDING} {status}
     </span>
   );
@@ -95,15 +95,15 @@ const EmployeeDashboard = () => {
           <div className="flex items-center justify-between mb-10">
             <div>
               <h1 className="font-serif text-3xl text-[#0A1628] mb-1 font-bold">Contributor Hub</h1>
-              <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] font-sans">
-                Active Session: <span className="text-gray-600">{user?.fullName || "Aja Member"}</span>
+              <p className="text-xs text-gray-500">
+                Active Session: <span className="text-gray-700 font-semibold">{user?.fullName || "Aja Member"}</span>
               </p>
             </div>
             <Link
               to="/portal/submit"
-              className="flex items-center gap-2.5 px-7 py-3.5 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-blue-900 transition-all shadow-2xl shadow-blue-900/20 active:scale-95"
+              className="flex items-center gap-2 px-6 py-3 bg-[#0A1628] text-white text-xs font-semibold rounded-2xl hover:bg-blue-900 transition-all shadow-xl shadow-blue-900/20 active:scale-95"
             >
-              <HiPlusCircle size={20} /> New Submission
+              <HiPlusCircle size={18} /> New Submission
             </Link>
           </div>
 
@@ -118,7 +118,7 @@ const EmployeeDashboard = () => {
                    <s.icon size={28} />
                 </div>
                 <div className="text-5xl font-serif text-[#0A1628] mb-1 font-black">{s.value}</div>
-                <div className="text-[10px] text-gray-400 uppercase tracking-widest font-black opacity-80">{s.label}</div>
+                <div className="text-xs text-gray-500 font-semibold">{s.label}</div>
               </div>
             ))}
           </div>
@@ -129,29 +129,33 @@ const EmployeeDashboard = () => {
               <div className="bg-white rounded-[50px] border border-black/8 p-10 shadow-sm relative overflow-hidden">
                 <div className="flex items-center justify-between mb-10">
                   <h2 className="text-2xl font-serif text-[#0A1628] font-bold">Intelligence Feed</h2>
-                  <Link to="/portal/submissions" className="text-[10px] font-black text-blue-600 uppercase tracking-widest hover:underline active:scale-95 transition-transform">View Archive</Link>
+                  <Link to="/portal/submissions" className="text-xs font-bold text-blue-600 hover:underline transition-all">View Archive</Link>
                 </div>
 
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto text-sm">
                   {loading ? (
                     <div className="py-24 text-center"><HiArrowPath className="animate-spin mx-auto text-blue-100" size={44} /></div>
                   ) : submissions.length > 0 ? (
                     <table className="w-full text-left font-sans">
                       <thead>
                         <tr className="border-b border-black/5">
-                          <th className="pb-5 text-[9px] uppercase tracking-[0.2em] font-black text-gray-400">Mastery Content</th>
-                          <th className="pb-5 text-[9px] uppercase tracking-[0.2em] font-black text-gray-400">Technology</th>
-                          <th className="pb-5 text-[9px] uppercase tracking-[0.2em] font-black text-gray-400 text-center">Status</th>
-                          <th className="pb-5 text-[9px] uppercase tracking-[0.2em] font-black text-gray-400 text-right">Date</th>
+                          <th className="pb-5 text-xs font-bold text-gray-400">Mastery Content</th>
+                          <th className="pb-5 text-xs font-bold text-gray-400">Origin / Company</th>
+                          <th className="pb-5 text-xs font-bold text-gray-400">Technology</th>
+                          <th className="pb-5 text-xs font-bold text-gray-400 text-center">Status</th>
+                          <th className="pb-5 text-xs font-bold text-gray-400 text-right">Date</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-black/5">
                         {submissions.slice(0, 8).map((q) => (
                           <tr key={q.id} className="group hover:bg-gray-50/50 transition-all cursor-default">
-                            <td className="py-6 font-bold text-sm text-[#0A1628] tracking-tight line-clamp-1 max-w-[220px] group-hover:text-blue-600 uppercase">{q.title}</td>
+                            <td className="py-6 font-bold text-[#0A1628] tracking-tight line-clamp-1 max-w-[180px] group-hover:text-blue-600">{q.title}</td>
+                            <td className="py-6">
+                               <span className="text-xs font-bold text-gray-400 uppercase tracking-tight">{q.clientName || "General"}</span>
+                            </td>
                             <td className="py-6"><TechBadge tech={q.technologyName || q.technology} /></td>
                             <td className="py-6 flex justify-center"><StatusBadge status={q.status} /></td>
-                            <td className="py-6 text-right text-[10px] font-bold font-mono text-gray-300 tracking-tighter italic">
+                            <td className="py-6 text-right text-xs font-medium text-gray-400 italic">
                                {new Date(q.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
                             </td>
                           </tr>
@@ -161,7 +165,7 @@ const EmployeeDashboard = () => {
                   ) : (
                     <div className="py-24 text-center bg-gray-50/50 rounded-[40px] border-2 border-dashed border-black/5 group">
                        <p className="text-sm text-gray-400 italic font-serif max-w-xs mx-auto mb-6">Your technical intel contribution pipeline is currently empty.</p>
-                       <Link to="/portal/submit" className="inline-flex items-center gap-2 px-8 py-3.5 bg-white border border-black/8 text-[10px] font-black text-blue-600 uppercase tracking-widest rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm active:scale-95">
+                       <Link to="/portal/submit" className="inline-flex items-center gap-2 px-8 py-4 bg-white border border-black/8 text-xs font-bold text-blue-600 rounded-2xl hover:bg-blue-600 hover:text-white hover:border-blue-600 transition-all shadow-sm active:scale-95">
                           <HiPlusCircle size={18} /> Initiate Submission
                        </Link>
                     </div>
@@ -179,7 +183,7 @@ const EmployeeDashboard = () => {
                   <h3 className="text-xl font-serif mb-8 font-bold relative z-10">Platform Pulse</h3>
                   <div className="space-y-8 relative z-10">
                     <div>
-                       <div className="flex justify-between text-[9px] font-black uppercase tracking-[0.2em] text-blue-300 mb-3">
+                       <div className="flex justify-between text-xs font-bold text-blue-300/60 mb-3">
                           <span>Quality Sync Rate</span>
                           <span>{((globalStats.totalQuestions / (globalStats.totalReceived || 1)) * 100).toFixed(0)}%</span>
                        </div>
@@ -189,11 +193,11 @@ const EmployeeDashboard = () => {
                     </div>
                     <div className="pt-6 border-t border-white/5 space-y-6">
                        <div className="flex justify-between items-center bg-white/5 p-4 rounded-3xl border border-white/5">
-                          <span className="text-[10px] text-blue-200 uppercase tracking-widest font-black">Global Intel Pool</span>
+                          <span className="text-xs text-blue-200 font-bold">Global Intel Pool</span>
                           <span className="text-3xl font-serif font-black tracking-tighter text-blue-100">{globalStats.totalReceived}</span>
                        </div>
                        <div className="flex justify-between items-center bg-emerald-500/10 p-4 rounded-3xl border border-emerald-500/10 text-emerald-400">
-                          <span className="text-[10px] uppercase tracking-widest font-black">Verified Mastery</span>
+                          <span className="text-xs font-bold">Verified Mastery</span>
                           <span className="text-3xl font-serif font-black tracking-tighter">{globalStats.totalQuestions}</span>
                        </div>
                     </div>
@@ -203,19 +207,19 @@ const EmployeeDashboard = () => {
                <div className="bg-white border border-black/8 p-10 rounded-[50px] shadow-sm relative overflow-hidden">
                   <h4 className="font-serif text-xl text-[#0A1628] mb-6 font-bold">Vault Guidelines</h4>
                   <ul className="space-y-6">
-                     <li className="flex gap-4 text-sm text-gray-500 leading-relaxed italic group">
-                        <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.5)] group-hover:scale-150 transition-transform" />
+                     <li className="flex gap-4 text-sm text-gray-500 leading-relaxed italic group items-start">
+                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                         "Elite technical nuance ensures high-priority curation sync."
                      </li>
-                     <li className="flex gap-4 text-sm text-gray-500 leading-relaxed italic group">
-                        <div className="mt-1 w-2 h-2 rounded-full bg-blue-500 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.5)] group-hover:scale-150 transition-transform" />
+                     <li className="flex gap-4 text-sm text-gray-500 leading-relaxed italic group items-start">
+                        <div className="mt-2 w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
                         "Accurate technology tagging optimizes global discoverability."
                      </li>
                   </ul>
                   
                   {/* Internal Technical Support */}
-                  <div className="mt-10 pt-8 border-t border-black/5">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Internal Support Line</p>
+                  <div className="mt-10 pt-8 border-t border-black/5 text-gray-400">
+                    <p className="text-xs font-bold mb-4 uppercase tracking-widest text-center">Internal Support</p>
                     <VoiceCallButton />
                   </div>
                </div>
