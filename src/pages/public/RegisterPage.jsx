@@ -122,7 +122,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex font-sans bg-[#F8FAFC]">
+    <div className="min-h-screen flex font-sans bg-transparent">
       {/* LEFT PANEL: Branding & Visuals */}
       <div className="hidden lg:flex lg:w-1/2 mesh-bg flex-col justify-between p-16 relative overflow-hidden">
         <div className="animated-grid-bg" />
@@ -145,7 +145,7 @@ const RegisterPage = () => {
         <div className="relative z-10">
           <h2 className="text-5xl font-serif text-white leading-tight mb-8">
             Build Your <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 font-bold italic">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-teal-400 font-bold italic">
               Future In Tech.
             </span> <br />
             Join Us.
@@ -177,9 +177,9 @@ const RegisterPage = () => {
 
       {/* RIGHT PANEL: Register Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 animate-fade-in-up">
-        <div className="w-full max-w-md figma-card p-10 rounded-[2.5rem]">
+        <div className="w-full max-w-md bg-[#0A0D14]/80 backdrop-blur-xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] p-10 rounded-[2.5rem]">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-[#0A1628] tracking-tight mb-2">
+            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
               Create Account
             </h1>
             <p className="text-gray-400 text-xs font-light mb-6">
@@ -187,43 +187,43 @@ const RegisterPage = () => {
             </p>
             
             {/* INTERNAL EMPLOYEE NOTICE */}
-            <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
-              <p className="text-[10px] text-blue-700 leading-relaxed font-bold uppercase tracking-wider mb-1">
+            <div className="p-4 bg-purple-900/20 border border-purple-500/30 rounded-2xl">
+              <p className="text-[10px] text-purple-300 leading-relaxed font-bold uppercase tracking-wider mb-1">
                 Internal Employee Notice
               </p>
-              <p className="text-xs text-blue-600 leading-relaxed">
-                If you are an <span className="font-bold">Aja internal employee</span>, please login with the credentials given by your administration.
+              <p className="text-xs text-purple-400 leading-relaxed">
+                If you are an <span className="font-bold text-purple-300">Aja internal employee</span>, please login with the credentials given by your administration.
               </p>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-5">
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Full Name</label>
+              <label className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] ml-1">Full Name</label>
               <input
                 type="text"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
                 placeholder="John Doe"
-                className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
+                className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-white placeholder-gray-500 transition-all text-sm hover:border-white/20"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Email Address</label>
+              <label className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] ml-1">Email Address</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="name@company.com"
-                className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
+                className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-white placeholder-gray-500 transition-all text-sm hover:border-white/20"
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Phone Number</label>
+              <label className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] ml-1">Phone Number</label>
               <input
                 type="tel"
                 name="phone"
@@ -231,13 +231,13 @@ const RegisterPage = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="10-digit number"
-                className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
+                className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-white placeholder-gray-500 transition-all text-sm hover:border-white/20"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Password</label>
+                <label className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] ml-1">Password</label>
                 <div className="relative">
                   <input
                     type={showPassword ? "text" : "password"}
@@ -245,15 +245,15 @@ const RegisterPage = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full px-4 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
+                    className="w-full px-4 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-white placeholder-gray-500 transition-all text-sm hover:border-white/20"
                   />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-4 text-gray-400">
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-4 text-gray-400 hover:text-white">
                     {showPassword ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                   </button>
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Confirm</label>
+                <label className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] ml-1">Confirm</label>
                 <div className="relative">
                   <input
                     type={showConfirm ? "text" : "password"}
@@ -261,9 +261,9 @@ const RegisterPage = () => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full px-4 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
+                    className="w-full px-4 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-white placeholder-gray-500 transition-all text-sm hover:border-white/20"
                   />
-                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-4 text-gray-400">
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-4 text-gray-400 hover:text-white">
                     {showConfirm ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                   </button>
                 </div>
@@ -276,17 +276,17 @@ const RegisterPage = () => {
                 name="agreed"
                 checked={formData.agreed}
                 onChange={handleChange}
-                className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                className="w-4 h-4 rounded border-gray-600 bg-black/20 text-purple-600 focus:ring-purple-500 cursor-pointer"
               />
-              <span className="text-[10px] sm:text-xs text-gray-500 font-medium">
-                I agree to the <span className="text-blue-600 font-bold hover:underline">Terms of Service</span> and <span className="text-blue-600 font-bold hover:underline">Privacy Policy</span>
+              <span className="text-[10px] sm:text-xs text-gray-400 font-medium">
+                I agree to the <span className="text-purple-400 font-bold hover:underline">Terms of Service</span> and <span className="text-purple-400 font-bold hover:underline">Privacy Policy</span>
               </span>
             </label>
 
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-4 figma-button rounded-2xl flex justify-center items-center relative overflow-hidden group tracking-wider font-bold"
+              className="w-full mt-2 py-4 bg-purple-600 hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] text-white rounded-2xl flex justify-center items-center relative overflow-hidden group tracking-wider font-bold transition-all"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
               <span className="relative z-10">
@@ -299,9 +299,9 @@ const RegisterPage = () => {
               </span>
             </button>
 
-            <p className="text-sm text-center text-gray-500 mt-2">
+            <p className="text-sm text-center text-gray-400 mt-2">
               Already have an account?{" "}
-              <Link to="/login" className="text-blue-600 font-bold hover:underline">
+              <Link to="/login" className="text-purple-400 font-bold hover:underline">
                 Login here
               </Link>
             </p>

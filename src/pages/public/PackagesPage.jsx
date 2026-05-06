@@ -43,45 +43,45 @@ const PackagesPage = () => {
   // ⏳ LOADING
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-white">
-        <div className="w-12 h-12 border-4 border-blue-50 border-t-[#2563EB] rounded-full animate-spin mb-4" />
-        <p className="text-[#0A1628] font-bold text-sm uppercase tracking-widest">Aja Interview Vault</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-transparent">
+        <div className="w-12 h-12 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin mb-4" />
+        <p className="text-white font-bold text-sm uppercase tracking-widest">Aja Interview Vault</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-transparent relative z-10">
       <Navbar />
 
       {/* HEADER */}
       <div className="max-w-7xl mx-auto pt-32 pb-16 px-6 text-center">
-        <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-100 text-[#2563EB] text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6">
+        <div className="inline-flex items-center gap-2 bg-purple-900/20 border border-purple-500/30 text-purple-400 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6">
           Career Development Plans
         </div>
 
-        <h1 className="font-serif text-5xl md:text-6xl text-[#0A1628] leading-tight mb-6">
-          Your <span className="text-[#2563EB] italic font-serif">Last Stop</span> <br />
+        <h1 className="font-serif text-5xl md:text-6xl text-white leading-tight mb-6">
+          Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-teal-400 italic font-serif">Last Stop</span> <br />
           For Interview Success
         </h1>
 
-        <p className="text-gray-500 text-lg font-light max-w-3xl mx-auto mb-12 leading-relaxed">
+        <p className="text-gray-400 text-lg font-light max-w-3xl mx-auto mb-12 leading-relaxed">
           If you came here, it means you are preparing for an interview or 
-          looking for an internship. <span className="text-[#0A1628] font-semibold">For both, this is your last stop.</span> Buy our 
+          looking for an internship. <span className="text-white font-semibold">For both, this is your last stop.</span> Buy our 
           packages to know what experts are asking in interviews, and our team 
           will contact you once you've registered with us.
         </p>
 
         {/* DURATION SELECTOR - Polished Pill Toggle */}
-        <div className="inline-flex p-1.5 bg-gray-100/80 backdrop-blur-sm rounded-2xl border border-gray-200">
+        <div className="inline-flex p-1.5 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
           {[30, 90, 180].map((d) => (
             <button
               key={d}
               onClick={() => setSelectedDuration(d)}
               className={`px-8 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
                 selectedDuration === d
-                  ? "bg-[#0A1628] text-white shadow-lg"
-                  : "text-gray-500 hover:text-[#0A1628]"
+                  ? "bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                  : "text-gray-400 hover:text-white"
               }`}
             >
               {d} Days Access
@@ -93,7 +93,7 @@ const PackagesPage = () => {
       {/* PACKAGES GRID */}
       <section className="max-w-7xl mx-auto px-6 pb-32">
         {packages.length === 0 ? (
-          <div className="text-center py-20 border-2 border-dashed border-gray-100 rounded-[3rem]">
+          <div className="text-center py-20 border-2 border-dashed border-white/10 rounded-[3rem]">
             <p className="text-gray-400 font-medium">Coming soon: New technology tracks</p>
           </div>
         ) : (
@@ -107,28 +107,28 @@ const PackagesPage = () => {
                   key={pkg.id}
                   className={`relative group flex flex-col p-6 rounded-3xl transition-all duration-500 hover:-translate-y-1 
                     ${isPopular 
-                      ? "bg-white border-2 border-[#2563EB] shadow-2xl shadow-blue-200" 
+                      ? "bg-[#0A0D14]/80 backdrop-blur-xl border border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.2)] text-white" 
                       : isPremium 
-                        ? "bg-[#0A1628] text-white shadow-2xl shadow-slate-900/40" 
-                        : "bg-white border border-gray-100 shadow-xl shadow-gray-200/50"}`}
+                        ? "bg-[#050505]/90 backdrop-blur-xl border border-teal-500/30 shadow-[0_0_30px_rgba(20,184,166,0.1)] text-white" 
+                        : "bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg text-white"}`}
                 >
                   {isPopular && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#2563EB] text-white text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-full shadow-lg whitespace-nowrap">
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)] whitespace-nowrap">
                       Most Popular Path
                     </div>
                   )}
 
                   <div className="flex items-center justify-between mb-4">
-                     <div className={`text-3xl ${!isPremium && "text-[#2563EB]"}`}>
+                     <div className={`text-3xl ${!isPremium && "text-purple-400"}`}>
                         {index === 0 ? "⚙️" : index === 1 ? "⚛️" : index === 2 ? "☁️" : "☕"}
                      </div>
-                     <div className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider ${isPremium ? "bg-white/10 text-white" : "bg-blue-50 text-[#2563EB]"}`}>
+                     <div className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider ${isPremium ? "bg-white/10 text-white" : "bg-purple-500/20 text-purple-400"}`}>
                         {pkg.technologyName || "Core Tech"}
                      </div>
                   </div>
 
                   <h3 className="text-xl font-bold mb-2">{pkg.name}</h3>
-                  <p className={`text-xs mb-5 font-light leading-relaxed line-clamp-2 ${isPremium ? "text-white/60" : "text-gray-500"}`}>
+                  <p className={`text-xs mb-5 font-light leading-relaxed line-clamp-2 ${isPremium ? "text-white/60" : "text-gray-400"}`}>
                     {pkg.description || "Master core concepts and advanced interview questions."}
                   </p>
 
@@ -148,8 +148,8 @@ const PackagesPage = () => {
                         "Full-time Hiring Support"
                       ].map((feature, fIdx) => (
                         <li key={fIdx} className="flex items-center gap-2.5">
-                          <HiCheckCircle size={14} className={isPremium ? "text-white/40" : "text-[#2563EB]"} />
-                          <span className={`text-[11px] font-medium ${isPremium ? "text-white/70" : "text-gray-600"}`}>
+                          <HiCheckCircle size={14} className={isPremium ? "text-teal-400" : "text-purple-400"} />
+                          <span className={`text-[11px] font-medium ${isPremium ? "text-white/70" : "text-gray-300"}`}>
                             {feature}
                           </span>
                         </li>
@@ -160,10 +160,10 @@ const PackagesPage = () => {
                       onClick={() => navigate(`/checkout/${pkg.id}?days=${selectedDuration}`)}
                       className={`w-full py-3 rounded-xl text-xs font-bold transition-all duration-300 hover:scale-[1.02] active:scale-100 shadow-lg
                         ${isPremium 
-                          ? "bg-white text-[#0A1628] hover:bg-gray-100 shadow-white/5" 
+                          ? "bg-teal-600 text-white hover:bg-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.4)]" 
                           : isPopular 
-                            ? "bg-[#2563EB] text-white hover:bg-blue-700 shadow-blue-200" 
-                            : "bg-[#0A1628] text-white hover:bg-[#1a2e4d] shadow-slate-200"}`}
+                            ? "bg-purple-600 text-white hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]" 
+                            : "bg-white/10 text-white hover:bg-white/20 border border-white/10"}`}
                     >
                       Begin Your Journey
                     </button>

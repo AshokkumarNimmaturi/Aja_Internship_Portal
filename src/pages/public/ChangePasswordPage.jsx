@@ -82,35 +82,35 @@ const ChangePasswordPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12 font-sans portal-modern">
+    <div className="min-h-screen bg-transparent flex items-center justify-center px-6 py-12 font-sans portal-modern relative z-10">
       <div className="w-full max-w-md">
 
         {/* Logo */}
         <Link to="/" className="flex items-center justify-center gap-3 mb-10">
-          <div className="w-10 h-10 bg-[#0A1628] rounded-xl flex items-center justify-center">
-            <span className="text-white text-sm font-bold tracking-wide">AIP</span>
+          <div className="w-10 h-10 bg-white/10 backdrop-blur-md border border-white/20 rounded-xl flex items-center justify-center">
+            <img src="/logo.png" alt="Aja Logo" className="h-6 w-auto filter brightness-0 invert" />
           </div>
           <div>
-            <div className="text-sm font-semibold text-[#0A1628] leading-tight">
+            <div className="text-sm font-semibold text-white leading-tight">
               Aja Interview Vault
             </div>
-            <div className="text-xs text-gray-400 leading-tight">
+            <div className="text-xs text-purple-400 leading-tight">
               Interview Question Bank
             </div>
           </div>
         </Link>
 
         {/* Card */}
-        <div className="bg-white rounded-2xl border border-black/8 p-8 shadow-sm">
+        <div className="bg-[#0A0D14]/80 backdrop-blur-xl rounded-[2rem] border border-white/10 p-10 shadow-[0_0_50px_rgba(0,0,0,0.5)]">
 
           {/* Warning Banner */}
-          <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-8">
+          <div className="flex gap-3 bg-amber-900/20 border border-amber-500/30 rounded-xl p-4 mb-8">
             <HiExclamationTriangle size={18} className="text-amber-500 shrink-0 mt-0.5" />
             <div>
-              <p className="text-xs font-semibold text-amber-800 mb-1">
+              <p className="text-xs font-semibold text-amber-400 mb-1">
                 Action Required — Cannot Skip
               </p>
-              <p className="text-xs text-amber-700 leading-relaxed">
+              <p className="text-xs text-amber-300 leading-relaxed">
                 Welcome! For your security, you must set a new password
                 before continuing. This screen cannot be skipped.
               </p>
@@ -119,11 +119,11 @@ const ChangePasswordPage = () => {
 
           {/* Header */}
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center">
-              <HiShieldCheck size={20} className="text-[#2563EB]" />
+            <div className="w-10 h-10 bg-purple-500/20 border border-purple-500/30 rounded-xl flex items-center justify-center">
+              <HiShieldCheck size={20} className="text-purple-400" />
             </div>
             <div>
-              <h1 className="text-lg font-semibold text-[#0A1628]">
+              <h1 className="text-lg font-semibold text-white">
                 Set Your New Password
               </h1>
               <p className="text-xs text-gray-400">
@@ -136,7 +136,7 @@ const ChangePasswordPage = () => {
 
             {/* Current Password */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-2">
                 Current Password
               </label>
               <p className="text-xs text-gray-400 mb-2">
@@ -150,23 +150,23 @@ const ChangePasswordPage = () => {
                   onChange={handleChange}
                   placeholder="Enter temporary password"
                   required
-                  className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all pr-12"
+                  className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => toggleShow('current')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors">
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
                   {show.current ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                 </button>
               </div>
             </div>
 
             {/* Divider */}
-            <div className="h-px bg-black/5" />
+            <div className="h-px bg-white/10" />
 
             {/* New Password */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-2">
                 New Password
               </label>
               <div className="relative">
@@ -177,12 +177,12 @@ const ChangePasswordPage = () => {
                   onChange={handleChange}
                   placeholder="Create a strong password"
                   required
-                  className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all pr-12"
+                  className="w-full px-4 py-3 bg-black/20 border border-white/10 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500/30 transition-all pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => toggleShow('new')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors">
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
                   {show.new ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                 </button>
               </div>
@@ -194,14 +194,14 @@ const ChangePasswordPage = () => {
                     {[1, 2, 3].map((s) => (
                       <div key={s}
                         className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-                          s <= strength.score ? strength.color : 'bg-gray-100'
+                          s <= strength.score ? strength.color : 'bg-white/10'
                         }`} />
                     ))}
                   </div>
                   <p className={`text-xs font-medium ${
-                    strength.score === 1 ? 'text-red-500' :
-                    strength.score === 2 ? 'text-amber-500' :
-                    'text-green-600'
+                    strength.score === 1 ? 'text-red-400' :
+                    strength.score === 2 ? 'text-amber-400' :
+                    'text-green-400'
                   }`}>
                     {strength.label} password
                   </p>
@@ -217,10 +217,10 @@ const ChangePasswordPage = () => {
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-2">
                     <div className={`w-1.5 h-1.5 rounded-full ${
-                      item.rule ? 'bg-green-500' : 'bg-gray-200'
+                      item.rule ? 'bg-green-500 shadow-[0_0_5px_rgba(34,197,94,0.5)]' : 'bg-white/20'
                     }`} />
                     <span className={`text-xs ${
-                      item.rule ? 'text-green-600' : 'text-gray-400'
+                      item.rule ? 'text-green-400' : 'text-gray-400'
                     }`}>
                       {item.text}
                     </span>
@@ -231,7 +231,7 @@ const ChangePasswordPage = () => {
 
             {/* Confirm New Password */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
+              <label className="block text-xs font-medium text-gray-300 mb-2">
                 Confirm New Password
               </label>
               <div className="relative">
@@ -242,23 +242,23 @@ const ChangePasswordPage = () => {
                   onChange={handleChange}
                   placeholder="Repeat your new password"
                   required
-                  className={`w-full px-4 py-3 border rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-50 transition-all pr-12 ${
+                  className={`w-full px-4 py-3 border bg-black/20 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/30 transition-all pr-12 ${
                     formData.confirmPassword.length > 0 &&
                     formData.confirmPassword !== formData.newPassword
-                      ? 'border-red-300 focus:border-red-400'
-                      : 'border-black/10 focus:border-[#2563EB]'
+                      ? 'border-red-500 focus:border-red-500'
+                      : 'border-white/10 focus:border-purple-500'
                   }`}
                 />
                 <button
                   type="button"
                   onClick={() => toggleShow('confirm')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors">
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors">
                   {show.confirm ? <HiEyeSlash size={16} /> : <HiEye size={16} />}
                 </button>
               </div>
               {formData.confirmPassword.length > 0 &&
                 formData.confirmPassword !== formData.newPassword && (
-                  <p className="text-xs text-red-500 mt-1">
+                  <p className="text-xs text-red-400 mt-1">
                     Passwords do not match
                   </p>
                 )}
@@ -268,7 +268,7 @@ const ChangePasswordPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-2">
+              className="w-full py-3.5 bg-purple-600 hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] text-white text-sm font-bold tracking-wide rounded-xl transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-2">
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
                   <HiArrowPath className="animate-spin" size={16} />

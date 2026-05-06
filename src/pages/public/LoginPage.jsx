@@ -86,7 +86,7 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex font-sans bg-gray-50">
+    <div className="min-h-screen flex font-sans bg-transparent">
       {/* LEFT PANEL: Branding & Visuals */}
       <div className="hidden lg:flex lg:w-1/2 mesh-bg flex-col justify-between p-16 relative overflow-hidden">
         <div className="animated-grid-bg" />
@@ -110,7 +110,7 @@ const LoginPage = () => {
         <div className="relative z-10">
           <h2 className="text-5xl font-serif text-white leading-tight mb-8">
             Start Your <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 font-bold italic">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-teal-400 font-bold italic">
               IT Career Journey
             </span> <br />
             Today.
@@ -142,9 +142,9 @@ const LoginPage = () => {
 
       {/* RIGHT PANEL: Login Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 animate-fade-in-up">
-        <div className="w-full max-w-md figma-card p-10 rounded-[2.5rem]">
+        <div className="w-full max-w-md bg-[#0A0D14]/80 backdrop-blur-xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] p-10 rounded-[2.5rem]">
           <div className="mb-10">
-            <h1 className="text-3xl font-bold text-[#0A1628] tracking-tight mb-2">
+            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
               Welcome Back
             </h1>
             <p className="text-gray-400 text-sm font-light">
@@ -155,7 +155,7 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit} className="flex flex-col gap-6">
             {/* EMAIL */}
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Email Address</label>
+              <label className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] ml-1">Email Address</label>
               <input
                 type="email"
                 name="email"
@@ -163,15 +163,15 @@ const LoginPage = () => {
                 onChange={handleChange}
                 placeholder="name@company.com"
                 required
-                className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
+                className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-white placeholder-gray-500 transition-all text-sm hover:border-white/20"
               />
             </div>
 
             {/* PASSWORD */}
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-black text-[#0A1628] uppercase tracking-[0.2em] ml-1">Password</label>
-                <Link to="/forgot-password" size={18} className="text-blue-600 text-[10px] tracking-widest uppercase font-bold hover:underline">
+                <label className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] ml-1">Password</label>
+                <Link to="/forgot-password" size={18} className="text-purple-400 text-[10px] tracking-widest uppercase font-bold hover:underline">
                   Forgot?
                 </Link>
               </div>
@@ -183,12 +183,12 @@ const LoginPage = () => {
                   onChange={handleChange}
                   placeholder="••••••••"
                   required
-                  className="w-full px-5 py-4 bg-[#F8FAFC] border border-black/5 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 apple-transition text-sm hover:border-black/10"
+                  className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-white placeholder-gray-500 transition-all text-sm hover:border-white/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors"
+                  className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
                 >
                   {showPassword ? <HiEyeSlash size={20} /> : <HiEye size={20} />}
                 </button>
@@ -199,7 +199,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-4 py-4 figma-button rounded-2xl flex justify-center items-center relative overflow-hidden group tracking-wider font-bold"
+              className="w-full mt-4 py-4 bg-purple-600 hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] text-white rounded-2xl flex justify-center items-center relative overflow-hidden group tracking-wider font-bold transition-all"
             >
               <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
               <span className="relative z-10">
@@ -213,9 +213,9 @@ const LoginPage = () => {
             </button>
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-400">
                 Don't have an account yet?{" "}
-                <Link to="/register" className="text-blue-600 font-bold hover:underline">
+                <Link to="/register" className="text-purple-400 font-bold hover:underline">
                   Register
                 </Link>
               </p>

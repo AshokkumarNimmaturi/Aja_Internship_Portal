@@ -118,7 +118,7 @@ const AdminPanelPage = () => {
     premiumPrice: "",
     bundlePrice: "",
     technologyName: "",
-    packageType: "FULL_STACK"
+    packageType: "SINGLE"
   });
 
   // ✅ ROUTE HANDLING
@@ -321,12 +321,18 @@ const AdminPanelPage = () => {
     e.preventDefault();
     setProcessing("package");
     try {
-      await createPackage(packageForm);
+      const payload = {
+        ...packageForm,
+        standardPrice: packageForm.standardPrice || (Number(packageForm.basicPrice) * 2),
+        premiumPrice: packageForm.premiumPrice || (Number(packageForm.basicPrice) * 3),
+        bundlePrice: packageForm.bundlePrice || 0
+      };
+      await createPackage(payload);
       toast.success("Package created successfully");
       setShowPackageForm(false);
       setPackageForm({
         name: "", description: "", basicPrice: "", standardPrice: "", 
-        premiumPrice: "", bundlePrice: "", technologyName: "", packageType: "FULL_STACK"
+        premiumPrice: "", bundlePrice: "", technologyName: "", packageType: "SINGLE"
       });
       fetchData();
     } catch (err) {
@@ -405,6 +411,11 @@ const AdminPanelPage = () => {
               {activeView === "Users" && user?.role === 'ADMIN' && (
                 <button onClick={() => setShowUserForm(true)} className="flex items-center gap-2 px-6 py-2.5 bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-black transition-all shadow-sm active:scale-95">
                   <HiUserPlus size={16} /> New Agent
+                </button>
+              )}
+              {activeView === "Packages" && user?.role === 'ADMIN' && (
+                <button onClick={() => setShowPackageForm(true)} className="flex items-center gap-2 px-6 py-2.5 bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-black transition-all shadow-sm active:scale-95">
+                  <HiPlusCircle size={16} /> New Package
                 </button>
               )}
               <button onClick={fetchData} className="p-2.5 bg-white border border-[#E3E6E8] text-gray-400 rounded-lg hover:bg-gray-50 transition-all active:scale-95">
@@ -903,17 +914,17 @@ const AdminPanelPage = () => {
                 <form onSubmit={handleCreatePackage} className="grid grid-cols-2 gap-6">
                   <div className="col-span-2 space-y-1.5">
                     <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Product Identification</label>
-                    <input required value={packageForm.name} onChange={e => setPackageForm({...packageForm, name: e.target.value})} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-[#E3E6E8] outline-none focus:bg-white focus:border-[#0074CC] transition-all text-xs font-bold" placeholder="e.g. Distributed Systems Mastery" />
+                    <input required value={packageForm.name} onChange={e => setPackageForm({...packageForm, name: e.target.value})} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-[#E3E6E8] outline-none focus:bg-white focus:border-[#0074CC] transition-all text-xs font-bold text-[#0A1628]" placeholder="e.g. Distributed Systems Mastery" />
                   </div>
                   <div className="col-span-2 space-y-1.5">
                     <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Value Proposition</label>
-                    <textarea rows="3" value={packageForm.description} onChange={e => setPackageForm({...packageForm, description: e.target.value})} className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-[#E3E6E8] outline-none focus:bg-white focus:border-[#0074CC] transition-all text-xs font-medium leading-relaxed uppercase tracking-tight opacity-70" placeholder="Define the mastery offered..." />
+                    <textarea rows="3" value={packageForm.description} onChange={e => setPackageForm({...packageForm, description: e.target.value})} className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-[#E3E6E8] outline-none focus:bg-white focus:border-[#0074CC] transition-all text-xs font-medium leading-relaxed uppercase tracking-tight opacity-70 text-[#0A1628]" placeholder="Define the mastery offered..." />
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Entry Tier Price</label>
                     <div className="relative">
                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-300 font-bold text-[10px]">₹</span>
-                       <input required type="number" value={packageForm.basicPrice} onChange={e => setPackageForm({...packageForm, basicPrice: e.target.value})} className="w-full pl-8 pr-4 py-2.5 rounded-lg bg-gray-50 border border-[#E3E6E8] focus:bg-white focus:border-[#0074CC] outline-none text-xs font-bold" />
+                       <input required type="number" value={packageForm.basicPrice} onChange={e => setPackageForm({...packageForm, basicPrice: e.target.value})} className="w-full pl-8 pr-4 py-2.5 rounded-lg bg-gray-50 border border-[#E3E6E8] focus:bg-white focus:border-[#0074CC] outline-none text-xs font-bold text-[#0A1628]" />
                     </div>
                   </div>
                   <div className="space-y-1.5">
@@ -925,15 +936,13 @@ const AdminPanelPage = () => {
                   </div>
                   <div className="space-y-1.5">
                     <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Tech Core</label>
-                    <input value={packageForm.technologyName} onChange={e => setPackageForm({...packageForm, technologyName: e.target.value})} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-[#E3E6E8] outline-none focus:bg-white focus:border-[#0074CC] text-xs font-bold" placeholder="e.g. Distributed Systems" />
+                    <input value={packageForm.technologyName} onChange={e => setPackageForm({...packageForm, technologyName: e.target.value})} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-[#E3E6E8] outline-none focus:bg-white focus:border-[#0074CC] text-xs font-bold text-[#0A1628]" placeholder="e.g. Distributed Systems" />
                   </div>
                   <div className="space-y-1.5">
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Storefront Category</label>
-                    <select value={packageForm.packageType} onChange={e => setPackageForm({...packageForm, packageType: e.target.value})} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-[#E3E6E8] outline-none text-[9px] font-bold uppercase tracking-widest cursor-pointer shadow-sm">
-                      <option value="FULL_STACK">FULL STACK</option>
-                      <option value="BACKEND">BACKEND</option>
-                      <option value="FRONTEND">FRONTEND</option>
-                      <option value="SYSTEM_DESIGN">S-DESIGN</option>
+                    <label className="text-[9px] font-bold uppercase tracking-widest text-gray-400 ml-1">Package Type</label>
+                    <select value={packageForm.packageType} onChange={e => setPackageForm({...packageForm, packageType: e.target.value})} className="w-full px-4 py-2.5 rounded-lg bg-gray-50 border border-[#E3E6E8] outline-none text-[9px] font-bold uppercase tracking-widest cursor-pointer shadow-sm text-[#0A1628]">
+                      <option value="SINGLE">SINGLE TECHNOLOGY</option>
+                      <option value="BUNDLE">MASTERY BUNDLE</option>
                     </select>
                   </div>
                   <button className="col-span-2 bg-[#0A1628] text-white py-3 rounded-lg text-[9px] font-bold uppercase tracking-widest mt-6 hover:bg-black transition-all shadow-sm active:scale-95 disabled:opacity-50">

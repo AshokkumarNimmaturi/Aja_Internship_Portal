@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 const Footer = () => {
   return (
-    <footer className="bg-[#0A1628] text-white/60 px-6 py-20">
+    <footer className="bg-[#050505] border-t border-white/5 text-white/60 px-6 py-20 relative z-10">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-16">
           <div className="col-span-1 md:col-span-2">
@@ -12,7 +12,7 @@ const Footer = () => {
                 <div className="text-white text-lg font-bold leading-tight">
                   Aja Interview Vault
                 </div>
-                <div className="text-[10px] text-blue-400 font-bold uppercase tracking-widest leading-tight">
+                <div className="text-[10px] text-purple-400 font-bold uppercase tracking-widest leading-tight">
                   Aja Consulting Services LLP
                 </div>
               </div>

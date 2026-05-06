@@ -12,10 +12,12 @@
 
 body {
   font-family: 'Inter', system-ui, sans-serif;
-  background-color: #ffffff;
-  color: #0d0d0d;
+  background-color: #050505;
+  background-image: radial-gradient(circle at center, #0B0E14 0%, #050505 100%);
+  color: #e5e7eb;
   -webkit-font-smoothing: antialiased;
   letter-spacing: -0.01em;
+  min-height: 100vh;
 }
 
 /* 🏢 ELITE INNER PORTAL SYSTEM 🏢 */
@@ -340,3 +342,55 @@ h4,
     transform: translateX(40px) translateY(40px);
   }
 }
+
+/* 🌌 COSMIC SHOOTING STARS 🌌 */
+@keyframes shooting-star {
+  0% {
+    transform: translateX(0) translateY(0) rotate(-45deg) scale(0);
+    opacity: 1;
+  }
+  10% {
+    transform: translateX(-50px) translateY(50px) rotate(-45deg) scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-800px) translateY(800px) rotate(-45deg) scale(0);
+    opacity: 0;
+  }
+}
+
+.cosmic-bg {
+  background-color: #050505;
+  background-image: radial-gradient(circle at center, #0B0E14 0%, #050505 100%);
+}
+
+.shooting-star {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100px;
+  height: 2px;
+  background: linear-gradient(-45deg, rgba(168, 85, 247, 1), rgba(0, 0, 255, 0));
+  border-radius: 999px;
+  filter: drop-shadow(0 0 6px rgba(168, 85, 247, 1));
+  animation: shooting-star 3s linear infinite;
+  opacity: 0;
+}
+
+.shooting-star::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 2px;
+  background: linear-gradient(-45deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 1), rgba(255, 255, 255, 0));
+  border-radius: 100%;
+}
+
+.star-1 { top: 0%; left: 80%; animation-delay: 0s; animation-duration: 3s; }
+.star-2 { top: 20%; left: 90%; animation-delay: 1.2s; animation-duration: 4s; }
+.star-3 { top: 10%; left: 50%; animation-delay: 2.5s; animation-duration: 2.5s; }
+.star-4 { top: 40%; left: 70%; animation-delay: 0.8s; animation-duration: 3.5s; }
+.star-5 { top: -10%; left: 60%; animation-delay: 3s; animation-duration: 4s; }
+.star-6 { top: 30%; left: 100%; animation-delay: 1.8s; animation-duration: 2.8s; }
