@@ -221,7 +221,7 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
           </div>
           <button
             onClick={handleLogout}
-            className={`text-white/10 hover:text-white transition-colors shrink-0 p-2 rounded-lg hover:bg-white/5 ${!isHovered && 'hidden'}`}
+            className={`text-white/20 hover:text-red-400 transition-all duration-300 shrink-0 p-2 rounded-lg hover:bg-red-500/10 ${!isHovered && 'hidden'}`}
           >
             <HiArrowRightOnRectangle className="w-4 h-4" />
           </button>

@@ -39,13 +39,15 @@ const LoginPage = () => {
 
       const user = res.data.user;
       const accessToken = res.data.accessToken;
+      const refreshToken = res.data.refreshToken;
 
       // ✅ STORE TOKEN (ONLY ONE SOURCE)
       localStorage.setItem("token", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
       localStorage.setItem("user", JSON.stringify(user));
 
       // ✅ Update AuthContext (no duplication issue now)
-      login(user, accessToken);
+      login(user, accessToken, refreshToken);
 
       toast.success(`Welcome back, ${user.fullName}!`);
 

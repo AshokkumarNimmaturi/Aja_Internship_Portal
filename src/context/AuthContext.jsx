@@ -15,18 +15,25 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(() => {
     return localStorage.getItem("token") || null;
   });
+  const [refreshToken, setRefreshToken] = useState(() => {
+    return localStorage.getItem("refreshToken") || null;
+  });
 
-  const login = (userData, accessToken) => {
+  const login = (userData, accessToken, refreshTok) => {
     setUser(userData);
     setToken(accessToken);
+    setRefreshToken(refreshTok);
     localStorage.setItem("token", accessToken);
+    localStorage.setItem("refreshToken", refreshTok);
     localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
+    setRefreshToken(null);
     localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
     localStorage.removeItem("user");
   };
 

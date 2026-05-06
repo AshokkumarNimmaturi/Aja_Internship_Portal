@@ -32,16 +32,56 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
+    const originalRequest = error.config;
     console.error("[API RESPONSE ERROR]:", error.response?.status, error.message);
 
     // 🔥 Guard: Handle 401 (Unauthorized/Expired Session)
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const refreshToken = localStorage.getItem("refreshToken");
+
+      // Attempt to refresh token if available
+      if (refreshToken) {
+        return axios
+          .post("http://localhost:8080/api/auth/refresh", { refreshToken })
+          .then((res) => {
+            if (res.status === 200) {
+              const newAccessToken = res.data.accessToken;
+              localStorage.setItem("token", newAccessToken);
+              
+              // Update headers for retry
+              originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+              return axiosInstance(originalRequest);
+            }
+          })
+          .catch((refreshError) => {
+            // If refresh fails, clear storage and redirect
+            localStorage.removeItem("token");
+            localStorage.removeItem("refreshToken");
+            localStorage.removeItem("user");
+
+            const path = window.location.pathname;
+            const isProtectedRoute = 
+              path.startsWith("/portal") || 
+              path.startsWith("/subscriber") || 
+              path.startsWith("/dashboard");
+
+            if (isProtectedRoute && !path.includes("/login")) {
+              window.location.href = "/login?expired=true";
+            }
+            return Promise.reject(refreshError);
+          });
+      }
+
+      // If no refresh token available, fallback to original logout logic
       localStorage.removeItem("token");
       localStorage.removeItem("user");
 
-      // Only redirect if on a protected route (portal or subscriber)
       const path = window.location.pathname;
-      const isProtectedRoute = path.startsWith("/portal") || path.startsWith("/subscriber") || path.startsWith("/dashboard");
+      const isProtectedRoute = 
+        path.startsWith("/portal") || 
+        path.startsWith("/subscriber") || 
+        path.startsWith("/dashboard");
 
       if (isProtectedRoute && !path.includes("/login")) {
         window.location.href = "/login";
