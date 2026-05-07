@@ -4,25 +4,37 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
-    const saved = sessionStorage.getItem("user");
-    return saved ? JSON.parse(saved) : null;
+    try {
+      const saved = localStorage.getItem("user");
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      console.error("AuthContext: Could not parse saved user", e);
+      return null;
+    }
   });
   const [token, setToken] = useState(() => {
-    return sessionStorage.getItem("accessToken") || null;
+    return localStorage.getItem("token") || null;
+  });
+  const [refreshToken, setRefreshToken] = useState(() => {
+    return localStorage.getItem("refreshToken") || null;
   });
 
-  const login = (userData, accessToken) => {
+  const login = (userData, accessToken, refreshTok) => {
     setUser(userData);
     setToken(accessToken);
-    sessionStorage.setItem("accessToken", accessToken);
-    sessionStorage.setItem("user", JSON.stringify(userData));
+    setRefreshToken(refreshTok);
+    localStorage.setItem("token", accessToken);
+    localStorage.setItem("refreshToken", refreshTok);
+    localStorage.setItem("user", JSON.stringify(userData));
   };
 
   const logout = () => {
     setUser(null);
     setToken(null);
-    sessionStorage.removeItem("accessToken");
-    sessionStorage.removeItem("user");
+    setRefreshToken(null);
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
   };
 
   const isAuthenticated = !!token;
@@ -31,6 +43,14 @@ export const AuthProvider = ({ children }) => {
 
   const hasAnyRole = (roles) => roles.includes(user?.role);
 
+  const updateUser = (updates) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates };
+      setUser(updatedUser);
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -38,6 +58,7 @@ export const AuthProvider = ({ children }) => {
         token,
         login,
         logout,
+        updateUser,
         isAuthenticated,
         hasRole,
         hasAnyRole,

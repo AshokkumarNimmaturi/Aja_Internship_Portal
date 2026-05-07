@@ -1,301 +1,223 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { PlusCircle, Clock, CheckCircle, XCircle } from "lucide-react";
+// ✅ UPGRADED: Using elite Heroicons 2
+import { 
+  HiPlusCircle, 
+  HiClock, 
+  HiCheckCircle, 
+  HiXCircle, 
+  HiArrowPath, 
+  HiChartBar, 
+  HiCursorArrowRays, 
+  HiTrophy 
+} from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import TechBadge from "../../components/common/TechBadge";
+import { PortalSidebar } from "../../components/portal/PortalSidebar";
+import { fetchMyQuestions, fetchQuestions } from "../../api/questionApi";
+import VoiceCallButton from "../../components/common/VoiceCallButton";
 
-const mockSubmissions = [
-  {
-    id: 1,
-    title: "What is the difference between @Component and @Bean in Spring?",
-    technology: "Spring Boot",
-    status: "APPROVED",
-    date: "10 Mar 2026",
-  },
-  {
-    id: 2,
-    title: "Explain Java memory model and garbage collection.",
-    technology: "Java",
-    status: "PENDING",
-    date: "12 Mar 2026",
-  },
-  {
-    id: 3,
-    title: "How does React context API work internally?",
-    technology: "React",
-    status: "REJECTED",
-    date: "8 Mar 2026",
-  },
-  {
-    id: 4,
-    title: "What are the differences between SQL joins?",
-    technology: "SQL",
-    status: "APPROVED",
-    date: "5 Mar 2026",
-  },
-];
-
-const StatusBadge = ({ status }) => {
+export const StatusBadge = ({ status }) => {
   const styles = {
-    APPROVED: "bg-green-50 text-green-600",
-    PENDING: "bg-amber-50 text-amber-600",
-    REJECTED: "bg-red-50 text-red-600",
+    APPROVED: "bg-green-50 text-green-600 border border-green-100",
+    PENDING: "bg-amber-50 text-amber-600 border border-amber-100",
+    REJECTED: "bg-red-50 text-red-600 border border-red-100",
   };
   const icons = {
-    APPROVED: <CheckCircle size={11} />,
-    PENDING: <Clock size={11} />,
-    REJECTED: <XCircle size={11} />,
+    APPROVED: <HiCheckCircle size={12} />,
+    PENDING: <HiClock size={12} />,
+    REJECTED: <HiXCircle size={12} />,
   };
   return (
-    <span
-      className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full ${styles[status]}`}
-    >
-      {icons[status]} {status}
+    <span className={`flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-widest px-2 py-1 rounded-lg ${styles[status] || styles.PENDING}`}>
+      {icons[status] || icons.PENDING} {status}
     </span>
   );
 };
 
-const PortalSidebar = ({ user, role, activeItem }) => {
-  const employeeNav = [
-    { label: "Dashboard", icon: "🏠", path: "/portal/dashboard" },
-    { label: "Submit Question", icon: "✏️", path: "/portal/submit" },
-    { label: "My Submissions", icon: "📋", path: "/portal/submissions" },
-    { label: "My Answers", icon: "💬", path: "/portal/answers" },
-    { label: "Profile", icon: "👤", path: "/portal/profile" },
-  ];
-  const tutorNav = [
-    { label: "Dashboard", icon: "🏠", path: "/portal/dashboard" },
-    { label: "Pending Review", icon: "⏳", path: "/portal/review", badge: 5 },
-    { label: "Access Requests", icon: "🔑", path: "/portal/access" },
-    { label: "All Questions", icon: "📚", path: "/portal/questions" },
-    { label: "Profile", icon: "👤", path: "/portal/profile" },
-  ];
-  const adminNav = [
-    { label: "Dashboard", icon: "🏠", path: "/portal/dashboard" },
-    { label: "Users", icon: "👥", path: "/portal/admin" },
-    { label: "Pending Review", icon: "⏳", path: "/portal/review", badge: 5 },
-    { label: "Access Requests", icon: "🔑", path: "/portal/access" },
-    { label: "Packages", icon: "📦", path: "/portal/packages" },
-    { label: "Audit Log", icon: "📊", path: "/portal/audit" },
-    { label: "Profile", icon: "👤", path: "/portal/profile" },
+const EmployeeDashboard = () => {
+  const { user } = useAuth();
+  const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [globalStats, setGlobalStats] = useState({ totalReceived: 0, totalQuestions: 0 });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setLoading(true);
+      
+      // ✅ RESILIENT FETCHING: Load personal data first
+      try {
+        const myRes = await fetchMyQuestions();
+        setSubmissions(myRes.data || []);
+      } catch (err) {
+        console.warn("Could not load personal submissions", err.response?.status);
+      }
+
+      // ✅ PLATFORM STATS: Fail quietly if restricted
+      try {
+        const allRes = await fetchQuestions();
+        const allQuestions = allRes.data.content || allRes.data;
+        const validQuestions = Array.isArray(allQuestions) ? allQuestions : [];
+        
+        setGlobalStats({
+          totalReceived: validQuestions.length,
+          totalQuestions: validQuestions.filter(q => q.status === 'APPROVED').length
+        });
+      } catch (err) {
+        // Employees might not have permission for the global list, which is fine
+        console.debug("Global stats restricted for this role");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const stats = [
+    { label: "Total Intake", value: submissions.length, icon: HiChartBar, color: "text-blue-600", bg: "bg-blue-50" },
+    { label: "Approved Mastery", value: submissions.filter(q => q.status === "APPROVED").length, icon: HiTrophy, color: "text-emerald-600", bg: "bg-emerald-50" },
+    { label: "Awaiting Sync", value: submissions.filter(q => q.status === "PENDING").length, icon: HiCursorArrowRays, color: "text-amber-600", bg: "bg-amber-50" }
   ];
 
-  const navItems =
-    role === "ADMIN" ? adminNav : role === "TUTOR" ? tutorNav : employeeNav;
-
-  const roleBadgeStyle = {
-    ADMIN: "bg-[#0A1628] text-white",
-    TUTOR: "bg-blue-600 text-white",
-    EMPLOYEE: "bg-teal-600 text-white",
+  const formatDate = (dateString) => {
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
   };
 
   return (
-    <aside className="w-64 shrink-0 bg-[#0A1628] min-h-screen flex flex-col">
-      {/* Logo */}
-      <div className="p-6 border-b border-white/10">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center">
-            <span className="text-white text-xs font-bold">AIP</span>
-          </div>
-          <div>
-            <div className="text-white text-xs font-semibold leading-tight">
-              Aja Internship Portal
-            </div>
-            <div className="text-white/40 text-xs leading-tight">
-              Internal Portal
-            </div>
-          </div>
-        </Link>
-        {/* Role Badge */}
-        <div className="mt-3">
-          <span
-            className={`text-xs font-semibold px-3 py-1 rounded-full ${roleBadgeStyle[role] || "bg-gray-600 text-white"}`}
-          >
-            {role}
-          </span>
-        </div>
-      </div>
+    <div className="flex h-screen bg-[#F3F4F6] font-sans overflow-hidden">
+      <PortalSidebar user={user} role={user?.role || "EMPLOYEE"} activeItem="Dashboard" />
 
-      {/* Nav */}
-      <nav className="flex-1 p-4 flex flex-col gap-1">
-        {navItems.map((item) => (
-          <Link
-            key={item.label}
-            to={item.path}
-            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm transition-all ${
-              activeItem === item.label
-                ? "bg-white text-[#0A1628] font-medium"
-                : "text-white/60 hover:bg-white/10 hover:text-white"
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </div>
-            {item.badge && (
-              <span className="bg-red-500 text-white text-xs font-semibold w-5 h-5 rounded-full flex items-center justify-center">
-                {item.badge}
-              </span>
-            )}
-          </Link>
-        ))}
-      </nav>
-
-      {/* Bottom */}
-      <div className="p-4 border-t border-white/10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-white/20 text-white text-xs font-semibold flex items-center justify-center">
-              {user?.name?.charAt(0) || "U"}
-            </div>
+      <main className="flex-1 p-8 py-10 overflow-y-auto w-full">
+        <div className="max-w-6xl mx-auto">
+          {/* Header - Minimalist */}
+          <div className="flex items-center justify-between mb-8">
             <div>
-              <div className="text-xs font-medium text-white leading-tight">
-                {user?.name || "User"}
-              </div>
-              <div className="text-xs text-white/40 leading-tight">
-                {user?.email || ""}
-              </div>
+              <h1 className="text-xl font-bold text-[#0A1628] mb-1">Contributor Dashboard</h1>
+              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+                Active Member: <span className="text-[#0074CC]">{user?.fullName || "Aja Member"}</span>
+              </p>
             </div>
-          </div>
-          <Link
-            to="/login"
-            className="text-white/40 hover:text-red-400 text-xs transition-colors"
-          >
-            Logout
-          </Link>
-        </div>
-      </div>
-    </aside>
-  );
-};
-
-export { PortalSidebar, StatusBadge };
-
-const EmployeeDashboard = () => {
-  const { user } = useAuth();
-
-  const stats = [
-    {
-      label: "My Submissions",
-      value: mockSubmissions.length,
-      icon: "📋",
-      color: "bg-blue-50 text-[#2563EB]",
-    },
-    {
-      label: "Approved",
-      value: mockSubmissions.filter((q) => q.status === "APPROVED").length,
-      icon: "✅",
-      color: "bg-green-50 text-green-600",
-    },
-    {
-      label: "Pending",
-      value: mockSubmissions.filter((q) => q.status === "PENDING").length,
-      icon: "⏳",
-      color: "bg-amber-50 text-amber-600",
-    },
-  ];
-
-  return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
-      <PortalSidebar
-        user={user}
-        role={user?.role || "EMPLOYEE"}
-        activeItem="Dashboard"
-      />
-
-      <main className="flex-1 p-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="font-serif text-3xl text-[#0A1628] mb-1">
-              Welcome, {user?.name?.split(" ")[0] || "Employee"} 👋
-            </h1>
-            <p className="text-sm text-gray-400 font-light">
-              Share your interview experience with the team
-            </p>
-          </div>
-          <Link
-            to="/portal/submit"
-            className="flex items-center gap-2 px-5 py-2.5 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all"
-          >
-            <PlusCircle size={15} />
-            Submit Question
-          </Link>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          {stats.map((stat) => (
-            <div
-              key={stat.label}
-              className="bg-white border border-black/8 rounded-2xl p-5"
-            >
-              <div
-                className={`w-10 h-10 rounded-xl flex items-center justify-center text-lg mb-3 ${stat.color}`}
-              >
-                {stat.icon}
-              </div>
-              <div className="font-serif text-3xl text-[#0A1628] mb-1">
-                {stat.value}
-              </div>
-              <div className="text-xs text-gray-400">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Recent Submissions */}
-        <div className="bg-white border border-black/8 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-base font-semibold text-[#0A1628]">
-              Recent Submissions
-            </h2>
             <Link
               to="/portal/submit"
-              className="text-xs text-[#2563EB] hover:underline"
+              className="flex items-center gap-2 px-6 py-2 bg-[#0A1628] text-white text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-black transition-all active:scale-95"
             >
-              + Submit New
+              <HiPlusCircle size={14} /> New Submission
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-black/5">
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">
-                    Question
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">
-                    Technology
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">
-                    Status
-                  </th>
-                  <th className="text-left text-xs font-medium text-gray-400 pb-3">
-                    Date
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {mockSubmissions.map((q) => (
-                  <tr
-                    key={q.id}
-                    className="border-b border-black/5 last:border-b-0 hover:bg-gray-50 transition-colors"
-                  >
-                    <td className="py-3 pr-4">
-                      <p className="text-sm text-gray-700 line-clamp-1">
-                        {q.title}
-                      </p>
-                    </td>
-                    <td className="py-3 pr-4">
-                      <TechBadge tech={q.technology} />
-                    </td>
-                    <td className="py-3 pr-4">
-                      <StatusBadge status={q.status} />
-                    </td>
-                    <td className="py-3 text-xs text-gray-400">{q.date}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Stats Overview - High Density */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {stats.map((s, i) => (
+              <div key={i} className="bg-white p-6 rounded-lg border border-[#E3E6E8] shadow-sm hover:border-[#0074CC]/20 transition-all group">
+                <div className="flex items-center justify-between mb-4">
+                  <div className={`w-10 h-10 rounded-lg ${s.bg} ${s.color} flex items-center justify-center border border-black/5`}>
+                     <s.icon size={18} />
+                  </div>
+                  <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">{s.label}</div>
+                </div>
+                <div className="text-3xl font-bold text-[#0A1628]">{s.value}</div>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Recent Table - Professional */}
+            <div className="lg:col-span-2">
+              <div className="bg-white rounded-lg border border-[#E3E6E8] p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-sm font-bold text-[#0A1628] uppercase tracking-widest">Submission Stream</h2>
+                  <Link to="/portal/submissions" className="text-[10px] font-bold text-[#0074CC] uppercase tracking-widest hover:underline">View All</Link>
+                </div>
+
+                <div className="overflow-x-auto">
+                  {loading ? (
+                    <div className="py-20 text-center"><HiArrowPath className="animate-spin mx-auto text-gray-200" size={32} /></div>
+                  ) : submissions.length > 0 ? (
+                    <table className="w-full text-left font-sans text-xs">
+                      <thead>
+                        <tr className="border-b border-[#E3E6E8]">
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px]">Content</th>
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px]">Organization</th>
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px]">Stack</th>
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px] text-center">Status</th>
+                          <th className="pb-3 font-bold text-gray-400 uppercase tracking-widest text-[9px] text-right">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#F3F4F6]">
+                        {submissions.slice(0, 8).map((q) => (
+                          <tr key={q.id} className="group hover:bg-gray-50/50 transition-all cursor-default text-xs">
+                            <td className="py-4 font-bold text-[#0A1628] line-clamp-1 max-w-[200px] group-hover:text-[#0074CC]">{q.title}</td>
+                            <td className="py-4">
+                               <span className="font-bold text-gray-500 uppercase tracking-tight text-[10px]">{q.clientName || "General"}</span>
+                            </td>
+                            <td className="py-4"><TechBadge tech={q.technologyName || q.technology} className="!text-[9px] !py-0.5" /></td>
+                            <td className="py-4 flex justify-center"><StatusBadge status={q.status} /></td>
+                            <td className="py-4 text-right text-gray-400 font-bold uppercase text-[9px]">
+                               {new Date(q.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' })}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  ) : (
+                    <div className="py-20 text-center bg-gray-50/30 rounded-lg border border-dashed border-[#E3E6E8]">
+                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mb-6">Pipeline idle. Start your contribution.</p>
+                       <Link to="/portal/submit" className="inline-flex items-center gap-2 px-6 py-2 bg-[#0A1628] text-white text-[9px] font-bold uppercase tracking-widest rounded-lg hover:bg-black transition-all active:scale-95">
+                          Launch Submission
+                       </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Platform Insights - Compact */}
+            <div className="space-y-4">
+               <div className="bg-[#0A1628] p-6 rounded-lg text-white shadow-sm relative overflow-hidden group">
+                  <h3 className="text-sm font-bold uppercase tracking-widest mb-6">Network Health</h3>
+                  <div className="space-y-6">
+                    <div>
+                       <div className="flex justify-between text-[10px] font-bold text-blue-300 uppercase tracking-widest mb-2">
+                          <span>Verified Curation</span>
+                          <span>{((globalStats.totalQuestions / (globalStats.totalReceived || 1)) * 100).toFixed(0)}%</span>
+                       </div>
+                       <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+                          <div className="h-full bg-blue-400 transition-all duration-1000" style={{ width: `${(globalStats.totalQuestions / (globalStats.totalReceived || 1)) * 100}%` }} />
+                       </div>
+                    </div>
+                    <div className="pt-4 border-t border-white/5 grid grid-cols-2 gap-3">
+                       <div className="bg-white/5 p-3 rounded-lg border border-white/5 text-center">
+                          <span className="block text-[8px] text-blue-200 font-bold uppercase tracking-widest mb-1">Global Vault</span>
+                          <span className="text-lg font-bold text-white">{globalStats.totalReceived}</span>
+                       </div>
+                       <div className="bg-white/5 p-3 rounded-lg border border-white/5 text-center">
+                          <span className="block text-[8px] text-green-300 font-bold uppercase tracking-widest mb-1">Verified</span>
+                          <span className="text-lg font-bold text-white">{globalStats.totalQuestions}</span>
+                       </div>
+                    </div>
+                  </div>
+               </div>
+
+               <div className="bg-white border border-[#E3E6E8] p-6 rounded-lg shadow-sm">
+                  <h4 className="text-[10px] font-bold text-[#0A1628] uppercase tracking-widest mb-4">Submission Ethics</h4>
+                  <ul className="space-y-4">
+                     <li className="flex gap-3 text-[10px] text-gray-500 leading-normal font-bold uppercase tracking-widest">
+                        <div className="mt-1 w-1 h-1 rounded-full bg-[#0074CC] shrink-0" />
+                        Detailed nuance ensures priority sync.
+                     </li>
+                     <li className="flex gap-3 text-[10px] text-gray-500 leading-normal font-bold uppercase tracking-widest">
+                        <div className="mt-1 w-1 h-1 rounded-full bg-[#0074CC] shrink-0" />
+                        Accurate tagging optimizes vault discovery.
+                     </li>
+                  </ul>
+                  
+                  <div className="mt-8 pt-6 border-t border-[#F3F4F6]">
+                    <VoiceCallButton className="w-full !rounded-lg !py-2.5 !text-[9px] !bg-gray-50 !text-[#0A1628] border border-gray-100 hover:!bg-white" />
+                  </div>
+               </div>
+            </div>
           </div>
         </div>
       </main>

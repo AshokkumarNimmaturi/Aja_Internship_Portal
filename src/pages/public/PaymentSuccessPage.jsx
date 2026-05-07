@@ -1,20 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+// ✅ UPGRADED: Using elite Heroicons 2
 import {
-  CheckCircle,
-  Calendar,
-  Package,
-  Clock,
-  ArrowRight,
-} from "lucide-react";
+  HiCheckCircle,
+  HiCalendar,
+  HiArchiveBox,
+  HiClock,
+  HiArrowLongRight,
+} from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
+import { fetchMySubscription } from "../../api/paymentApi";
 
 const PaymentSuccessPage = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const [countdown, setCountdown] = useState(10);
 
-  // Auto redirect to dashboard after 10 seconds
+  const [countdown, setCountdown] = useState(10);
+  const [subscription, setSubscription] = useState(null);
+
+  // ✅ FETCH SUBSCRIPTION (REAL DATA)
+  const fetchSubscription = async () => {
+    try {
+      const res = await fetchMySubscription();
+      setSubscription(res.data);
+    } catch (error) {
+      console.error("Failed to fetch subscription");
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscription();
+  }, []);
+
+  // ✅ AUTO REDIRECT
   useEffect(() => {
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -26,115 +44,112 @@ const PaymentSuccessPage = () => {
         return prev - 1;
       });
     }, 1000);
+
     return () => clearInterval(timer);
   }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6 py-12 font-sans">
       <div className="w-full max-w-md">
-        {/* Logo */}
+        {/* LOGO */}
         <Link to="/" className="flex items-center justify-center gap-3 mb-10">
           <div className="w-10 h-10 bg-[#0A1628] rounded-xl flex items-center justify-center">
-            <span className="text-white text-sm font-bold tracking-wide">
-              AIP
-            </span>
+            <span className="text-white text-sm font-bold tracking-wide">AIP</span>
           </div>
           <div>
             <div className="text-sm font-semibold text-[#0A1628] leading-tight">
-              Aja Internship Portal
+              Aja Interview Vault
             </div>
-            <div className="text-xs text-gray-400 leading-tight">
-              Interview Question Bank
-            </div>
+            <div className="text-xs text-gray-400 leading-tight">Interview Question Bank</div>
           </div>
         </Link>
 
-        {/* Success Card */}
+        {/* CARD */}
         <div className="bg-white rounded-2xl border border-black/8 p-8 text-center shadow-sm">
-          {/* Animated Check */}
-          <div className="flex items-center justify-center mb-6">
-            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center animate-bounce">
-              <CheckCircle size={44} className="text-green-500" />
+          {/* ICON */}
+          <div className="flex justify-center mb-6">
+            <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center animate-bounce shadow-sm">
+              <HiCheckCircle size={44} className="text-green-500" />
             </div>
           </div>
 
-          {/* Heading */}
-          <h1 className="font-serif text-3xl text-[#0A1628] mb-2">
+          {/* TITLE */}
+          <h1 className="text-3xl font-semibold text-[#0A1628] mb-2 tracking-tight">
             Payment Successful!
           </h1>
-          <p className="text-gray-400 font-light text-sm mb-8">
-            Welcome aboard{user?.name ? `, ${user.name}` : ""}! Your
-            subscription is now active and you have full access.
+
+          <p className="text-gray-400 text-sm mb-8 font-light">
+            Welcome aboard{user?.fullName ? `, ${user.fullName}` : ""}! 🎉
           </p>
 
-          {/* Subscription Details */}
-          <div className="bg-gray-50 rounded-2xl p-5 mb-6 text-left">
-            <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-4">
+          {/* SUBSCRIPTION DETAILS */}
+          <div className="bg-gray-50 rounded-2xl p-5 mb-6 text-left border border-black/5 shadow-inner">
+            <h2 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">
               Subscription Details
             </h2>
+
             <div className="flex flex-col gap-3">
-              <div className="flex items-center justify-between">
+              {/* PACKAGE */}
+              <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Package size={14} className="text-[#2563EB]" />
-                  Package
+                  <HiArchiveBox size={14} />
+                  <span>Package</span>
                 </div>
-                <span className="text-sm font-medium text-[#0A1628]">
-                  {user?.packageName || "Your Package"}
+                <span className="text-sm font-bold text-[#0A1628]">
+                  {subscription?.packageName || "Your Package"}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+
+              {/* START DATE */}
+              <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Calendar size={14} className="text-[#2563EB]" />
-                  Start Date
+                  <HiCalendar size={14} />
+                  <span>Start Date</span>
                 </div>
-                <span className="text-sm font-medium text-[#0A1628]">
-                  {new Date().toLocaleDateString("en-IN", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
+                <span className="text-sm font-medium text-[#0D0D0D]">
+                  {subscription?.startDate
+                    ? new Date(subscription.startDate).toLocaleDateString(
+                        "en-IN",
+                      )
+                    : new Date().toLocaleDateString("en-IN")}
                 </span>
               </div>
-              <div className="flex items-center justify-between">
+
+              {/* STATUS */}
+              <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2 text-sm text-gray-400">
-                  <Clock size={14} className="text-[#2563EB]" />
-                  Status
+                  <HiClock size={14} />
+                  <span>Status</span>
                 </div>
-                <span className="text-xs font-semibold px-3 py-1 bg-green-50 text-green-600 rounded-full">
-                  Active
+                <span className="text-[10px] font-bold px-3 py-1 bg-green-50 text-green-600 rounded-full border border-green-100 uppercase tracking-widest leading-none">
+                  {subscription?.status || "Active"}
                 </span>
               </div>
             </div>
           </div>
 
-          {/* CTA Buttons */}
+          {/* BUTTONS */}
           <div className="flex flex-col gap-3">
             <Link
               to="/dashboard"
-              className="w-full py-3.5 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all flex items-center justify-center gap-2"
+              className="py-4 bg-[#0A1628] text-white rounded-xl flex items-center justify-center gap-2 font-bold text-sm shadow-xl shadow-blue-900/10 hover:bg-[#0F2340] transition-all"
             >
-              Go to My Dashboard
-              <ArrowRight size={15} />
+              Go to Dashboard <HiArrowLongRight size={16} />
             </Link>
+
             <Link
               to="/packages"
-              className="w-full py-3.5 border border-black/10 text-gray-600 text-sm rounded-xl hover:bg-gray-50 transition-all"
+              className="py-4 border border-black/8 rounded-xl text-[#0A1628] font-bold text-sm hover:bg-gray-50 transition-all shadow-sm"
             >
-              Browse All Packages
+              Browse Packages
             </Link>
           </div>
 
-          {/* Auto Redirect Note */}
-          <p className="text-xs text-gray-300 mt-5">
-            Redirecting to dashboard in{" "}
-            <span className="text-[#2563EB] font-medium">{countdown}s</span>{" "}
-            automatically...
+          {/* COUNTDOWN */}
+          <p className="text-[10px] uppercase font-bold tracking-widest text-gray-300 mt-6">
+            Redirecting in <span className="text-blue-500">{countdown}s</span>
           </p>
         </div>
-
-        <p className="text-center text-xs text-gray-300 mt-6">
-          © 2026 Aja Consulting Services LLP. All rights reserved.
-        </p>
       </div>
     </div>
   );

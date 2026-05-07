@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Link,
   useParams,
@@ -6,48 +6,19 @@ import {
   useNavigate,
 } from "react-router-dom";
 import Navbar from "../../components/common/Navbar";
-import { Check, ShieldCheck, ArrowLeft, Tag } from "lucide-react";
+import { HiCheck, HiShieldCheck, HiArrowLeft, HiTag } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "../../api/axiosInstance";
+import { fetchPackageById } from "../../api/packageApi";
+import { createOrder, verifyPayment } from "../../api/paymentApi";
 import toast from "react-hot-toast";
 
-const packagesData = {
-  1: {
-    icon: "☕",
-    name: "Backend Package",
-    techs: "Java · Spring Boot · Microservices · SQL",
-  },
-  2: {
-    icon: "⚛️",
-    name: "Frontend Package",
-    techs: "React · JavaScript · TypeScript · CSS",
-  },
-  3: {
-    icon: "🐳",
-    name: "DevOps Package",
-    techs: "Docker · Kubernetes · CI/CD · Linux",
-  },
-  4: {
-    icon: "☁️",
-    name: "Salesforce Package",
-    techs: "Apex · LWC · SOQL · Flows · Admin",
-  },
-  5: {
-    icon: "🐍",
-    name: "Python Package",
-    techs: "Core Python · Django · Flask · OOP",
-  },
-};
-
-const tierData = {
+const tierFeatures = {
   30: {
     label: "Basic",
-    price: 299,
     features: ["Full Q&A Access", "Bookmark Questions", "Search & Filter"],
   },
   90: {
     label: "Standard",
-    price: 699,
     features: [
       "Full Q&A Access",
       "Bookmark Questions",
@@ -57,7 +28,6 @@ const tierData = {
   },
   180: {
     label: "Premium",
-    price: 1199,
     features: [
       "Full Q&A Access",
       "Bookmark Questions",
@@ -67,6 +37,17 @@ const tierData = {
       "Certificate",
     ],
   },
+};
+
+const getIcon = (name) => {
+  if (!name) return "📦";
+  const lower = name.toLowerCase();
+  if (lower.includes("backend") || lower.includes("java")) return "☕";
+  if (lower.includes("frontend") || lower.includes("react")) return "⚛️";
+  if (lower.includes("devops") || lower.includes("docker")) return "🐳";
+  if (lower.includes("salesforce")) return "☁️";
+  if (lower.includes("python")) return "🐍";
+  return "📦";
 };
 
 const getExpiryDate = (days) => {
@@ -92,24 +73,48 @@ const CheckoutPage = () => {
   const [searchParams] = useSearchParams();
   const tierDays = Number(searchParams.get("tier")) || 30;
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+   const [pkg, setPkg] = useState(null);
+  const [vpa, setVpa] = useState("");
+  
+  
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
 
-  const pkg = packagesData[id];
-  const tier = tierData[tierDays];
-  const gst = Math.round(tier.price * 0.18);
-  const total = tier.price + gst;
+  useEffect(() => {
+    const fetchPackage = async () => {
+      try {
+        const res = await fetchPackageById(id);
+        setPkg(res.data);
+      } catch (error) {
+        toast.error("Package not found");
+      } finally {
+        setPageLoading(false);
+      }
+    };
+    fetchPackage();
+  }, [id]);
+
+  const tier = tierFeatures[tierDays];
+
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center font-sans bg-transparent">
+        <p className="text-gray-400">Loading order details...</p>
+      </div>
+    );
+  }
 
   if (!pkg || !tier) {
     return (
-      <div className="min-h-screen flex items-center justify-center font-sans">
+      <div className="min-h-screen flex items-center justify-center font-sans bg-transparent">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-[#0A1628] mb-3">
+          <h2 className="text-xl font-semibold text-white mb-3">
             Invalid package or tier
           </h2>
           <Link
             to="/packages"
-            className="text-[#2563EB] text-sm hover:underline"
+            className="text-purple-400 text-sm hover:underline"
           >
             ← Back to packages
           </Link>
@@ -118,8 +123,19 @@ const CheckoutPage = () => {
     );
   }
 
+  const getPrice = () => {
+    if (tierDays === 30) return pkg.basicPrice;
+    if (tierDays === 90) return pkg.standardPrice;
+    return pkg.premiumPrice;
+  };
+
+  const price = getPrice();
+  const gst = Math.round(price * 0.18);
+  const total = price + gst;
+
   const handlePayment = async () => {
     if (!isAuthenticated) {
+      localStorage.setItem("redirectAfterLogin", `/checkout/${id}?tier=${tierDays}`);
       toast.error("Please log in or register to continue");
       navigate(`/register`);
       return;
@@ -128,31 +144,28 @@ const CheckoutPage = () => {
     setLoading(true);
     try {
       // Step 1 — Create order on backend
-      const orderResponse = await axiosInstance.post("/payment/create-order", {
-        packageId: id,
-        durationDays: tierDays,
-        amount: total,
+      const orderResponse = await createOrder({
+        packageId: Number(id),
+        tier: tier.label.toUpperCase(),
       });
 
-      const { orderId, amount, currency } = orderResponse.data;
+      const { razorpayOrderId, razorpayKeyId, amount } = orderResponse.data;
 
       // Step 2 — Open Razorpay
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-        amount: amount,
-        currency: currency,
-        name: "Aja Internship Portal",
+        key: razorpayKeyId,
+        amount: amount * 100,
+        currency: "INR",
+        name: "Aja Interview Vault",
         description: `${pkg.name} — ${tier.label} Plan`,
-        order_id: orderId,
+        order_id: razorpayOrderId,
         handler: async (response) => {
           try {
             // Step 3 — Verify payment on backend
-            await axiosInstance.post("/payment/verify", {
-              orderId: response.razorpay_order_id,
-              paymentId: response.razorpay_payment_id,
-              signature: response.razorpay_signature,
-              packageId: id,
-              durationDays: tierDays,
+            await verifyPayment({
+              razorpayOrderId: response.razorpay_order_id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpaySignature: response.razorpay_signature,
             });
             toast.success("Payment successful! Welcome aboard.");
             navigate("/payment/success");
@@ -161,10 +174,13 @@ const CheckoutPage = () => {
           }
         },
         prefill: {
-          name: user?.name || "",
+          name: user?.fullName || "",
           email: user?.email || "",
+          contact: user?.phone || "",
+          method: vpa ? "upi" : undefined,
         },
-        theme: { color: "#0A1628" },
+        vpa: vpa || undefined,
+        theme: { color: "#3399cc" },
       };
 
       const razorpay = new window.Razorpay(options);
@@ -177,40 +193,40 @@ const CheckoutPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans">
+    <div className="min-h-screen bg-transparent font-sans relative z-10">
       <Navbar />
 
       <div className="pt-28 pb-16 px-6 max-w-5xl mx-auto">
         {/* Back Link */}
         <Link
           to={`/packages/${id}`}
-          className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mb-8"
+          className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors mb-8"
         >
-          <ArrowLeft size={15} /> Back to package
+          <HiArrowLeft size={15} /> Back to package
         </Link>
 
-        <h1 className="font-serif text-3xl text-[#0A1628] mb-8">
+        <h1 className="font-serif text-4xl font-bold text-white mb-8 tracking-tighter">
           Complete Your Order
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in-up">
           {/* LEFT — Order Summary */}
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-8">
             {/* Package Card */}
-            <div className="bg-white rounded-2xl border border-black/8 p-6">
+            <div className="bg-[#0A0D14]/80 backdrop-blur-xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl p-8">
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
                 Order Summary
               </h2>
 
               {/* Package Info */}
-              <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl mb-5">
-                <span className="text-3xl">{pkg.icon}</span>
+              <div className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl mb-5">
+                <span className="text-3xl">{getIcon(pkg.name)}</span>
                 <div>
-                  <div className="text-sm font-semibold text-[#0A1628]">
+                  <div className="text-sm font-semibold text-white">
                     {pkg.name}
                   </div>
                   <div className="text-xs text-gray-400 mt-0.5">
-                    {pkg.techs}
+                    {pkg.technologyName || "Technology Package"}
                   </div>
                 </div>
               </div>
@@ -218,10 +234,10 @@ const CheckoutPage = () => {
               {/* Tier Badge */}
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <Tag size={13} className="text-[#2563EB]" />
-                  <span className="text-sm text-gray-600">Selected Plan</span>
+                  <HiTag size={13} className="text-purple-400" />
+                  <span className="text-sm text-gray-300">Selected Plan</span>
                 </div>
-                <span className="text-xs font-semibold px-3 py-1 bg-blue-50 text-[#2563EB] rounded-full">
+                <span className="text-xs font-semibold px-3 py-1 bg-purple-500/20 border border-purple-500/30 text-purple-400 rounded-full shadow-inner">
                   {tier.label} · {tierDays} Days
                 </span>
               </div>
@@ -230,37 +246,37 @@ const CheckoutPage = () => {
               <div className="flex flex-col gap-2 mb-5">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400">Start Date</span>
-                  <span className="text-gray-600 font-medium">
+                  <span className="text-gray-300 font-medium">
                     {getTodayDate()}
                   </span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400">Expiry Date</span>
-                  <span className="text-gray-600 font-medium">
+                  <span className="text-gray-300 font-medium">
                     {getExpiryDate(tierDays)}
                   </span>
                 </div>
               </div>
 
               {/* Divider */}
-              <div className="h-px bg-black/5 mb-4" />
+              <div className="h-px bg-white/10 mb-4" />
 
               {/* Price Breakdown */}
               <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400">Subtotal</span>
-                  <span className="text-gray-700">₹{tier.price}</span>
+                  <span className="text-gray-300">₹{price}</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
                   <span className="text-gray-400">GST (18%)</span>
-                  <span className="text-gray-700">₹{gst}</span>
+                  <span className="text-gray-300">₹{gst}</span>
                 </div>
-                <div className="h-px bg-black/5 my-1" />
+                <div className="h-px bg-white/10 my-1" />
                 <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-[#0A1628]">
+                  <span className="text-sm font-semibold text-white">
                     Total
                   </span>
-                  <span className="font-serif text-2xl text-[#0A1628]">
+                  <span className="font-serif text-2xl text-white">
                     ₹{total}
                   </span>
                 </div>
@@ -268,17 +284,17 @@ const CheckoutPage = () => {
             </div>
 
             {/* What's Included */}
-            <div className="bg-white rounded-2xl border border-black/8 p-6">
+            <div className="bg-[#0A0D14]/80 backdrop-blur-xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl p-8">
               <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-4">
                 What's Included
               </h2>
               <div className="flex flex-col gap-3">
                 {tier.features.map((feature) => (
                   <div key={feature} className="flex items-center gap-3">
-                    <div className="w-5 h-5 bg-green-50 rounded-full flex items-center justify-center shrink-0">
-                      <Check size={11} className="text-green-500" />
+                    <div className="w-5 h-5 bg-green-500/20 border border-green-500/30 rounded-full flex items-center justify-center shrink-0 shadow-inner">
+                      <HiCheck size={11} className="text-green-400" />
                     </div>
-                    <span className="text-sm text-gray-600">{feature}</span>
+                    <span className="text-sm text-gray-300">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -286,44 +302,51 @@ const CheckoutPage = () => {
           </div>
 
           {/* RIGHT — Payment */}
-          <div className="flex flex-col gap-5">
+          <div className="flex flex-col gap-8 animation-delay-200">
             {/* Not logged in warning */}
             {!isAuthenticated && (
-              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
-                <p className="text-sm font-medium text-amber-800 mb-1">
+              <div className="bg-amber-900/20 border border-amber-500/30 rounded-2xl p-5 shadow-[0_0_20px_rgba(245,158,11,0.1)]">
+                <p className="text-sm font-medium text-amber-400 mb-1">
                   Account Required
                 </p>
-                <p className="text-xs text-amber-700 leading-relaxed mb-3">
+                <p className="text-xs text-amber-300 leading-relaxed mb-3">
                   You need to create a free account before completing your
                   purchase.
                 </p>
                 <div className="flex gap-2">
-                  <Link
-                    to="/register"
-                    className="text-xs px-4 py-2 bg-[#0A1628] text-white rounded-lg hover:bg-[#0F2340] transition-all"
+                  <button
+                    onClick={() => {
+                      localStorage.setItem("redirectAfterLogin", `/checkout/${id}?tier=${tierDays}`);
+                      navigate("/register");
+                    }}
+                    className="text-xs px-4 py-2 bg-purple-600 text-white font-bold rounded-lg hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] transition-all tracking-wider"
                   >
                     Create Account
-                  </Link>
-                  <Link
-                    to="/login"
-                    className="text-xs px-4 py-2 border border-black/10 text-gray-600 rounded-lg hover:bg-gray-50 transition-all"
+                  </button>
+                  <button
+                    onClick={() => {
+                      localStorage.setItem("redirectAfterLogin", `/checkout/${id}?tier=${tierDays}`);
+                      navigate("/login");
+                    }}
+                    className="text-xs px-4 py-2 bg-white/5 border border-white/10 text-white rounded-lg hover:bg-white/10 transition-all font-bold tracking-wider"
                   >
                     Log In
-                  </Link>
+                  </button>
                 </div>
               </div>
             )}
 
             {/* Payment Card */}
-            <div className="bg-white rounded-2xl border border-black/8 p-6">
-              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-6">
+            <div className="bg-[#0A0D14]/80 backdrop-blur-xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl p-8 relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-3xl group-hover:bg-purple-500/20 apple-transition pointer-events-none" />
+              <h2 className="text-sm font-semibold text-gray-400 uppercase tracking-widest mb-6 relative z-10">
                 Payment
               </h2>
 
               {/* Total Display */}
-              <div className="text-center mb-6 p-4 bg-gray-50 rounded-xl">
+              <div className="text-center mb-6 p-4 bg-white/5 border border-white/10 rounded-xl">
                 <div className="text-xs text-gray-400 mb-1">Amount to Pay</div>
-                <div className="font-serif text-4xl text-[#0A1628]">
+                <div className="font-serif text-4xl text-white">
                   ₹{total}
                 </div>
                 <div className="text-xs text-gray-400 mt-1">
@@ -331,11 +354,35 @@ const CheckoutPage = () => {
                 </div>
               </div>
 
+              {/* UPI ID Input (Optional) */}
+              <div className="mb-6 group/input">
+                <label className="block text-[10px] font-black uppercase tracking-widest text-gray-400 mb-2 transition-colors group-focus-within/input:text-purple-400">
+                  Enter UPI ID (Optional)
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={vpa}
+                    onChange={(e) => setVpa(e.target.value)}
+                    placeholder="e.g. username@okaxis"
+                    className="w-full px-4 py-3.5 bg-black/20 border border-white/10 rounded-xl text-sm text-white focus:bg-black/40 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition-all outline-none placeholder:text-gray-500"
+                  />
+                  {vpa && (
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-bold text-purple-400 bg-purple-500/20 border border-purple-500/30 px-2 py-1 rounded-md animate-fade-in shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+                      DIRECT PAY ENABLED
+                    </div>
+                  )}
+                </div>
+                <p className="mt-2 text-[10px] text-gray-400 leading-relaxed uppercase tracking-widest">
+                  Leave empty to get a <span className="text-white font-bold">QR Code</span> instead
+                </p>
+              </div>
+
               {/* Razorpay Button */}
               <button
                 onClick={handlePayment}
                 disabled={loading}
-                className="w-full py-4 bg-[#F97316] text-white text-sm font-semibold rounded-xl hover:bg-[#EA6C0B] transition-all disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm"
+                className="w-full py-4 razorpay-official-button text-sm font-bold uppercase tracking-widest disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-3 relative z-10"
               >
                 {loading ? (
                   <>
@@ -362,7 +409,7 @@ const CheckoutPage = () => {
                   </>
                 ) : (
                   <>
-                    <ShieldCheck size={16} />
+                    <HiShieldCheck size={16} />
                     Pay ₹{total} Securely
                   </>
                 )}
@@ -370,23 +417,23 @@ const CheckoutPage = () => {
 
               {/* Razorpay Badge */}
               <div className="flex items-center justify-center gap-2 mt-3">
-                <ShieldCheck size={13} className="text-gray-300" />
+                <HiShieldCheck size={13} className="text-gray-300" />
                 <span className="text-xs text-gray-300">
                   Secured by Razorpay
                 </span>
               </div>
 
               {/* Success Note */}
-              <div className="flex items-center justify-center gap-2 mt-4 p-3 bg-green-50 rounded-xl">
-                <Check size={13} className="text-green-500 shrink-0" />
-                <span className="text-xs text-green-700">
+              <div className="flex items-center justify-center gap-2 mt-4 p-3 bg-green-500/20 border border-green-500/30 rounded-xl shadow-[0_0_10px_rgba(34,197,94,0.1)]">
+                <HiCheck size={13} className="text-green-400 shrink-0" />
+                <span className="text-xs text-green-400">
                   You will get instant access after successful payment
                 </span>
               </div>
 
               {/* Accepted Payments */}
               <div className="mt-5">
-                <p className="text-xs text-center text-gray-300 mb-3">
+                <p className="text-xs text-center text-gray-400 mb-3">
                   Accepted payment methods
                 </p>
                 <div className="flex items-center justify-center gap-3">
@@ -394,7 +441,7 @@ const CheckoutPage = () => {
                     (method) => (
                       <span
                         key={method}
-                        className="text-xs px-2.5 py-1 border border-black/5 text-gray-400 rounded-lg bg-gray-50"
+                        className="text-xs px-2.5 py-1 border border-white/10 text-gray-300 rounded-lg bg-white/5"
                       >
                         {method}
                       </span>
@@ -405,14 +452,14 @@ const CheckoutPage = () => {
             </div>
 
             {/* Security Note */}
-            <div className="bg-white rounded-2xl border border-black/8 p-5">
+            <div className="bg-[#0A0D14]/80 backdrop-blur-xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] rounded-3xl p-6">
               <div className="flex items-start gap-3">
-                <ShieldCheck
+                <HiShieldCheck
                   size={18}
-                  className="text-[#2563EB] shrink-0 mt-0.5"
+                  className="text-purple-400 shrink-0 mt-0.5"
                 />
                 <div>
-                  <p className="text-xs font-semibold text-[#0A1628] mb-1">
+                  <p className="text-xs font-semibold text-white mb-1">
                     100% Secure Payment
                   </p>
                   <p className="text-xs text-gray-400 leading-relaxed">

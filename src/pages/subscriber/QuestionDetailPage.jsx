@@ -1,296 +1,194 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Bookmark, ThumbsUp, Star } from "lucide-react";
+import { HiArrowLeft, HiBookmark, HiBriefcase, HiCheckBadge, HiStar, HiArrowPath, HiBolt, HiShieldCheck } from "react-icons/hi2";
+import { useAuth } from "../../context/AuthContext";
+import { Sidebar } from "../../components/subscriber/Sidebar";
+import { 
+  fetchQuestionById, 
+  // recordQuestionVisit, 
+  getBookmarks, 
+  getQuestionAnswers, 
+  toggleBookmarkApi 
+} from "../../api/questionApi";
 import TechBadge from "../../components/common/TechBadge";
 import DifficultyBadge from "../../components/common/DifficultyBadge";
-import { useAuth } from "../../context/AuthContext";
-
-const mockQuestion = {
-  id: 1,
-  title:
-    "What is the difference between HashMap and ConcurrentHashMap in Java? When would you use each?",
-  technology: "Java",
-  difficulty: "MEDIUM",
-  rating: 4.8,
-  tutorComment: {
-    tutor: "Rajesh Kumar",
-    initials: "RK",
-    comment:
-      "This is one of the most frequently asked Java concurrency questions. Make sure you understand thread safety concepts before answering. Mention segment locking in ConcurrentHashMap and give a real use case.",
-  },
-  answers: [
-    {
-      id: 1,
-      user: "Priya S.",
-      initials: "PS",
-      text: "HashMap is not thread-safe. It allows one null key and multiple null values. It is faster in single-threaded environments. ConcurrentHashMap is thread-safe and uses segment-level locking (in Java 7) or CAS operations (in Java 8+). It does not allow null keys or values. Use HashMap when working in a single-threaded context. Use ConcurrentHashMap when multiple threads need to read and write concurrently without external synchronization.",
-      upvotes: 24,
-      upvoted: false,
-      time: "2 days ago",
-    },
-    {
-      id: 2,
-      user: "Arun M.",
-      initials: "AM",
-      text: "To add to the above answer — in Java 8, ConcurrentHashMap was redesigned. Instead of segment locking it now uses a combination of CAS (Compare and Swap) operations and synchronized blocks on individual buckets. This makes it more efficient. The compute(), merge() and forEach() methods are also atomic which makes complex operations easier to implement safely.",
-      upvotes: 18,
-      upvoted: true,
-      time: "1 day ago",
-    },
-    {
-      id: 3,
-      user: "Sneha R.",
-      initials: "SR",
-      text: "A practical use case: if you are building a web application that maintains a session cache accessed by multiple threads, use ConcurrentHashMap. If you are building a utility method that processes a list sequentially and needs a lookup table, HashMap is fine and more performant.",
-      upvotes: 12,
-      upvoted: false,
-      time: "5 hours ago",
-    },
-  ],
-};
+import toast from "react-hot-toast";
 
 const QuestionDetailPage = () => {
   const { id } = useParams();
   const { user } = useAuth();
+  const [question, setQuestion] = useState(null);
+  const [answers, setAnswers] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [bookmarked, setBookmarked] = useState(false);
-  const [answers, setAnswers] = useState(mockQuestion.answers);
-  const [visibleCount, setVisibleCount] = useState(2);
+  const [isSyncing, setIsSyncing] = useState(false);
 
-  const handleUpvote = (answerId) => {
-    setAnswers((prev) =>
-      prev.map((a) =>
-        a.id === answerId
-          ? {
-              ...a,
-              upvoted: !a.upvoted,
-              upvotes: a.upvoted ? a.upvotes - 1 : a.upvotes + 1,
-            }
-          : a,
-      ),
-    );
+  const fetchQuestion = async () => {
+    setLoading(true);
+    try {
+      // ✅ ELITE SYNC: Disabled Visit Telemetry until Backend is ready
+      // recordQuestionVisit(id).catch(() => {});
+
+      const [qRes, bRes, aRes] = await Promise.all([
+        fetchQuestionById(id),
+        getBookmarks().catch(() => ({ data: [] })),
+        getQuestionAnswers(id).catch(() => ({ data: [] }))
+      ]);
+      
+      setQuestion(qRes.data);
+      setAnswers(aRes.data);
+      const isBookmarked = Array.isArray(bRes.data) && bRes.data.some(b => b.id === parseInt(id));
+      setBookmarked(isBookmarked);
+    } catch (e) { 
+      toast.error("Could not load details."); 
+    } finally { 
+      setLoading(false); 
+    }
   };
 
+  useEffect(() => { fetchQuestion(); }, [id]);
+
+  const toggleBookmark = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    try {
+      await toggleBookmarkApi(id);
+      setBookmarked(!bookmarked);
+      toast.success(bookmarked ? "Removed from bookmarks" : "Saved to your vault! 🦾");
+    } catch (e) {
+      toast.error("Failed to update bookmark.");
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  if (loading) return (
+    <div className="flex h-screen bg-gray-50 items-center justify-center flex-col">
+       <div className="relative">
+          <HiArrowPath className="animate-spin text-blue-500 mb-4" size={40} />
+          <div className="absolute inset-0 flex items-center justify-center"><HiBolt size={12} className="text-blue-500" /></div>
+       </div>
+       <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.3em] animate-pulse">Syncing Intel Packet...</p>
+    </div>
+  );
+
+  if (!question) return (
+    <div className="flex h-screen bg-gray-50 items-center justify-center flex-col p-10 text-center">
+       <div className="text-6xl mb-6">🕵️‍♂️</div>
+       <h2 className="text-2xl font-serif text-[#0A1628] mb-2">Protocol Redacted</h2>
+       <p className="text-sm text-gray-400 italic mb-8 max-w-xs">This intelligence packet has been moved or purged from the central database.</p>
+       <Link to="/dashboard" className="px-8 py-3 bg-[#0A1628] text-white text-[10px] font-black uppercase tracking-[0.2em] rounded-xl shadow-xl active:scale-95">Back to Command Center</Link>
+    </div>
+  );
+
   return (
-    <div className="flex min-h-screen bg-gray-50 font-sans">
-      {/* Sidebar — reuse same sidebar style */}
-      <aside className="w-64 shrink-0 bg-white border-r border-black/5 min-h-screen flex flex-col">
-        <div className="p-6 border-b border-black/5">
-          <Link to="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 bg-[#0A1628] rounded-xl flex items-center justify-center">
-              <span className="text-white text-xs font-bold">AIP</span>
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-[#0A1628] leading-tight">
-                Aja Internship Portal
-              </div>
-              <div className="text-xs text-gray-400 leading-tight">
-                Interview Question Bank
-              </div>
-            </div>
-          </Link>
-        </div>
-        <nav className="flex-1 p-4 flex flex-col gap-1">
-          {[
-            { label: "Dashboard", icon: "🏠", path: "/dashboard" },
-            {
-              label: "My Questions",
-              icon: "📚",
-              path: "/dashboard/questions",
-              active: true,
-            },
-            { label: "Bookmarks", icon: "🔖", path: "/dashboard/bookmarks" },
-            {
-              label: "My Subscription",
-              icon: "💳",
-              path: "/dashboard/subscription",
-            },
-            { label: "Profile", icon: "👤", path: "/dashboard/profile" },
-          ].map((item) => (
-            <Link
-              key={item.label}
-              to={item.path}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all ${
-                item.active
-                  ? "bg-blue-50 text-[#2563EB] font-medium"
-                  : "text-gray-500 hover:bg-gray-50 hover:text-gray-800"
-              }`}
-            >
-              <span className="text-base">{item.icon}</span>
-              {item.label}
-            </Link>
-          ))}
-        </nav>
-        <div className="p-4 border-t border-black/5 flex flex-col gap-3">
-          <div className="flex items-center gap-2 px-3 py-2 bg-green-50 rounded-xl">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-            <span className="text-xs font-medium text-green-700">
-              Active · 24 days left
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#0A1628] to-[#2563EB] text-white text-xs font-semibold flex items-center justify-center">
-              {user?.name?.charAt(0) || "U"}
-            </div>
-            <div>
-              <div className="text-xs font-medium text-[#0A1628]">
-                {user?.name || "User"}
-              </div>
-              <div className="text-xs text-gray-400">Subscriber</div>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      {/* Main */}
-      <main className="flex-1 p-8 max-w-4xl">
-        {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-xs text-gray-400 mb-6">
-          <Link
-            to="/dashboard"
-            className="hover:text-gray-600 transition-colors"
-          >
-            Dashboard
-          </Link>
-          <span>/</span>
-          <Link
-            to="/dashboard"
-            className="hover:text-gray-600 transition-colors"
-          >
-            My Questions
-          </Link>
-          <span>/</span>
-          <span className="text-gray-600">Question #{id}</span>
-        </div>
-
-        {/* Question Header */}
-        <div className="bg-white border border-black/8 rounded-2xl p-7 mb-5">
-          <div className="flex items-start justify-between gap-4 mb-4">
-            <h1 className="font-serif text-2xl text-[#0A1628] leading-snug flex-1">
-              {mockQuestion.title}
-            </h1>
-            <button
-              onClick={() => setBookmarked(!bookmarked)}
-              className="shrink-0 p-2 rounded-xl border border-black/8 hover:border-blue-100 transition-all"
-            >
-              <Bookmark
-                size={16}
-                className={
-                  bookmarked ? "text-[#2563EB] fill-[#2563EB]" : "text-gray-300"
-                }
-              />
-            </button>
+    <div className="flex h-screen bg-[#F1F2F3] font-sans overflow-hidden portal-modern">
+      <Sidebar activeItem="Questions" />
+      <main className="flex-1 p-8 py-12 overflow-y-auto w-full">
+        <div className="max-w-4xl mx-auto">
+          {/* Back Nav */}
+          <div className="flex items-center justify-between mb-8">
+             <Link to="/dashboard/questions" className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[#0074CC] transition-all group">
+                <HiArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" /> Question Bank
+             </Link>
+             <div className="flex items-center gap-3">
+                <button 
+                  onClick={toggleBookmark} 
+                  disabled={isSyncing}
+                  className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${
+                    bookmarked 
+                      ? "bg-[#0074CC] text-white shadow-lg shadow-blue-500/20" 
+                      : "bg-white text-gray-500 border border-[#E3E6E8] hover:bg-gray-50"
+                  }`}
+                >
+                  <HiBookmark size={16} className={bookmarked ? "fill-white" : ""} />
+                  {bookmarked ? "Bookmarked" : "Save to Vault"}
+                </button>
+             </div>
           </div>
 
-          {/* Meta Row */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <TechBadge tech={mockQuestion.technology} />
-            <DifficultyBadge difficulty={mockQuestion.difficulty} />
-            <div className="flex items-center gap-1">
-              {[1, 2, 3, 4, 5].map((s) => (
-                <Star
-                  key={s}
-                  size={12}
-                  className={
-                    s <= Math.floor(mockQuestion.rating)
-                      ? "text-amber-400 fill-amber-400"
-                      : "text-gray-200 fill-gray-200"
-                  }
-                />
-              ))}
-              <span className="text-xs text-gray-400 ml-1">
-                {mockQuestion.rating} rated by tutors
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Tutor Comment */}
-        <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5 mb-5 border-l-4 border-l-[#2563EB]">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-8 h-8 rounded-full bg-[#0A1628] text-white text-xs font-semibold flex items-center justify-center shrink-0">
-              {mockQuestion.tutorComment.initials}
-            </div>
-            <div>
-              <div className="text-xs font-semibold text-[#0A1628]">
-                {mockQuestion.tutorComment.tutor}
-              </div>
-              <div className="text-xs text-[#2563EB]">Tutor's Note</div>
-            </div>
-          </div>
-          <p className="text-sm text-blue-800 leading-relaxed font-light">
-            {mockQuestion.tutorComment.comment}
-          </p>
-        </div>
-
-        {/* Answers Section */}
-        <div className="bg-white border border-black/8 rounded-2xl p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-base font-semibold text-[#0A1628]">
-              {answers.length} Answers
-            </h2>
-            <span className="text-xs px-3 py-1 bg-gray-50 border border-black/5 text-gray-400 rounded-full">
-              Most upvoted first
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-5">
-            {answers.slice(0, visibleCount).map((answer) => (
-              <div
-                key={answer.id}
-                className="border border-black/5 rounded-xl p-5 hover:border-blue-50 transition-all"
-              >
-                {/* Answer Header */}
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 text-gray-600 text-xs font-semibold flex items-center justify-center">
-                      {answer.initials}
-                    </div>
-                    <div>
-                      <div className="text-xs font-medium text-[#0A1628]">
-                        {answer.user}
-                      </div>
-                      <div className="text-xs text-gray-400">{answer.time}</div>
-                    </div>
+          <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700">
+            {/* Core intelligence Packet */}
+            <div className="bg-white border border-[#E3E6E8] rounded-lg shadow-sm">
+               <div className="p-6">
+                  <div className="flex items-center gap-3 mb-4">
+                     <TechBadge tech={question.technologyName || "General"} />
+                     <div className="text-[9px] font-bold text-gray-400 uppercase tracking-widest px-2 py-0.5 rounded-md bg-gray-50 border border-gray-100">{question.difficulty}</div>
                   </div>
-                  <button
-                    onClick={() => handleUpvote(answer.id)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
-                      answer.upvoted
-                        ? "bg-blue-50 border-blue-100 text-[#2563EB]"
-                        : "border-black/8 text-gray-400 hover:border-blue-100 hover:text-[#2563EB]"
-                    }`}
-                  >
-                    <ThumbsUp size={12} />
-                    {answer.upvotes}
-                  </button>
+                  
+                  <h1 className="text-lg font-bold text-[#232629] leading-tight mb-4">
+                     {question.title}
+                  </h1>
+
+                  <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
+                    <p className="text-sm text-gray-600 leading-relaxed font-medium">
+                      {question.content}
+                    </p>
+                  </div>
+               </div>
+            </div>
+
+            {/* Master Solution Guide */}
+            <div className="bg-white border border-[#E3E6E8] rounded-lg shadow-sm">
+               <div className="bg-gray-50 border-b border-[#E3E6E8] px-6 py-2.5 flex items-center justify-between">
+                  <h2 className="text-[10px] font-black uppercase tracking-widest text-gray-400">Official Solution</h2>
+                  <span className="text-[8px] font-bold uppercase tracking-widest text-[#0074CC] bg-blue-50 px-2 py-0.5 rounded-full border border-blue-100">
+                     Verified
+                  </span>
+               </div>
+               
+               <div className="p-6">
+                  <div className="bg-white p-6 rounded-lg border border-[#E3E6E8] shadow-inner text-sm leading-relaxed text-[#232629] font-medium">
+                     {question.officialAnswer ? question.officialAnswer : question.initialAnswer || "No mastering guide available for this packet yet."}
+                  </div>
+                  
+                  <div className="mt-10 flex items-center justify-between">
+                     <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Aja Consulting Services • Verified Intel</p>
+                     <div className="flex items-center gap-4">
+                        <button className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:text-[#0074CC] transition-colors">
+                           <HiStar size={16} /> Mark as Mastered
+                        </button>
+                     </div>
+                  </div>
+               </div>
+            </div>
+
+            {/* Community Intelligence Section */}
+            {answers.length > 0 && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-4 px-1">
+                   <h2 className="text-sm font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Alternative Perspectives ({answers.length})</h2>
+                   <div className="h-px w-full bg-gray-200" />
                 </div>
-
-                {/* Answer Text */}
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {answer.text}
-                </p>
+                
+                <div className="grid grid-cols-1 gap-6">
+                  {answers.map((answer) => (
+                    <div key={answer.id} className="bg-white border border-[#E3E6E8] rounded-xl p-8 shadow-sm group hover:border-[#0074CC]/30 transition-all">
+                       <div className="flex items-center gap-4 mb-5">
+                          <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-400 font-black text-xs">
+                             {answer.authorName?.charAt(0) || "A"}
+                          </div>
+                          <div>
+                             <div className="text-sm font-bold text-[#232629] mb-0.5">{answer.authorName || "Anonymous Contributor"}</div>
+                             <div className="text-[9px] font-black uppercase tracking-widest text-[#0074CC]/40">Expert Contribution</div>
+                          </div>
+                       </div>
+                       <p className="text-xs text-gray-500 leading-relaxed font-medium pl-4 border-l-2 border-gray-100 group-hover:border-blue-500/20 transition-all">
+                          {answer.content}
+                       </p>
+                    </div>
+                  ))}
+                </div>
               </div>
-            ))}
+            )}
           </div>
-
-          {/* Load More */}
-          {visibleCount < answers.length && (
-            <button
-              onClick={() => setVisibleCount(answers.length)}
-              className="w-full mt-5 py-3 border border-black/8 rounded-xl text-sm text-gray-500 hover:bg-gray-50 transition-all"
-            >
-              Load {answers.length - visibleCount} more answers
-            </button>
-          )}
+          
+          <div className="mt-20 text-center opacity-30 pb-20">
+             <p className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] flex items-center justify-center gap-2 italic">
+                <HiShieldCheck size={14} /> End-to-End Encryption • Mastery Sync 🦾
+             </p>
+          </div>
         </div>
-
-        {/* Back Button */}
-        <Link
-          to="/dashboard"
-          className="inline-flex items-center gap-2 text-sm text-gray-400 hover:text-gray-700 transition-colors mt-6"
-        >
-          <ArrowLeft size={15} /> Back to Dashboard
-        </Link>
       </main>
     </div>
   );

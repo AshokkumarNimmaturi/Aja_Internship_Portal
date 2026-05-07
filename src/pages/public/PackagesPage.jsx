@@ -1,367 +1,178 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { HiCheckCircle, HiShieldCheck } from "react-icons/hi2"; // ✅ ADDED
+import { fetchPackages } from "../../api/packageApi";
+import toast from "react-hot-toast";
 import Navbar from "../../components/common/Navbar";
 import Footer from "../../components/common/Footer";
-import { Check, X } from "lucide-react";
-
-const packages = [
-  {
-    id: 1,
-    icon: "☕",
-    name: "Backend",
-    description:
-      "Master Java, Spring Boot and backend system design questions asked in top product companies.",
-    techs: ["Java", "Spring Boot", "Microservices", "SQL", "REST APIs"],
-    questionCount: 120,
-    prices: { 30: 299, 90: 699, 180: 1199 },
-    color: "bg-amber-50 border-amber-100",
-    featured: false,
-  },
-  {
-    id: 2,
-    icon: "⚛️",
-    name: "Frontend",
-    description:
-      "Ace React, JavaScript and modern frontend interviews with questions from real projects.",
-    techs: ["React", "JavaScript", "TypeScript", "CSS", "Redux"],
-    questionCount: 110,
-    prices: { 30: 299, 90: 699, 180: 1199 },
-    color: "bg-blue-50 border-blue-100",
-    featured: true,
-  },
-  {
-    id: 3,
-    icon: "🐳",
-    name: "DevOps",
-    description:
-      "Docker, Kubernetes, CI/CD and cloud questions from engineers who cleared DevOps interviews.",
-    techs: ["Docker", "Kubernetes", "CI/CD", "Linux", "AWS"],
-    questionCount: 90,
-    prices: { 30: 299, 90: 699, 180: 1199 },
-    color: "bg-emerald-50 border-emerald-100",
-    featured: false,
-  },
-  {
-    id: 4,
-    icon: "☁️",
-    name: "Salesforce",
-    description:
-      "Apex, LWC and Salesforce admin questions collected from certified consultants.",
-    techs: ["Apex", "LWC", "SOQL", "Flows", "Admin"],
-    questionCount: 95,
-    prices: { 30: 299, 90: 699, 180: 1199 },
-    color: "bg-red-50 border-red-100",
-    featured: false,
-  },
-  {
-    id: 5,
-    icon: "🐍",
-    name: "Python",
-    description:
-      "Core Python, Django and Flask questions from backend and data engineering interviews.",
-    techs: ["Core Python", "Django", "Flask", "OOP", "Data Structures"],
-    questionCount: 100,
-    prices: { 30: 299, 90: 699, 180: 1199 },
-    color: "bg-purple-50 border-purple-100",
-    featured: false,
-  },
-];
-
-const durations = [
-  { days: 30, label: "30 Days", sublabel: "Basic" },
-  { days: 90, label: "90 Days", sublabel: "Standard" },
-  { days: 180, label: "180 Days", sublabel: "Premium" },
-];
-
-const comparisonFeatures = [
-  { name: "Full Q&A Access", basic: true, standard: true, premium: true },
-  { name: "Bookmark Questions", basic: true, standard: true, premium: true },
-  { name: "Search & Filter", basic: true, standard: true, premium: true },
-  { name: "Download Notes", basic: false, standard: true, premium: true },
-  { name: "Priority Tutor Q&A", basic: false, standard: false, premium: true },
-  {
-    name: "Certificate of Completion",
-    basic: false,
-    standard: false,
-    premium: true,
-  },
-];
 
 const PackagesPage = () => {
+  const navigate = useNavigate();
+
+  const [packages, setPackages] = useState([]);
   const [selectedDuration, setSelectedDuration] = useState(30);
+  const [loading, setLoading] = useState(true);
+
+  const loadPackageData = async () => {
+    try {
+      setLoading(true);
+      const res = await fetchPackages();
+      // ✅ Handle Spring Boot "Page" objects vs "List" arrays
+      const data = res.data.content || res.data;
+      setPackages(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Package Sync Error:", error);
+      toast.error("Package intelligence is currently syncing");
+      // Optional: Set fallback packages here if needed
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadPackageData();
+  }, []);
+
+  // ✅ Price based on duration
+  const getPrice = (pkg) => {
+    if (selectedDuration === 30) return pkg.basicPrice;
+    if (selectedDuration === 90) return pkg.standardPrice;
+    return pkg.premiumPrice;
+  };
+
+  // ⏳ LOADING
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-transparent">
+        <div className="w-12 h-12 border-4 border-purple-500/20 border-t-purple-500 rounded-full animate-spin mb-4" />
+        <p className="text-white font-bold text-sm uppercase tracking-widest">Aja Interview Vault</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-white font-sans">
+    <div className="min-h-screen bg-transparent relative z-10">
       <Navbar />
 
-      {/* HERO */}
-      <section className="pt-32 pb-16 px-6 text-center">
-        <div className="max-w-2xl mx-auto">
-          <p className="text-xs font-semibold tracking-widest text-[#2563EB] uppercase mb-3">
-            Subscription Packages
-          </p>
-          <h1 className="font-serif text-5xl text-[#0A1628] mb-4 leading-tight">
-            Choose Your Technology Track
-          </h1>
-          <p className="text-gray-400 font-light text-lg leading-relaxed">
-            Time-limited access to full question banks with expert answers. Pick
-            the track that matches your interview goal.
-          </p>
+      {/* HEADER */}
+      <div className="max-w-7xl mx-auto pt-32 pb-16 px-6 text-center">
+        <div className="inline-flex items-center gap-2 bg-purple-900/20 border border-purple-500/30 text-purple-400 text-[10px] font-bold uppercase tracking-widest px-4 py-2 rounded-full mb-6">
+          Career Development Plans
         </div>
-      </section>
 
-      {/* DURATION TOGGLE */}
-      <div className="flex justify-center px-6 mb-12">
-        <div className="inline-flex bg-gray-100 rounded-2xl p-1.5 gap-1">
-          {durations.map((d) => (
+        <h1 className="font-serif text-5xl md:text-6xl text-white leading-tight mb-6">
+          Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-teal-400 italic font-serif">Last Stop</span> <br />
+          For Interview Success
+        </h1>
+
+        <p className="text-gray-400 text-lg font-light max-w-3xl mx-auto mb-12 leading-relaxed">
+          If you came here, it means you are preparing for an interview or 
+          looking for an internship. <span className="text-white font-semibold">For both, this is your last stop.</span> Buy our 
+          packages to know what experts are asking in interviews, and our team 
+          will contact you once you've registered with us.
+        </p>
+
+        {/* DURATION SELECTOR - Polished Pill Toggle */}
+        <div className="inline-flex p-1.5 bg-white/5 backdrop-blur-sm rounded-2xl border border-white/10">
+          {[30, 90, 180].map((d) => (
             <button
-              key={d.days}
-              onClick={() => setSelectedDuration(d.days)}
-              className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
-                selectedDuration === d.days
-                  ? "bg-white text-[#0A1628] shadow-sm"
-                  : "text-gray-400 hover:text-gray-600"
+              key={d}
+              onClick={() => setSelectedDuration(d)}
+              className={`px-8 py-3 rounded-xl text-xs font-bold transition-all duration-300 ${
+                selectedDuration === d
+                  ? "bg-purple-600 text-white shadow-[0_0_15px_rgba(168,85,247,0.4)]"
+                  : "text-gray-400 hover:text-white"
               }`}
             >
-              <div>{d.label}</div>
-              <div
-                className={`text-xs font-normal ${
-                  selectedDuration === d.days
-                    ? "text-[#2563EB]"
-                    : "text-gray-300"
-                }`}
-              >
-                {d.sublabel}
-              </div>
+              {d} Days Access
             </button>
           ))}
         </div>
       </div>
 
-      {/* PACKAGE CARDS */}
-      <section className="px-6 pb-20 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {packages.map((pkg) => (
-            <div
-              key={pkg.id}
-              className={`relative bg-white rounded-2xl border-2 p-6 transition-all duration-250 hover:-translate-y-1 hover:shadow-xl cursor-pointer ${
-                pkg.featured
-                  ? "border-[#2563EB] shadow-blue-50 shadow-lg"
-                  : "border-black/8 hover:border-blue-100"
-              }`}
-            >
-              {/* Most Popular Badge */}
-              {pkg.featured && (
-                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#2563EB] text-white text-xs font-semibold px-4 py-1.5 rounded-full whitespace-nowrap">
-                  Most Popular
-                </div>
-              )}
-
-              {/* Icon + Name */}
-              <div className="flex items-start justify-between mb-4">
-                <div>
-                  <span className="text-4xl block mb-3">{pkg.icon}</span>
-                  <h3 className="text-lg font-semibold text-[#0A1628]">
-                    {pkg.name}
-                  </h3>
-                  <p className="text-xs text-gray-400 mt-1 leading-relaxed max-w-xs">
-                    {pkg.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Tech Tags */}
-              <div className="flex flex-wrap gap-1.5 mb-5">
-                {pkg.techs.map((tech) => (
-                  <span
-                    key={tech}
-                    className="text-xs px-2.5 py-1 bg-gray-50 border border-black/5 text-gray-500 rounded-lg"
-                  >
-                    {tech}
-                  </span>
-                ))}
-              </div>
-
-              {/* Question Count */}
-              <div className="flex items-center gap-2 mb-5">
-                <div className="w-2 h-2 bg-green-400 rounded-full" />
-                <span className="text-xs text-gray-400">
-                  {pkg.questionCount}+ questions · 5 free samples included
-                </span>
-              </div>
-
-              {/* Price */}
-              <div className="flex items-baseline gap-1 mb-5">
-                <span className="font-serif text-4xl text-[#0A1628]">
-                  ₹{pkg.prices[selectedDuration]}
-                </span>
-                <span className="text-sm text-gray-400">
-                  / {selectedDuration} days
-                </span>
-              </div>
-
-              {/* Features */}
-              <div className="flex flex-col gap-2 mb-6">
-                {[
-                  "Full Q&A Access",
-                  "Bookmark Questions",
-                  selectedDuration >= 90 ? "Download Notes" : null,
-                  selectedDuration >= 180 ? "Priority Tutor Q&A" : null,
-                  selectedDuration >= 180 ? "Certificate of Completion" : null,
-                ]
-                  .filter(Boolean)
-                  .map((feature) => (
-                    <div key={feature} className="flex items-center gap-2">
-                      <Check size={13} className="text-green-500 shrink-0" />
-                      <span className="text-xs text-gray-500">{feature}</span>
-                    </div>
-                  ))}
-              </div>
-
-              {/* CTA Button */}
-              <Link
-                to={`/packages/${pkg.id}`}
-                className={`block w-full py-3 rounded-xl text-sm font-medium text-center transition-all ${
-                  pkg.featured
-                    ? "bg-[#0A1628] text-white hover:bg-[#0F2340]"
-                    : "border border-black/10 text-gray-700 hover:bg-[#0A1628] hover:text-white"
-                }`}
-              >
-                Get Access →
-              </Link>
-            </div>
-          ))}
-
-          {/* Full Stack Bundle Card */}
-          <div className="md:col-span-2 lg:col-span-3 bg-[#0A1628] rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <div className="flex items-center gap-3 mb-3">
-                <span className="text-3xl">🚀</span>
-                <div>
-                  <h3 className="text-lg font-semibold text-white">
-                    Full Stack Bundle
-                  </h3>
-                  <p className="text-white/50 text-sm">
-                    All 5 tracks — Backend + Frontend + DevOps + Salesforce +
-                    Python
-                  </p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  "Java",
-                  "React",
-                  "Docker",
-                  "Salesforce",
-                  "Python",
-                  "500+ Questions",
-                ].map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-xs px-2.5 py-1 bg-white/10 text-white/70 rounded-lg"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="text-center md:text-right shrink-0">
-              <div className="text-white/40 text-sm line-through mb-1">
-                ₹{packages[0].prices[selectedDuration] * 5}
-              </div>
-              <div className="font-serif text-5xl text-white mb-1">₹999</div>
-              <div className="text-white/40 text-xs mb-4">
-                / {selectedDuration} days
-              </div>
-              <Link
-                to="/register"
-                className="inline-block px-8 py-3 bg-white text-[#0A1628] text-sm font-semibold rounded-xl hover:-translate-y-0.5 hover:shadow-lg transition-all"
-              >
-                Get Bundle Deal →
-              </Link>
-            </div>
+      {/* PACKAGES GRID */}
+      <section className="max-w-7xl mx-auto px-6 pb-32">
+        {packages.length === 0 ? (
+          <div className="text-center py-20 border-2 border-dashed border-white/10 rounded-[3rem]">
+            <p className="text-gray-400 font-medium">Coming soon: New technology tracks</p>
           </div>
-        </div>
-      </section>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {packages.map((pkg, index) => {
+              const isPopular = index === 1; // Standard is usually middle
+              const isPremium = index === packages.length - 1 && index > 1;
 
-      {/* COMPARISON TABLE */}
-      <section className="px-6 pb-24 max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <h2 className="font-serif text-3xl text-[#0A1628] mb-2">
-            Compare Plans
-          </h2>
-          <p className="text-gray-400 font-light text-sm">
-            See what's included in each subscription tier
-          </p>
-        </div>
-
-        <div className="bg-white border border-black/8 rounded-2xl overflow-hidden">
-          {/* Table Header */}
-          <div className="grid grid-cols-4 border-b border-black/5">
-            <div className="p-5 text-sm font-medium text-gray-400">
-              Features
-            </div>
-            {[
-              { label: "Basic", days: "30 days", color: "text-gray-600" },
-              { label: "Standard", days: "90 days", color: "text-[#2563EB]" },
-              { label: "Premium", days: "180 days", color: "text-purple-600" },
-            ].map((tier) => (
-              <div
-                key={tier.label}
-                className="p-5 text-center border-l border-black/5"
-              >
-                <div className={`text-sm font-semibold ${tier.color}`}>
-                  {tier.label}
-                </div>
-                <div className="text-xs text-gray-400 mt-0.5">{tier.days}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Table Rows */}
-          {comparisonFeatures.map((feature, i) => (
-            <div
-              key={i}
-              className={`grid grid-cols-4 border-b border-black/5 last:border-b-0 ${
-                i % 2 === 0 ? "bg-white" : "bg-gray-50/50"
-              }`}
-            >
-              <div className="p-5 text-sm text-gray-600">{feature.name}</div>
-              {[feature.basic, feature.standard, feature.premium].map(
-                (has, j) => (
-                  <div
-                    key={j}
-                    className="p-5 flex items-center justify-center border-l border-black/5"
-                  >
-                    {has ? (
-                      <Check size={16} className="text-green-500" />
-                    ) : (
-                      <X size={16} className="text-gray-200" />
-                    )}
-                  </div>
-                ),
-              )}
-            </div>
-          ))}
-
-          {/* Price Row */}
-          <div className="grid grid-cols-4 bg-gray-50 border-t border-black/8">
-            <div className="p-5 text-sm font-medium text-gray-600">Price</div>
-            {[
-              { price: "₹299", color: "text-gray-700" },
-              { price: "₹699", color: "text-[#2563EB]" },
-              { price: "₹1199", color: "text-purple-600" },
-            ].map((tier, i) => (
-              <div key={i} className="p-5 text-center border-l border-black/5">
-                <span
-                  className={`font-serif text-xl font-semibold ${tier.color}`}
+              return (
+                <div
+                  key={pkg.id}
+                  className={`relative group flex flex-col p-6 rounded-3xl transition-all duration-500 hover:-translate-y-1 
+                    ${isPopular 
+                      ? "bg-[#0A0D14]/80 backdrop-blur-xl border border-purple-500/50 shadow-[0_0_30px_rgba(168,85,247,0.2)] text-white" 
+                      : isPremium 
+                        ? "bg-[#050505]/90 backdrop-blur-xl border border-teal-500/30 shadow-[0_0_30px_rgba(20,184,166,0.1)] text-white" 
+                        : "bg-white/5 backdrop-blur-xl border border-white/10 shadow-lg text-white"}`}
                 >
-                  {tier.price}
-                </span>
-              </div>
-            ))}
+                  {isPopular && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-600 text-white text-[9px] uppercase font-bold tracking-widest px-3 py-1 rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)] whitespace-nowrap">
+                      Most Popular Path
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between mb-4">
+                     <div className={`text-3xl ${!isPremium && "text-purple-400"}`}>
+                        {index === 0 ? "⚙️" : index === 1 ? "⚛️" : index === 2 ? "☁️" : "☕"}
+                     </div>
+                     <div className={`px-2 py-1 rounded-lg text-[9px] font-bold uppercase tracking-wider ${isPremium ? "bg-white/10 text-white" : "bg-purple-500/20 text-purple-400"}`}>
+                        {pkg.technologyName || "Core Tech"}
+                     </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold mb-2">{pkg.name}</h3>
+                  <p className={`text-xs mb-5 font-light leading-relaxed line-clamp-2 ${isPremium ? "text-white/60" : "text-gray-400"}`}>
+                    {pkg.description || "Master core concepts and advanced interview questions."}
+                  </p>
+
+                  <div className="mt-auto">
+                    <div className="flex items-baseline gap-1 mb-5">
+                      <span className="text-3xl font-bold">₹{getPrice(pkg)}</span>
+                      <span className={`text-[10px] font-medium ${isPremium ? "text-white/40" : "text-gray-400"}`}>
+                        / {selectedDuration} Days
+                      </span>
+                    </div>
+
+                    <ul className="space-y-3 mb-6">
+                      {[
+                        "500+ Verified Questions",
+                        "Expert Tutor Reviews",
+                        "Career Path Guidance",
+                        "Full-time Hiring Support"
+                      ].map((feature, fIdx) => (
+                        <li key={fIdx} className="flex items-center gap-2.5">
+                          <HiCheckCircle size={14} className={isPremium ? "text-teal-400" : "text-purple-400"} />
+                          <span className={`text-[11px] font-medium ${isPremium ? "text-white/70" : "text-gray-300"}`}>
+                            {feature}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+
+                    <button
+                      onClick={() => navigate(`/checkout/${pkg.id}?days=${selectedDuration}`)}
+                      className={`w-full py-3 rounded-xl text-xs font-bold transition-all duration-300 hover:scale-[1.02] active:scale-100 shadow-lg
+                        ${isPremium 
+                          ? "bg-teal-600 text-white hover:bg-teal-500 shadow-[0_0_15px_rgba(20,184,166,0.4)]" 
+                          : isPopular 
+                            ? "bg-purple-600 text-white hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]" 
+                            : "bg-white/10 text-white hover:bg-white/20 border border-white/10"}`}
+                    >
+                      Begin Your Journey
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
+        )}
       </section>
 
       <Footer />

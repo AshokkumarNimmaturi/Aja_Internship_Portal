@@ -1,4 +1,5 @@
-import { Bookmark, MessageCircle } from "lucide-react";
+// ✅ UPGRADED: Using elite Heroicons 2
+import { HiBookmark, HiChatBubbleLeftEllipsis } from "react-icons/hi2";
 import { Link } from "react-router-dom";
 import TechBadge from "../common/TechBadge";
 import DifficultyBadge from "../common/DifficultyBadge";
@@ -11,7 +12,7 @@ const QuestionCard = ({ question, basePath = "/dashboard" }) => {
     >
       <div className="flex items-start justify-between mb-3">
         <TechBadge tech={question.technology} />
-        <Bookmark
+        <HiBookmark
           size={16}
           className="text-gray-300 hover:text-blue-500 transition-colors cursor-pointer mt-1"
         />
@@ -22,7 +23,7 @@ const QuestionCard = ({ question, basePath = "/dashboard" }) => {
       <div className="flex items-center justify-between mt-4">
         <DifficultyBadge difficulty={question.difficulty} />
         <div className="flex items-center gap-1 text-gray-400 text-xs">
-          <MessageCircle size={13} />
+          <HiChatBubbleLeftEllipsis size={13} />
           <span>{question.answerCount || 0} answers</span>
         </div>
       </div>

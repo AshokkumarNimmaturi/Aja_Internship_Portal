@@ -1,166 +1,178 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, CheckCircle } from "lucide-react";
+import { HiEye, HiEyeSlash, HiCheckCircle } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
-import axiosInstance from "../../api/axiosInstance";
+import { loginUser } from "../../api/authApi";
 import toast from "react-hot-toast";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // ✅ validation
+    if (!formData.email || !formData.password) {
+      toast.error("Please fill all fields");
+      return;
+    }
+
     setLoading(true);
+
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const res = await loginUser({
+        email: formData.email,
+        password: formData.password,
+      });
 
-      let mockUser = null;
-      let mockToken = "mock_token_123";
+      const user = res.data.user;
+      const accessToken = res.data.accessToken;
+      const refreshToken = res.data.refreshToken;
 
-      const email = formData.email.toLowerCase();
-      if (email === "admin@test.com") {
-        mockUser = { id: 1, name: "Admin User", role: "ADMIN", isFirstLogin: false };
-      } else if (email === "tutor@test.com") {
-        mockUser = { id: 2, name: "Tutor User", role: "TUTOR", isFirstLogin: false };
-      } else if (email === "employee@test.com") {
-        mockUser = { id: 3, name: "Employee User", role: "EMPLOYEE", isFirstLogin: false };
-      } else if (email === "student@test.com") {
-        mockUser = { id: 4, name: "Student User", role: "SUBSCRIBER", isFirstLogin: false };
-      } else {
-        throw new Error("Invalid credentials. Try admin@test.com, tutor@test.com, employee@test.com, or student@test.com");
+      // ✅ STORE TOKEN (ONLY ONE SOURCE)
+      localStorage.setItem("token", accessToken);
+      localStorage.setItem("refreshToken", refreshToken);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // ✅ Update AuthContext (no duplication issue now)
+      login(user, accessToken, refreshToken);
+
+      toast.success(`Welcome back, ${user.fullName}!`);
+
+      // 🔥 REDIRECT AFTER LOGIN
+      const redirectPath = localStorage.getItem("redirectAfterLogin");
+
+      if (redirectPath) {
+        localStorage.removeItem("redirectAfterLogin");
+        navigate(redirectPath);
+        return;
       }
 
-      const user = mockUser;
-      const accessToken = mockToken;
-
-      login(user, accessToken);
-
-      toast.success(`Welcome back, ${user.name}!`);
-
-      if (user.isFirstLogin) {
+      // First login
+      if (user.firstLogin) {
         navigate("/change-password");
         return;
       }
 
+      // Role-based routing
       if (user.role === "ADMIN") navigate("/portal/admin");
       else if (user.role === "TUTOR") navigate("/portal/review");
       else if (user.role === "EMPLOYEE") navigate("/portal/dashboard");
       else navigate("/dashboard");
+
     } catch (error) {
-      const message = error.message;
-      toast.error(message);
+      console.error(error);
+
+      if (error.response?.status === 401) {
+        toast.error("Invalid email or password");
+      } else {
+        toast.error(error.response?.data?.message || "Login failed");
+      }
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex font-sans">
-      {/* LEFT — Brand Panel */}
-      <div className="hidden lg:flex lg:w-1/2 bg-[#0A1628] flex-col justify-between p-12">
-        <Link to="/" className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center">
-            <span className="text-white text-sm font-bold tracking-wide">
-              AIP
-            </span>
-          </div>
+    <div className="min-h-screen flex font-sans bg-transparent">
+      {/* LEFT PANEL: Branding & Visuals */}
+      <div className="hidden lg:flex lg:w-1/2 mesh-bg flex-col justify-between p-16 relative overflow-hidden">
+        <div className="animated-grid-bg" />
+        {/* Abstract Background Decoration */}
+        <div className="absolute top-[-100px] right-[-100px] w-80 h-80 bg-white/5 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute bottom-[-50px] left-[-50px] w-64 h-64 bg-blue-500/10 rounded-full blur-3xl animate-float animation-delay-200" />
+
+        <Link to="/" className="flex items-center gap-4 relative z-10">
+          <img src="/logo.png" alt="Aja" className="h-10 w-auto brightness-0 invert" />
+          <div className="h-8 w-px bg-white/20 mx-1" />
           <div>
-            <div className="text-white text-sm font-semibold leading-tight">
-              Aja Internship Portal
+            <div className="text-white text-sm font-bold tracking-tight">
+              Aja Interview Vault
             </div>
-            <div className="text-white/40 text-xs leading-tight">
-              Interview Question Bank
+            <div className="text-blue-200/60 text-[10px] font-bold uppercase tracking-widest">
+              Aja Consulting Services LLP
             </div>
           </div>
         </Link>
 
-        <div>
-          <h2 className="font-serif text-4xl text-white leading-snug mb-4">
-            Welcome to
-            <br />
-            <em className="text-[#2563EB]">Aja Internship Portal</em>
+        <div className="relative z-10">
+          <h2 className="text-5xl font-serif text-white leading-tight mb-8">
+            Start Your <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-teal-400 font-bold italic">
+              IT Career Journey
+            </span> <br />
+            Today.
           </h2>
-          <p className="text-white/50 font-light text-sm leading-relaxed mb-10">
-            Real questions. Real experience. Real confidence.
-          </p>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6 max-w-sm">
             {[
-              "Questions from real employee interviews",
-              "Reviewed and rated by expert tutors",
-              "Technology-specific packages from ₹299",
-            ].map((text, i) => (
-              <div key={i} className="flex items-center gap-3">
-                <CheckCircle size={16} className="text-[#2563EB] shrink-0" />
-                <span className="text-white/60 text-sm">{text}</span>
+              { t: "Internship to Employment", d: "A clear path from learning to full-time hiring." },
+              { t: "Expert-Led Training", d: "Learn from veterans with 10+ years experience." },
+              { t: "Verified Interview Bank", d: "Real questions from real tech assessments." },
+            ].map((item, i) => (
+              <div key={i} className="flex gap-4 group">
+                <div className="flex-shrink-0 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center group-hover:bg-blue-500/20 transition-colors">
+                  <HiCheckCircle size={18} className="text-blue-400" />
+                </div>
+                <div>
+                  <div className="text-white font-semibold text-sm">{item.t}</div>
+                  <div className="text-white/40 text-xs mt-0.5">{item.d}</div>
+                </div>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="text-white/20 text-xs">
-          © 2026 Aja Consulting Services LLP. All rights reserved.
+        <div className="text-white/30 text-[10px] uppercase tracking-widest font-bold">
+          © 2026 AJA CONSULTING SERVICES LLP
         </div>
       </div>
 
-      {/* RIGHT — Login Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-12 bg-white">
-        <div className="w-full max-w-md">
-          {/* Mobile Logo */}
-          <Link to="/" className="flex items-center gap-3 mb-10 lg:hidden">
-            <div className="w-9 h-9 bg-[#0A1628] rounded-xl flex items-center justify-center">
-              <span className="text-white text-xs font-bold">AIP</span>
-            </div>
-            <span className="text-sm font-semibold text-[#0A1628]">
-              Aja Internship Portal
-            </span>
-          </Link>
+      {/* RIGHT PANEL: Login Form */}
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 md:p-16 animate-fade-in-up">
+        <div className="w-full max-w-md bg-[#0A0D14]/80 backdrop-blur-xl border border-white/10 shadow-[0_0_50px_rgba(0,0,0,0.5)] p-10 rounded-[2.5rem]">
+          <div className="mb-10">
+            <h1 className="text-3xl font-bold text-white tracking-tight mb-2">
+              Welcome Back
+            </h1>
+            <p className="text-gray-400 text-sm font-light">
+              Log in to access your dashboard and courses.
+            </p>
+          </div>
 
-          <h1 className="text-2xl font-semibold text-[#0A1628] mb-2">
-            Log in to your account
-          </h1>
-          <p className="text-sm text-gray-400 font-light mb-8">
-            Enter your credentials to continue
-          </p>
-
-          <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-            {/* Email */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-2">
-                Email Address
-              </label>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+            {/* EMAIL */}
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] ml-1">Email Address</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="you@example.com"
+                placeholder="name@company.com"
                 required
-                className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all"
+                className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-white placeholder-gray-500 transition-all text-sm hover:border-white/20"
               />
             </div>
 
-            {/* Password */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-xs font-medium text-gray-600">
-                  Password
-                </label>
-                {/* ✅ FIXED — was a <button>, now a proper <Link> */}
-                <Link
-                  to="/forgot-password"
-                  className="text-xs text-[#2563EB] hover:underline transition-colors"
-                >
-                  Forgot password?
+            {/* PASSWORD */}
+            <div className="space-y-2">
+              <div className="flex justify-between items-center px-1">
+                <label className="text-[10px] font-black text-gray-300 uppercase tracking-[0.2em] ml-1">Password</label>
+                <Link to="/forgot-password" size={18} className="text-purple-400 text-[10px] tracking-widest uppercase font-bold hover:underline">
+                  Forgot?
                 </Link>
               </div>
               <div className="relative">
@@ -169,76 +181,45 @@ const LoginPage = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder="Enter your password"
+                  placeholder="••••••••"
                   required
-                  className="w-full px-4 py-3 border border-black/10 rounded-xl text-sm text-gray-800 placeholder-gray-300 focus:outline-none focus:border-[#2563EB] focus:ring-2 focus:ring-blue-50 transition-all pr-12"
+                  className="w-full px-5 py-4 bg-black/20 border border-white/10 rounded-2xl focus:outline-none focus:ring-2 focus:ring-purple-500/30 focus:border-purple-500 text-white placeholder-gray-500 transition-all text-sm hover:border-white/20"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-600 transition-colors"
+                  className="absolute right-4 top-4 text-gray-400 hover:text-white transition-colors"
                 >
-                  {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  {showPassword ? <HiEyeSlash size={20} /> : <HiEye size={20} />}
                 </button>
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* BUTTON */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-3.5 bg-[#0A1628] text-white text-sm font-medium rounded-xl hover:bg-[#0F2340] transition-all disabled:opacity-60 disabled:cursor-not-allowed mt-1"
+              className="w-full mt-4 py-4 bg-purple-600 hover:bg-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.4)] text-white rounded-2xl flex justify-center items-center relative overflow-hidden group tracking-wider font-bold transition-all"
             >
+              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-in-out" />
+              <span className="relative z-10">
               {loading ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg
-                    className="animate-spin h-4 w-4 text-white"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                  >
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8v8z"
-                    />
-                  </svg>
-                  Logging in...
-                </span>
-              ) : (
-                "Log in"
-              )}
+                 <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <span>Signing in...</span>
+                 </div>
+              ) : "Sign In to Portal"}
+              </span>
             </button>
 
-            {/* Internal Staff Note */}
-            <p className="text-xs text-center text-gray-400 italic">
-              Internal staff — use credentials provided by your administrator.
-            </p>
-
-            {/* Divider */}
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-black/5" />
-              <span className="text-xs text-gray-300">or</span>
-              <div className="flex-1 h-px bg-black/5" />
+            <div className="mt-6 text-center">
+              <p className="text-sm text-gray-400">
+                Don't have an account yet?{" "}
+                <Link to="/register" className="text-purple-400 font-bold hover:underline">
+                  Register
+                </Link>
+              </p>
             </div>
-
-            {/* Register Link */}
-            <p className="text-center text-sm text-gray-400">
-              New here?{" "}
-              <Link
-                to="/register"
-                className="text-[#2563EB] font-medium hover:underline"
-              >
-                Create a learner account →
-              </Link>
-            </p>
           </form>
         </div>
       </div>

@@ -6,6 +6,13 @@ const PublicOnlyRoute = ({ children }) => {
 
   if (!isAuthenticated) return children;
 
+  // Check if there is an explicit redirect path saved
+  const redirectPath = localStorage.getItem("redirectAfterLogin");
+  if (redirectPath) {
+    localStorage.removeItem("redirectAfterLogin");
+    return <Navigate to={redirectPath} replace />;
+  }
+
   // Redirect based on role after login
   if (user?.role === "SUBSCRIBER") return <Navigate to="/dashboard" replace />;
   if (user?.role === "ADMIN") return <Navigate to="/portal/admin" replace />;
