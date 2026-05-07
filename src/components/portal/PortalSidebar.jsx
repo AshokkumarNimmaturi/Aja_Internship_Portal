@@ -207,9 +207,13 @@ export const PortalSidebar = ({ user, role, pendingCount: initialCount = 0 }) =>
       <div className="p-5 border-t border-white/5 flex flex-col gap-3 shrink-0 overflow-hidden bg-black/5">
         <div className={`flex items-center ${isHovered ? 'justify-between' : 'justify-center'}`}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-white/5 text-white text-xs font-bold flex items-center justify-center shrink-0 border border-white/5 shadow-inner uppercase">
-              {user?.fullName?.charAt(0) || "U"}
-            </div>
+            {user?.profilePicture ? (
+              <img src={user.profilePicture} alt="Profile" className="w-9 h-9 rounded-lg object-cover border border-white/5 shrink-0" />
+            ) : (
+              <div className="w-9 h-9 rounded-lg bg-white/5 text-white text-xs font-bold flex items-center justify-center shrink-0 border border-white/5 shadow-inner uppercase">
+                {user?.fullName?.charAt(0) || "U"}
+              </div>
+            )}
             <div className={`whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
               <div className="text-xs font-bold text-white truncate w-24">
                 {user?.fullName || user?.name || "Member"}

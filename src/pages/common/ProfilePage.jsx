@@ -12,6 +12,7 @@ import {
   HiPlus,
   HiXMark,
   HiCheckCircle,
+  HiCamera,
 } from "react-icons/hi2";
 import { useAuth } from "../../context/AuthContext";
 import { Sidebar } from "../../components/subscriber/Sidebar";
@@ -26,11 +27,12 @@ const INTEREST_OPTIONS = [
 ];
 
 const ProfilePage = ({ isPortal = false }) => {
-  const { user, logout } = useAuth();
+  const { user, logout, updateUser } = useAuth();
   const navigate = useNavigate();
 
   // Profile state
   const [profile, setProfile] = useState({ fullName: user?.fullName || user?.name || "", email: user?.email || "" });
+  const [profilePic, setProfilePic] = useState(user?.profilePicture || null);
   const [savingProfile, setSavingProfile] = useState(false);
 
   // Interests state
@@ -53,10 +55,12 @@ const ProfilePage = ({ isPortal = false }) => {
         const res = await fetchMe();
         const data = res.data;
         setProfile({ fullName: data.fullName || data.name || "", email: data.email || "" });
+        setProfilePic(data.profilePicture || null);
         setInterests(data.interests || []);
       } catch {
         // fallback to auth context
         setProfile({ fullName: user?.fullName || user?.name || "", email: user?.email || "" });
+        setProfilePic(user?.profilePicture || null);
       }
     };
     fetchProfile();
@@ -66,12 +70,28 @@ const ProfilePage = ({ isPortal = false }) => {
     e.preventDefault();
     setSavingProfile(true);
     try {
-      await updateProfile({ fullName: profile.fullName });
+      await updateProfile({ fullName: profile.fullName, profilePicture: profilePic });
+      updateUser({ fullName: profile.fullName, profilePicture: profilePic });
       toast.success("Profile updated successfully!");
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to update profile");
     } finally {
       setSavingProfile(false);
+    }
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        toast.error("Image size must be less than 2MB");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePic(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -153,8 +173,18 @@ const ProfilePage = ({ isPortal = false }) => {
         <div className="max-w-3xl mx-auto">
           {/* Compact Profile Header */}
           <div className="bg-white border border-[#E3E6E8] rounded-lg p-6 mb-6 flex items-center gap-5 shadow-sm">
-            <div className={`w-14 h-14 rounded-lg bg-[#0A1628] text-white text-lg font-bold flex items-center justify-center border border-white/10`}>
-              {initials}
+            <div className="relative group cursor-pointer">
+              {profilePic ? (
+                <img src={profilePic} alt="Profile" className="w-16 h-16 rounded-lg object-cover border border-gray-200" />
+              ) : (
+                <div className={`w-16 h-16 rounded-lg bg-[#0A1628] text-white text-xl font-bold flex items-center justify-center border border-white/10`}>
+                  {initials}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/50 rounded-lg flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <HiCamera size={24} className="text-white" />
+              </div>
+              <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-[#0A1628] leading-tight">

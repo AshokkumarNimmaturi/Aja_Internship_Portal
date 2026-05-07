@@ -140,9 +140,13 @@ export const Sidebar = () => {
         {/* User Info */}
         <div className={`flex items-center ${isHovered ? 'justify-between' : 'justify-center'}`}>
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-[#0A1628] text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm" title={!isHovered ? (user?.fullName || user?.name) : ""}>
-              {(user?.fullName || user?.name)?.charAt(0)?.toUpperCase() || "U"}
-            </div>
+            {user?.profilePicture ? (
+              <img src={user.profilePicture} alt="Profile" className="w-9 h-9 rounded-lg object-cover border border-black/5 shrink-0" title={!isHovered ? (user?.fullName || user?.name) : ""} />
+            ) : (
+              <div className="w-9 h-9 rounded-lg bg-[#0A1628] text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-sm" title={!isHovered ? (user?.fullName || user?.name) : ""}>
+                {(user?.fullName || user?.name)?.charAt(0)?.toUpperCase() || "U"}
+              </div>
+            )}
             <div className={`whitespace-nowrap transition-opacity duration-300 ${isHovered ? 'opacity-100' : 'opacity-0 hidden'}`}>
               <div className="text-[12px] font-bold text-[#0A1628] leading-tight truncate w-28">
                 {user?.fullName || user?.name || "User"}

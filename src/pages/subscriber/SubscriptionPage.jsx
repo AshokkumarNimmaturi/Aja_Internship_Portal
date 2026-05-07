@@ -83,7 +83,7 @@ const SubscriptionPage = () => {
                 const totalDays = Math.max(1, Math.ceil((end - start) / (1000 * 60 * 60 * 24)));
                 const leftDays = Math.max(0, Math.ceil((end - now) / (1000 * 60 * 60 * 24)));
                 const progress = Math.min(100, Math.round(((totalDays - leftDays) / totalDays) * 100));
-                const isActive = sub.status === "ACTIVE" || leftDays > 0;
+                const isActive = sub.status === "ACTIVE" && leftDays > 0;
 
                 return (
                   <div key={sub.id || idx} className="bg-white rounded-lg border border-[#E3E6E8] shadow-sm hover:border-[#0074CC]/20 transition-all group">
